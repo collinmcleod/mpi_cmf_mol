@@ -61,7 +61,7 @@
 !   subtract 10 as an extra precaution.
 !
         T1=10.0_LDP
-        MAX_LN_LTE_POP=0.9*RANGE(T1)*LOG(T1)
+        MAX_LN_LTE_POP=0.9_LDP*RANGE(T1)*LOG(T1)
 !
 ! The LTE population is simply a linear sum over the combined levels.
 ! Because of floating overflow, we operate in LOG space. Note that

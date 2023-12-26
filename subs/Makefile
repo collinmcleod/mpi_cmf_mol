@@ -179,6 +179,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(rd_log.o)\
       $(LIB)(rd_sol_abund_scale.o)\
       $(LIB)(rd_t_ed.o)\
+      $(LIB)(rd_t_ed_v2.o)\
       $(LIB)(rdgendie_v4.o)\
       $(LIB)(readba.o)\
       $(LIB)(regrid_b_on_ne.o)\

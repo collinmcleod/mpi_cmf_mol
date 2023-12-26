@@ -235,7 +235,7 @@
 ! Read in number of energy levels.
 !
 	STRING=' '
-	DO WHILE(INDEX(STRING,'!Configuration name') .EQ. 0)
+	DO WHILE(INDEX(STRING,'!Type of cross-section') .EQ. 0)
 	  IF( INDEX(STRING,'!Number of energy levels') .NE. 0)THEN
 	    READ(STRING,*,IOSTAT=IOS)NTERMS(PHOT_ID)
 	    IF(IOS .NE. 0)THEN
@@ -324,7 +324,7 @@
 !
 	IF(NTERMS(PHOT_ID) .LT. 0)THEN
 	    WRITE(LUER,*)' Number of terms (levels) not read in GET_MAIN_PHOT_DATA: ',DESC
-	    WRITE(LUER,*)' Make sure ''Configuraition name'' is not in a comment line'
+	    WRITE(LUER,*)' Make sure ''!Type of cross-section'' is not in a comment line in the PHOT_FILE'
 	    WRITE(LUER,*)' PHOT_ID=',PHOT_ID
 	    STOP
 	ELSE IF(PHOT_ID .LT. 0)THEN

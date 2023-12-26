@@ -641,6 +641,8 @@ CONTAINS
 	  END DO
 	  X2(I_ST+N_ADD+1:ND)=X1(I_END:ND_OLD)
 !
+	  DO I=1,ND; WRITE(6,*)I,X2(I); END DO; FLUSH(UNIT=6)
+	  WRITE(6,*)'Call ing MON_INTERP'
 	  CALL MON_INTERP(R,ND,IONE,X2,ND,OLD_R,ND_OLD,X1,ND_OLD)
 !
 ! Now compute the revised SIGMA. V has already been computed.

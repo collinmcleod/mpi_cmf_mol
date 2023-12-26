@@ -268,7 +268,7 @@
 	      CALL GEN_IN(DO_SORT,'Create a list of the 30 lines having the largest influence')
 	      IF(DO_SORT)THEN
 	        T1=SUM(SUMD)
-	        Y(1:N_LINES)=ABS(Y(1:N_LINES))/T1
+	        Y(1:N_LINES)=ABS(Y(1:N_LINES))/ABS(T1)
 	        CALL INDEXX(N_LINES,Y,INDX,.TRUE.)
 !
 	        WRITE(27,'(A)')' '
@@ -276,7 +276,9 @@
 	        WRITE(27,'(A)')' '
 	        WRITE(27,'(1X,A,T71,A,2X,A,6X,A,4X,A)')'Transition','Lam(A)','Frac. Contr.','Cur. Sum','Scale Fac.'
 	        WRITE(27,'(A)')' '
-	        T1=SUM(SUMD)
+	        WRITE(27,'(A)')'Total cl tr '
+	        WRITE(27,'(A)')' '
+	        T1=ABS(SUM(SUMD))
 	        CUR_SUM=0.0_LDP
 	        DO I=N_LINES,N_LINES-29,-1
 	          J=INDX(I)

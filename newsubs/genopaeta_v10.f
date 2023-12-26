@@ -13,6 +13,7 @@ C
 	USE MOD_LEV_DIS_BLK
 	IMPLICIT NONE
 C
+C Altered 16-Dec-2023 - Added opacity check (keep_phot).
 C Altered 04-May-2022 - Changed call to DO_HMI_FF to DO_H0_FF
 C Altered 23-Oct-2016 - Added PHOT_DIS_PARAMETER
 C Altered 19-Aug-2015 - Added call to DO_HMI_FF (cur_hmi, 21-Jun-2015)
@@ -56,6 +57,7 @@ C Created 20-Mar-1989 - Based on OPAGEN and CHIGEN
 C
 	INTEGER ID,N,N_DI,ND
 	LOGICAL IONFF,LST_DEPTH_ONLY
+	LOGICAL KEEP_PHOT
 C
 C Constants for opacity etc.
 C
@@ -228,6 +230,18 @@ C
 	    XDIS(K)=B_LEV_DIS(K)*X_LEV_DIS(K)
 	  END DO
 	END IF
+!
+	DO I=1,N
+	  KEEP_PHOT=.FALSE.
+	  DO K=K_ST,ND
+	    IF(HN(I,K) .GT. 1.0E-10_LDP*ED(K))THEN
+	      KEEP_PHOT=.TRUE.
+	      EXIT
+	    END IF
+	  END DO
+	  IF(.NOT. KEEP_PHOT)ALPHA_VEC(I)=0.0_LDP
+	END DO    
+	NO_NON_ZERO_PHOT=COUNT(ALPHA_VEC .GT. 0.0_LDP)
 C
 C 
 C Now do the actual Bound-Free computation.

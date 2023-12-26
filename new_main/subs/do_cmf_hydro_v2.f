@@ -16,6 +16,7 @@
 	USE UPDATE_KEYWORD_INTERFACE
 	IMPLICIT NONE
 !
+! Altered 17-Dec-2023 - HYDRO_OPT now automatically set to FIXED_R_REF when TAU_REF > 2/3.
 ! Altered 04-Jan-2023 - Changed was connection radius adjusted if excessive iteratons (> 50).
 !                           May need further work.
 ! Altered 190Jun-2022 - Reactivated lowering of GAM_LIM to avoid -ve velocity gradients.
@@ -309,9 +310,13 @@
 	  STRING='OB_P'//ADJUSTL(STRING)
 	  CALL RD_STORE_DBLE(OBND_PARS(I),TRIM(STRING),L_TRUE,'Paremeters for outer boundary condition')
 	END DO
-	CALL RD_STORE_CHAR(HYDRO_OPT,'HYDRO_OPT',L_FALSE,'FIXED_R or FIXED_V_FLUX or DEFAULT')
+	CALL RD_STORE_CHAR(HYDRO_OPT,'HYDRO_OPT',L_FALSE,'FIXED_R_REF or FIXED_V_FLUX or DEFAULT')
 	IF(HYDRO_OPT .EQ. 'FIXED_V_FLUX')THEN
 	  CALL RD_STORE_DBLE(OLD_TEFF,'OLD_TEFF',L_TRUE,'Effective temperatre of input model')
+	END IF
+	IF(TAU_REF .GT. 0.668_LDP .AND. HYDRO_OPT .EQ. 'DEFAULT')THEN
+	  HYDRO_OPT='FIXED_R_REF' 
+	  WRITE(6,*)'As TAU_REF > 2/3 HYDRO_DEFAULT is being set to FIXED_R_REF in DO_CMF_HYDRO_V2'
 	END IF
 	CALL CLEAN_RD_STORE()
 !

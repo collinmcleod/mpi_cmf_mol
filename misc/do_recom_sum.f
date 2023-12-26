@@ -129,7 +129,7 @@
 	      END DO
 !
 	     RECOM_CHK=0.0_LDP
-	     DO K=KST,LEND
+	     DO K=KST,KEND
                DO I=1,ND-1
                  IF( (T_REC_CHK(K)-T(I))*(T(I+1)-T_REC_CHK(K)) .GE. 0 )THEN
                     T1=(T_REC_CHK(K)-T(I))/(T(I+1)-T(I))

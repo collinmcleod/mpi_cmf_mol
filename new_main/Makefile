@@ -4,7 +4,7 @@
 
 include ../Makefile_definitions
 
-OPTIONS=$(FG)
+OPTIONS=$(FD)
 
 
 # These names are for the fortran linker

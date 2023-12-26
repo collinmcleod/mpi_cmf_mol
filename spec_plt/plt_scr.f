@@ -1218,7 +1218,7 @@ C
 	1              NT,ND,LUSCR,NEWMOD)
 	  GOTO 200
 !
-	ELSE IF(PLT_OPT(1:3) .EQ. 'REP')THEN
+	ELSE IF(PLT_OPT .EQ. 'REP')THEN
 	  WRITE(6,*)' '
           FDG_COUNTER=FDG_COUNTER+1
 	  IT=NIT; ID=ND; IVAR=NT; J=1; K=ND; IVAR=NT
@@ -1236,6 +1236,49 @@ C
 	1              RITE_N_TIMES,LST_NG,WRITE_RVSIG,
 	1              NT,ND,LUSCR,NEWMOD)
 	  GOTO 200
+!
+	ELSE IF(PLT_OPT .EQ. 'DUMP')THEN
+	  IT=NIT
+	  CALL GEN_IN(IT,'Iteration to dump')
+	  OPEN(UNIT=LU_OUT,STATUS='UNKNOWN',ACTION='WRITE',FILE='IT_DUMP')
+	  WRITE(LU_OUT,*)NT,ND
+	  WRITE(LU_OUT,*)POPS(:,:,IT)
+	  CLOSE(UNIT=LU_OUT)
+	  GOTO 200
+!
+	ELSE IF(PLT_OPT .EQ. 'REP_DPTH')THEN
+	  OPEN(UNIT=LU_OUT,STATUS='OLD',ACTION='READ',FILE='IT_DUMP',IOSTAT=IOS)
+	  IF(IOS .NE. 0)THEN
+	    WRITE(6,*)'Unable to ipen IT_DUMP, IOSTAT=',IOS
+	    GOTO 200
+	  END IF
+	  READ(LU_IN,*,IOSTAT=IOS)I,J
+	  IF(IOS .EQ. 0)THEN
+	    IF(I .NE. NT .OR. J .NE. ND)THEN
+	      WRITE(6,*)'Incompatible dimensions'
+	      WRITE(6,*)'NT=',NT,'ND=',ND
+	      WRITE(6,*)'NT_FILE=',I,'ND_FILE=',J
+	      CLOSE(LU_IN); GOTO 200
+	    END IF
+	    READ(LU_IN,*,IOSTAT=IOS)SOLS
+	  END IF
+	  CLOSE(LU_IN)
+	  IF(IOS .NE. 0)THEN
+	    WRITE(6,*)'Error reading IT_DUMP, IOSTAT=',IOS
+	    GOTO 200
+	  END IF
+!	
+	  J=1; K=71
+	  CALL GEN_IN(J,'Start depth to be replaced')
+	  CALL GEN_IN(K,'Last depth tobe repalced')
+	  POPS(:,J:K,NIT)=SOLS(:,J:K)
+          IREC=NIT
+	  NITSF=NITSF+1
+	  CALL SCR_RITE_V2(R,V,SIGMA,POPS(1,1,NIT),IREC,NITSF,
+	1              RITE_N_TIMES,LST_NG,WRITE_RVSIG,
+	1              NT,ND,LUSCR,NEWMOD)
+	  GOTO 200
+
 !
 	ELSE IF(PLT_OPT .EQ. 'R' .OR.
 	1       PLT_OPT .EQ. 'F' .OR.

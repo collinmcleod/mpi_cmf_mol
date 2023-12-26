@@ -64,6 +64,7 @@
 	  WRITE(LUER,*)'Unable to allocate requested memory[2]'
 	  STOP
 	END IF
+	XRAY_LUM_0P1=0.0_LDP; XRAY_LUM_1KEV=0.0_LDP; XRAY_LUM_TOT=0.0_LDP
 !
 	IF(DO_VAR_MATS)THEN
 	  IF(IOS .EQ. 0)ALLOCATE(VCHI(NT,ND),STAT=IOS)              !Variation of CHI array.

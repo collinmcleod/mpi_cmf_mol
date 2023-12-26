@@ -52,7 +52,7 @@
 !   10 as an extra precaution.
 !
 	X=10.0_LDP
-	MAX_LN_LTE_POP=0.9*RANGE(X)*LOG(X)
+	MAX_LN_LTE_POP=0.9_LDP*RANGE(X)*LOG(X)
 !
 ! Compute the occupation probabilities.
 !

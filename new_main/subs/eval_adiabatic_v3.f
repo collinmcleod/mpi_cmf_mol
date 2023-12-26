@@ -15,6 +15,7 @@
 !
 	USE MOD_CMFGEN
  	USE STEQ_DATA_MOD
+	USE CONTROL_VARIABLE_MOD, ONLY : USE_ELEC_HEAT_BAL, COMP_STEQ_T_EHB
  	IMPLICIT NONE
 !
 ! Altered  21-Jun-2004 : Changed to version V3.
@@ -119,90 +120,20 @@
 	INT_EN=HDKT*INT_EN/POP_ATOM
 	COL_EN=HDKT*COL_EN/POP_ATOM
 !
-! We now compute constants for each of the 4 terms. These make
-! it simpler and cleaner for the evaluation of the linearization.
+	IF(USE_ELEC_HEAT_BAL .OR. COMP_STEQ_T_EHB)THEN
+	  SCALE=0.1_LDP*BOLTZMANN_CONSTANT()
+	  CALL UPDATE_BA_ST(BA_T_EHB,STEQ_T_EHB)
+	END IF
 !
-! For historical reasons STEQ contains Int[chi.J - eta]dv. Rather than multiply
+! For historical resions STEQ contains Int[chi.J - eta]dv. Rather than multiply
 ! this term everywhere by 4pi, we divide the adiabatic cooling rate by that
 ! term. Not also that the R units are unimportant, since R.Chi is dimensionless.
-! The 10^9 arises since T is in units of 10^4K, and V in units of 10^5 km/s.
+! The 10^9 arises since T is in units of 10^4K, and V in units of 10^5  km/s.
 !
 	PI=FUN_PI()
 	SCALE=1.0E+09_LDP*BOLTZMANN_CONSTANT()/4.0_LDP/PI
-	DO I=1,ND
-	  IF(I .EQ. ND)THEN
-	    T1=R(ND-1)-R(ND)
-	  ELSE
-	    T1=R(I)-R(I+1)
-	  END IF
-	  A(I)=1.5_LDP*SCALE*(POP_ATOM(I)+ED(I))*V(I)/T1
-	  B(I)=SCALE*(POP_ATOM(I)+ED(I))*V(I)*(3.0_LDP+SIGMA(I))/R(I)
-	  C(I)=1.5_LDP*SCALE*POP_ATOM(I)*V(I)/T1
-	  D(I)=SCALE*POP_ATOM(I)*V(I)/T1
-	  GAMMA(I)=ED(I)/POP_ATOM(I)
-	END DO
-!
-	IF(INCL_ADIABATIC)THEN
-	  DO I=1,ND-1
- 	    WORK(I)=A(I)*(T(I)-T(I+1)) + B(I)*T(I) +
-	1              C(I)*T(I)*(GAMMA(I)-GAMMA(I+1)) +
-	1              D(I)*(INT_EN(I)-INT_EN(I+1))
-	  END DO
- 	  WORK(ND)=A(ND)*(T(ND-1)-T(ND)) + B(ND)*T(ND) +
-	1              C(ND)*T(ND)*(GAMMA(ND-1)-GAMMA(ND)) +
-	1              D(ND)*(INT_EN(ND-1)-INT_EN(ND))
-!
-	  DO I=1,ND
-	    STEQ_T(I)=STEQ_T(I)-WORK(I)
-	  END DO
-	END IF
-!
-	IF(INCL_ADIABATIC .AND. COMPUTE_BA)THEN
-	  DO I=1,ND-1
-!
-! Diagonal terms.
-!
-	    L=DIAG_INDX
-	    BA_T(NT,L,I)=BA_T(NT,L,I)-A(I)-B(I)-C(I)*(GAMMA(I)-GAMMA(I+1))
-	    BA_T(NT-1,L,I)=BA_T(NT-1,L,I)-(A(I)+B(I))/(POP_ATOM(I)+ED(I))-
-	1                                  C(I)*T(I)/POP_ATOM(I)
-	    DO J=1,NT-2
-	      BA_T(J,L,I)=BA_T(J,L,I)-HDKT*D(I)*TOT_ENERGY(J)/POP_ATOM(I)
-	    END DO
-!
-! Upper diagonal terms.
-!
-	    IF(NUM_BNDS .GE. 3)THEN
-	      L=DIAG_INDX+1
-	      BA_T(NT,L,I)=BA_T(NT,L,I)+A(I)
-	      BA_T(NT-1,L,I)=BA_T(NT-1,L,I)+C(I)*T(I)/POP_ATOM(I+1)
-	      DO J=1,NT-1
-	        BA_T(J,L,I)=BA_T(J,L,I)+HDKT*D(I)*TOT_ENERGY(J)/POP_ATOM(I+1)
-	      END DO
-	    END IF
-!
-	  END DO	!Loop of depth.
-!
-! Need to do special case of I=ND
-!
-	  L=DIAG_INDX
-	  BA_T(NT,L,ND)=BA_T(NT,L,ND)+A(ND)-B(ND)-C(ND)*(GAMMA(ND-1)-GAMMA(ND))
-	  BA_T(NT-1,L,ND)=BA_T(NT-1,L,ND)-(A(ND)+B(ND))/(POP_ATOM(ND)+ED(ND)) +
-	1                                  C(ND)*T(ND)/POP_ATOM(ND)
-	  DO J=1,NT-2
-	    BA_T(J,L,ND)=BA_T(J,L,ND)+HDKT*D(ND)*TOT_ENERGY(J)/POP_ATOM(ND)
-	  END DO
-!
-	  IF(NUM_BNDS .GE. 3)THEN
-	    L=DIAG_INDX-1
-	    BA_T(NT,L,ND)=BA_T(NT,L,ND)-A(ND)
-	    BA_T(NT-1,L,ND)=BA_T(NT-1,L,ND)-C(ND)*T(ND)/POP_ATOM(ND-1)
-	    DO J=1,NT-2
-	      BA_T(J,L,ND)=BA_T(J,L,ND)-HDKT*D(ND)*TOT_ENERGY(J)/POP_ATOM(ND-1)
-	    END DO
-	  END IF
-!
-	END IF            !End COMPUTE_BA
+	CALL UPDATE_BA_ST(BA_T,STEQ_T)
+
 !
 ! Now compute the adiabatic cooling rate (in ergs/cm^3/sec) for diagnostic
 ! purposes. The rate is output to the COOLGEN file.
@@ -266,4 +197,99 @@
 	END IF
 !
 	RETURN
-	END
+!
+	CONTAINS
+
+	SUBROUTINE UPDATE_BA_ST(NEW_BA_T,NEW_STEQ_T)
+	USE SET_KIND_MODULE
+	IMPLICIT NONE
+!
+	REAL(KIND=LDP) NEW_BA_T(NT,NUM_BNDS,ND)
+	REAL(KIND=LDP) NEW_STEQ_T(ND)
+!
+! We now compute constants for each of the 4 terms. These make
+! it simpler and cleaner for the evaluation of the linearization.
+!
+! For historical reasons STEQ contains Int[chi.J - eta]dv. Rather than multiply
+! this term everywhere by 4pi, we divide the adiabatic cooling rate by that
+! term. Not also that the R units are unimportant, since R.Chi is dimensionless.
+! The 10^9 arises since T is in units of 10^4K, and V in units of 10^5 km/s.
+!
+	DO I=1,ND
+	  IF(I .EQ. ND)THEN
+	    T1=R(ND-1)-R(ND)
+	  ELSE
+	    T1=R(I)-R(I+1)
+	  END IF
+	  A(I)=1.5_LDP*SCALE*(POP_ATOM(I)+ED(I))*V(I)/T1
+	  B(I)=SCALE*(POP_ATOM(I)+ED(I))*V(I)*(3.0_LDP+SIGMA(I))/R(I)
+	  C(I)=1.5_LDP*SCALE*POP_ATOM(I)*V(I)/T1
+	  D(I)=SCALE*POP_ATOM(I)*V(I)/T1
+	  GAMMA(I)=ED(I)/POP_ATOM(I)
+	END DO
+!
+	IF(INCL_ADIABATIC)THEN
+	  DO I=1,ND-1
+ 	    WORK(I)=A(I)*(T(I)-T(I+1)) + B(I)*T(I) +
+	1              C(I)*T(I)*(GAMMA(I)-GAMMA(I+1)) +
+	1              D(I)*(INT_EN(I)-INT_EN(I+1))
+	  END DO
+ 	  WORK(ND)=A(ND)*(T(ND-1)-T(ND)) + B(ND)*T(ND) +
+	1              C(ND)*T(ND)*(GAMMA(ND-1)-GAMMA(ND)) +
+	1              D(ND)*(INT_EN(ND-1)-INT_EN(ND))
+!
+	  DO I=1,ND
+	    NEW_STEQ_T(I)=NEW_STEQ_T(I)-WORK(I)
+	  END DO
+	END IF
+!
+	IF(INCL_ADIABATIC .AND. COMPUTE_BA)THEN
+	  DO I=1,ND-1
+!
+! Diagonal terms.
+!
+	    L=DIAG_INDX
+	    NEW_BA_T(NT,L,I)=NEW_BA_T(NT,L,I)-A(I)-B(I)-C(I)*(GAMMA(I)-GAMMA(I+1))
+	    NEW_BA_T(NT-1,L,I)=NEW_BA_T(NT-1,L,I)-(A(I)+B(I))/(POP_ATOM(I)+ED(I))-
+	1                                  C(I)*T(I)/POP_ATOM(I)
+	    DO J=1,NT-2
+	      NEW_BA_T(J,L,I)=NEW_BA_T(J,L,I)-HDKT*D(I)*TOT_ENERGY(J)/POP_ATOM(I)
+	    END DO
+!
+! Upper diagonal terms.
+!
+	    IF(NUM_BNDS .GE. 3)THEN
+	      L=DIAG_INDX+1
+	      NEW_BA_T(NT,L,I)=NEW_BA_T(NT,L,I)+A(I)
+	      NEW_BA_T(NT-1,L,I)=NEW_BA_T(NT-1,L,I)+C(I)*T(I)/POP_ATOM(I+1)
+	      DO J=1,NT-1
+	        NEW_BA_T(J,L,I)=NEW_BA_T(J,L,I)+HDKT*D(I)*TOT_ENERGY(J)/POP_ATOM(I+1)
+	      END DO
+	    END IF
+!
+	  END DO	!Loop of depth.
+!
+! Need to do special case of I=ND
+!
+	  L=DIAG_INDX
+	  NEW_BA_T(NT,L,ND)=NEW_BA_T(NT,L,ND)+A(ND)-B(ND)-C(ND)*(GAMMA(ND-1)-GAMMA(ND))
+	  NEW_BA_T(NT-1,L,ND)=NEW_BA_T(NT-1,L,ND)-(A(ND)+B(ND))/(POP_ATOM(ND)+ED(ND)) +
+	1                                  C(ND)*T(ND)/POP_ATOM(ND)
+	  DO J=1,NT-2
+	    NEW_BA_T(J,L,ND)=NEW_BA_T(J,L,ND)+HDKT*D(ND)*TOT_ENERGY(J)/POP_ATOM(ND)
+	  END DO
+!
+	  IF(NUM_BNDS .GE. 3)THEN
+	    L=DIAG_INDX-1
+	    NEW_BA_T(NT,L,ND)=NEW_BA_T(NT,L,ND)-A(ND)
+	    NEW_BA_T(NT-1,L,ND)=NEW_BA_T(NT-1,L,ND)-C(ND)*T(ND)/POP_ATOM(ND-1)
+	    DO J=1,NT-2
+	      NEW_BA_T(J,L,ND)=NEW_BA_T(J,L,ND)-HDKT*D(ND)*TOT_ENERGY(J)/POP_ATOM(ND-1)
+	    END DO
+	  END IF
+!
+	END IF            !End COMPUTE_BA
+!
+	RETURN
+	END SUBROUTINE UPDATE_BA_ST
+ 	END SUBROUTINE EVAL_ADIABATIC_V3

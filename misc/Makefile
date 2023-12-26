@@ -148,8 +148,8 @@ $(EXE_DIR)wr_f_to_s.exe : wr_f_to_s.o output_term_seq.o $(OANDF)
 
 # General rule to compile a fortran ".f" file.
 
-%.o : %.f
-	$(F90)  -c $(FG)  $<
+%.o : %.f 
+	$(F90)  -c $(FD)  $<
 
 USR = $(LIB_DIR)libsubs.a(usr_option.o)
 GEN = $(LIB_DIR)libsubs.a(gen_in.o)

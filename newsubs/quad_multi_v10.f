@@ -98,6 +98,7 @@
 !
 	INTEGER I_S,I_F,J
 	REAL(KIND=LDP) T1,T2,T3,ZION_CUBED,NEFF,FOUR_PI_D_H
+	REAL(KIND=LDP) EDGE(N_F)
 	LOGICAL DO_ALL
 !
 ! NB: WSE_OLD=WSE*FQW/NU
@@ -118,6 +119,11 @@
 	WCR(:,:)=0.0_LDP
 	dWSE_SdT(:,:)=0.0_LDP
 	dWCRdT(:,:)=0.0_LDP
+!
+! Get edge frequencies.
+!
+	T1=0.0D0; J=-PHOT_ID
+	CALL SUB_PHOT_GEN(ID,EDGE,T1,EDGE_F,N_F,J,L_TRUE)
 !
 ! Get photoionization cross-sections for all levels. The first call returns
 ! the threshold cross-section when NU < EDGE.
@@ -168,14 +174,14 @@
 	IF(DO_ALL)THEN
 	  DO I_F=1,N_F
 	    I_S=F_TO_S_MAPPING(I_F)
-	    IF(NU_CONT .GE. EDGE_F(I_F))THEN
+	    IF(NU_CONT .GE. EDGE(I_F))THEN
 	      T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
 	      DO J=1,ND
 	        WSE_S(I_S,J)=WSE_S(I_S,J) + T1*HNST_F_ON_S(I_F,J)
-	        WCR(I_S,J)=WCR(I_S,J) - EDGE_F(I_F)*T1*HNST_F_ON_S(I_F,J)
+	        WCR(I_S,J)=WCR(I_S,J) - EDGE(I_F)*T1*HNST_F_ON_S(I_F,J)
 	        T2=T1*HNST_F_ON_S(I_F,J)*(dlnHNST_S_dlnT(I_S,J)+1.5_LDP+HDKT*EDGE_F(I_F)/T(J))/T(J)
 	        dWSE_SdT(I_S,J)=dWSE_SdT(I_S,J) - T2
-	        dWCRdT(I_S,J)=dWCRdT(I_S,J) + EDGE_F(I_F)*T2
+	        dWCRdT(I_S,J)=dWCRdT(I_S,J) + EDGE(I_F)*T2
 	      END DO
 !
 ! We only allow for level dissolutions when the ionizations are occurring to
@@ -200,11 +206,11 @@
 	ELSE
 	  DO I_F=1,N_F
 	    I_S=F_TO_S_MAPPING(I_F)
-	    IF(NU_CONT .GE. EDGE_F(I_F))THEN
+	    IF(NU_CONT .GE. EDGE(I_F))THEN
 	      T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
 	      DO J=1,ND
 	        WSE_S(I_S,J)=WSE_S(I_S,J) + T1*HNST_F_ON_S(I_F,J)
-	        WCR(I_S,J)=WCR(I_S,J) - EDGE_F(I_F)*T1*HNST_F_ON_S(I_F,J)
+	        WCR(I_S,J)=WCR(I_S,J) - EDGE(I_F)*T1*HNST_F_ON_S(I_F,J)
 	      END DO
 !
 ! We only allow for level dissolutions when the ionizations are occurring to
@@ -218,7 +224,7 @@
 	        IF(T3 .GT. PHOT_DIS_PARAMETER)THEN
 	          T3=T1*T3
 	          WSE_S(I_S,J)=WSE_S(I_S,J) + T3*HNST_F_ON_S(I_F,J)
-	          WCR(I_S,J)=WCR(I_S,J) - EDGE_F(I_F)*T3*HNST_F_ON_S(I_F,J)
+	          WCR(I_S,J)=WCR(I_S,J) - EDGE(I_F)*T3*HNST_F_ON_S(I_F,J)
 	        END IF
 	      END DO
 	    END IF

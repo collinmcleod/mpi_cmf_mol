@@ -365,15 +365,19 @@
 ! using DGEEQU sot the the maximum row and column values are approximately
 ! unity.
 !
+	    CALL TUNE(1,'DGEEQU')
 	    CALL DGEEQU(N,N,C_MAT,N,ROW_SF,COL_SF,
 	1               ROW_CND,COL_CND,MAX_VAL,IFAIL)
+	    CALL TUNE(2,'DGEEQU')
 	    DO J=1,N
 	      STEQ(J,K)=STEQ(J,K)*ROW_SF(J)
               DO I=1,N
 	        C_MAT(I,J)=C_MAT(I,J)*ROW_SF(I)*COL_SF(J)
 	      END DO
 	    END DO
+	    CALL TUNE(1,'DGERTF')
 	    CALL DGETRF(N,N,C_MAT,N,IPIVOT,IFAIL)
+	    CALL TUNE(2,'DGERTF')
 	    IF(IFAIL .NE. 0)THEN
 	      DESC='DGETRF_DIAG'
 	      WRITE(LUER,*)'Error in CMF_BLKBAND_V3'
@@ -390,7 +394,9 @@
 !
 ! Now perform the solution.
 !
+	    CALL TUNE(1,'DGETRS')
 	    CALL DGETRS(NO_TRANS,N,NSNG,C_MAT,N,IPIVOT,STEQ(1,K),N,IFAIL)
+	    CALL TUNE(2,'DGETRS')
 	    DO J=1,N
 	      STEQ(J,K)=STEQ(J,K)*COL_SF(J)
 	    END DO
@@ -597,6 +603,7 @@
 ! Map the small BA rray onto the full BA array (one depth at a time).
 !
 	  DEPTH_INDX=K
+	  CALL TUNE(1,'TRI_GEN')
 	  CALL GENERATE_FULL_MATRIX_V3(
 	1         C_MAT,STEQ(1,K),POPS,REPLACE_EQ,ZERO_STEQ,
 	1         N,ND,NION,NUM_BNDS,
@@ -620,12 +627,14 @@
 	1           BAND_INDX,DIAG_INDX,DEPTH_INDX,
 	1           FIRST_MATRIX,LAST_MATRIX,USE_PASSED_REP)
 	  END IF
+	  CALL TUNE(2,'TRI_GEN')
 !
 	  STEQ_STORE(:,K)=STEQ(:,K)
 C
 C Computes phi[k]' (i.e. ' denotes not yet multiplied by m[k]^{-1} )
 C Stored in L[k].
 C
+	  CALL TUNE(1,'TRI_MAT5')
 	  IF(K .NE. 1)THEN
 	    CALL MAT5PEN(STEQ(1,K),B_MAT,
 	1                  STEQ(1,K-1),RUB,RUB,RUB,RUB,RUB,
@@ -645,17 +654,23 @@ C
 	      GOTO 9999
 	    END IF
 	  END IF
+	  CALL TUNE(2,'TRI_MAT5')
 C
 C Do LU decompostion of m[k]. We first equilibrilze C_MAT.
 C
+	  CALL TUNE(1,'TRI_DGEEQU')
 	  CALL DGEEQU(N,N,C_MAT,N,ROW_SF,COL_SF,
 	1               ROW_CND,COL_CND,MAX_VAL,IFAIL)
+	  CALL TUNE(2,'TRI_DGEEQU')
+!
+	  CALL TUNE(1,'TRI_DGETRF')
 	  DO J=1,N
             DO I=1,N
 	      C_MAT(I,J)=C_MAT(I,J)*ROW_SF(I)*COL_SF(J)
 	    END DO
 	  END DO
 	  CALL DGETRF(N,N,C_MAT,N,IPIVOT,IFAIL)
+	  CALL TUNE(2,'TRI_DGETRF')
 	  IF(IFAIL .NE. 0)THEN
 	    DESC='DGETRF_2'
 	    GOTO 9999
@@ -663,10 +678,12 @@ C
 C
 C Computes phi[k] (Stored in L[k])
 C
+	  CALL TUNE(1,'TRI_DGETRS')
 	  DO J=1,N
 	    STEQ(J,K)=STEQ(J,K)*ROW_SF(J)
 	  END DO
 	  CALL DGETRS(NO_TRANS,N,NSNG,C_MAT,N,IPIVOT,STEQ(1,K),N,IFAIL)
+	  CALL TUNE(2,'TRI_DGETRS')
 	  IF(IFAIL .NE. 0)THEN
 	    DESC='DGETRS_4'
 	    GOTO 9999
@@ -683,7 +700,9 @@ C
 	        D_MAT(I,J)=D_MAT(I,J)*ROW_SF(I)
 	      END DO
 	    END DO
+	    CALL TUNE(1,'TRI_DGETRS')
 	    CALL DGETRS(NO_TRANS,N,N,C_MAT,N,IPIVOT,D_MAT,N,IFAIL)
+	    CALL TUNE(2,'TRI_DGETRS')
 	    DO J=1,N
               DO I=1,N
 	        D_MAT(I,J)=D_MAT(I,J)*COL_SF(I)
