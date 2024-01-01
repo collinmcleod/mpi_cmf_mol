@@ -18,6 +18,8 @@
 	USE CONTROL_VARIABLE_MOD, ONLY : USE_ELEC_HEAT_BAL, COMP_STEQ_T_EHB
  	IMPLICIT NONE
 !
+! Altered  29-Dec-2023 : Fixed evaluation of STEQ_T_EHB and its variation.
+! Altered     Dec-2023 : Added evaluation of STEQ_T_EHB. 
 ! Altered  21-Jun-2004 : Changed to version V3.
 !                          Changed to use simple linear differencing.
 !                          Changed to incorporate advection terms from rate equations
@@ -122,7 +124,7 @@
 !
 	IF(USE_ELEC_HEAT_BAL .OR. COMP_STEQ_T_EHB)THEN
 	  SCALE=0.1_LDP*BOLTZMANN_CONSTANT()
-	  CALL UPDATE_BA_ST(BA_T_EHB,STEQ_T_EHB)
+	  CALL UPDATE_BA_ST(BA_T_EHB,STEQ_T_EHB,COL_EN,ION_EN)
 	END IF
 !
 ! For historical resions STEQ contains Int[chi.J - eta]dv. Rather than multiply
@@ -132,7 +134,7 @@
 !
 	PI=FUN_PI()
 	SCALE=1.0E+09_LDP*BOLTZMANN_CONSTANT()/4.0_LDP/PI
-	CALL UPDATE_BA_ST(BA_T,STEQ_T)
+	CALL UPDATE_BA_ST(BA_T,STEQ_T,INT_EN,TOT_ENERGY)
 
 !
 ! Now compute the adiabatic cooling rate (in ergs/cm^3/sec) for diagnostic
@@ -200,12 +202,14 @@
 !
 	CONTAINS
 
-	SUBROUTINE UPDATE_BA_ST(NEW_BA_T,NEW_STEQ_T)
+	SUBROUTINE UPDATE_BA_ST(NEW_BA_T,NEW_STEQ_T,MEAN_EN,SUM_EN)
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
 	REAL(KIND=LDP) NEW_BA_T(NT,NUM_BNDS,ND)
 	REAL(KIND=LDP) NEW_STEQ_T(ND)
+	REAL(KIND=LDP) MEAN_EN(ND)
+	REAL(KIND=LDP) SUM_EN(ND)
 !
 ! We now compute constants for each of the 4 terms. These make
 ! it simpler and cleaner for the evaluation of the linearization.
@@ -236,7 +240,7 @@
 	  END DO
  	  WORK(ND)=A(ND)*(T(ND-1)-T(ND)) + B(ND)*T(ND) +
 	1              C(ND)*T(ND)*(GAMMA(ND-1)-GAMMA(ND)) +
-	1              D(ND)*(INT_EN(ND-1)-INT_EN(ND))
+	1              D(ND)*(MEAN_EN(ND-1)-MEAN_EN(ND))
 !
 	  DO I=1,ND
 	    NEW_STEQ_T(I)=NEW_STEQ_T(I)-WORK(I)
@@ -253,7 +257,7 @@
 	    NEW_BA_T(NT-1,L,I)=NEW_BA_T(NT-1,L,I)-(A(I)+B(I))/(POP_ATOM(I)+ED(I))-
 	1                                  C(I)*T(I)/POP_ATOM(I)
 	    DO J=1,NT-2
-	      NEW_BA_T(J,L,I)=NEW_BA_T(J,L,I)-HDKT*D(I)*TOT_ENERGY(J)/POP_ATOM(I)
+	      NEW_BA_T(J,L,I)=NEW_BA_T(J,L,I)-HDKT*D(I)*SUM_EN(J)/POP_ATOM(I)
 	    END DO
 !
 ! Upper diagonal terms.
@@ -263,7 +267,7 @@
 	      NEW_BA_T(NT,L,I)=NEW_BA_T(NT,L,I)+A(I)
 	      NEW_BA_T(NT-1,L,I)=NEW_BA_T(NT-1,L,I)+C(I)*T(I)/POP_ATOM(I+1)
 	      DO J=1,NT-1
-	        NEW_BA_T(J,L,I)=NEW_BA_T(J,L,I)+HDKT*D(I)*TOT_ENERGY(J)/POP_ATOM(I+1)
+	        NEW_BA_T(J,L,I)=NEW_BA_T(J,L,I)+HDKT*D(I)*SUM_EN(J)/POP_ATOM(I+1)
 	      END DO
 	    END IF
 !
@@ -276,7 +280,7 @@
 	  NEW_BA_T(NT-1,L,ND)=NEW_BA_T(NT-1,L,ND)-(A(ND)+B(ND))/(POP_ATOM(ND)+ED(ND)) +
 	1                                  C(ND)*T(ND)/POP_ATOM(ND)
 	  DO J=1,NT-2
-	    NEW_BA_T(J,L,ND)=NEW_BA_T(J,L,ND)+HDKT*D(ND)*TOT_ENERGY(J)/POP_ATOM(ND)
+	    NEW_BA_T(J,L,ND)=NEW_BA_T(J,L,ND)+HDKT*D(ND)*SUM_EN(J)/POP_ATOM(ND)
 	  END DO
 !
 	  IF(NUM_BNDS .GE. 3)THEN
@@ -284,7 +288,7 @@
 	    NEW_BA_T(NT,L,ND)=NEW_BA_T(NT,L,ND)-A(ND)
 	    NEW_BA_T(NT-1,L,ND)=NEW_BA_T(NT-1,L,ND)-C(ND)*T(ND)/POP_ATOM(ND-1)
 	    DO J=1,NT-2
-	      NEW_BA_T(J,L,ND)=NEW_BA_T(J,L,ND)-HDKT*D(ND)*TOT_ENERGY(J)/POP_ATOM(ND-1)
+	      NEW_BA_T(J,L,ND)=NEW_BA_T(J,L,ND)-HDKT*D(ND)*SUM_EN(J)/POP_ATOM(ND-1)
 	    END DO
 	  END IF
 !

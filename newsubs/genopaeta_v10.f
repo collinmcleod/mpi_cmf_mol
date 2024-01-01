@@ -231,17 +231,22 @@ C
 	  END DO
 	END IF
 !
-	DO I=1,N
-	  KEEP_PHOT=.FALSE.
-	  DO K=K_ST,ND
-	    IF(HN(I,K) .GT. 1.0E-10_LDP*ED(K))THEN
-	      KEEP_PHOT=.TRUE.
-	      EXIT
-	    END IF
-	  END DO
-	  IF(.NOT. KEEP_PHOT)ALPHA_VEC(I)=0.0_LDP
-	END DO    
-	NO_NON_ZERO_PHOT=COUNT(ALPHA_VEC .GT. 0.0_LDP)
+! Due to the choice of units, ESEC=6.65E-15*ED(K). We will thus
+! ignore the opacity if less than 1.0D-05 times the e.s. opacity.
+! This test is fairly mild, since the test has only to be violated at
+! on depth for that opacity source to be included.
+!
+!	DO I=1,N
+!	  KEEP_PHOT=.FALSE.
+!	  DO K=K_ST,ND
+!	    IF(HN(I,K)*ALPHA_VEC(I) .GT. 6.65E-20_LDP*ED(K))THEN
+!	      KEEP_PHOT=.TRUE.
+!	      EXIT
+!	    END IF
+!	  END DO
+!	  IF(.NOT. KEEP_PHOT)ALPHA_VEC(I)=0.0_LDP
+!	END DO    
+!	NO_NON_ZERO_PHOT=COUNT(ALPHA_VEC .GT. 0.0_LDP)
 C
 C 
 C Now do the actual Bound-Free computation.

@@ -14,6 +14,7 @@
 	USE MOD_USR_OPTION
 	IMPLICIT NONE
 !
+! Altered: 30-Dec-2023 : Added dE_OPTION for reading in SL assignments.
 ! Altered: 18-May-2015 : Changed GAM2, GAM4 to C4 and C6 (quadratic and Van der Waals
 !                          interacton constants)(09-Jun-2105).
 ! Altered: 17-Mar-2003: SCRAT & SCRATREC are now initialized.
@@ -36,10 +37,12 @@
 	CHARACTER(LEN=11) FORMAT_DATE
 	CHARACTER(LEN=10) NAME_CONVENTION
 	CHARACTER(LEN=20) SL_OPTION		!Option to fudge SL assignments
+	CHARACTER(LEN=20) dE_OPTION
 !
 	LOGICAL ASK           			!Ask of filenames or uset defaults.
 	LOGICAL FILE_PRES
 	LOGICAL SCRAT
+	LOGICAL F_TO_S_RD_ERROR
 	INTEGER I,J,NT,SCRATREC
 	INTEGER LEN_DIR
 	INTEGER EQ_TEMP
@@ -67,7 +70,7 @@
 	INTEGER LUER
 	INTEGER ERROR_LU
 	EXTERNAL ERROR_LU
-	CHARACTER(LEN=12), PARAMETER :: PRODATE='07-Jun-2023'
+	CHARACTER(LEN=12), PARAMETER :: PRODATE='01-Jan-2024'
 !
 	DATA BLANK/' '/
 !
@@ -419,9 +422,11 @@
 	END IF
 	WRITE(LUER,'(A)')' '
 	CALL RD_OPTIONS_INTO_STORE(LUIN,LUER)
-	SL_OPTION=' '
-        CALL RD_STORE_CHAR(SL_OPTION,'SL_OPT',L_FALSE,'Auto SL splitting option')
+	SL_OPTION=' '; dE_OPTION=' ';  I=20
+        CALL RD_STORE_NCHAR(SL_OPTION,'SL_OPT',I,L_FALSE,'Auto SL splitting option')
+	CALL RD_STORE_NCHAR(dE_OPTION,'dE_OPT',I,L_FALSE,'Option to split non-LS SLs by enegry')
 	WRITE(6,*)'CMF_FLUX_V5 is adopting the following SL_OPTION: ',TRIM(SL_OPTION)
+	WRITE(6,*)'CMF_FLUX_V5 is adopting the following dE_OPTION: ',TRIM(dE_OPTION)
 	WRITE(LUER,'(A)')' '
 	CALL CLEAN_RD_STORE()
 !
@@ -602,9 +607,9 @@
 	1              ATM(ID)%XzVLEVNAME_F,ATM(ID)%NXzV_F,FILENAME)
 !
 	    FILENAME=TRIM(ION_ID(ID))//'_F_TO_S'
-	    CALL RD_F_TO_S_IDS_V2(ATM(ID)%F_TO_S_XzV,ATM(ID)%INT_SEQ_XzV,
+	    CALL RD_F_TO_S_IDS_V4(ATM(ID)%F_TO_S_XzV,ATM(ID)%INT_SEQ_XzV,
 	1           ATM(ID)%XzVLEVNAME_F,ATM(ID)%NXzV_F,ATM(ID)%NXzV,
-	1           LUIN,FILENAME,SL_OPTION)
+	1           LUIN,FILENAME,SL_OPTION,dE_OPTION,F_TO_S_RD_ERROR)
 	    CALL RDPHOT_GEN_V2(ATM(ID)%EDGEXzV_F, ATM(ID)%XzVLEVNAME_F,
 	1            ATM(ID)%GIONXzV_F,      AT_NO(SPECIES_LNK(ID)),
 	1            ATM(ID)%ZXzV,           ATM(ID)%NXzV_F,
@@ -628,6 +633,14 @@
 	    END IF
 	  END IF
 	END DO		!Over NUM_SPECIES
+        IF(F_TO_S_RD_ERROR)THEN
+          WRITE(6,*)' '
+          WRITE(6,*)'There are errors reading in the super level links.'
+          WRITE(6,*)'These need to be fixed before the code can run.'
+          WRITE(6,*)'See F_TO_S_RD_ERRORS for details.'
+          WRITE(6,*)' '
+          STOP
+        END IF
 !
 ! This surbroutine allow forbidden lines to be omitted -- either for individual
 ! ionization stages, or for all species.
