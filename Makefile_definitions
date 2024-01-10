@@ -28,7 +28,7 @@ INSTALL_DIR=$(HOME)/cur_cmf/
 endif
 
 ifeq ($(HOST),osiris-wnode04.phyast.pitt.edu)
-INSTALL_DIR=$(HOME)/wnode04/cmf_testing/
+INSTALL_DIR=$(HOME)/wnode04/cur_cmf/
 endif
 
 ifeq ($(HOST),lorikeet.phyast.pitt.edu)
@@ -113,26 +113,13 @@ ifeq ($(HOST),osiris-wnode04.phyast.pitt.edu)
  FD  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments  -ffpe-trap=invalid -fbacktrace -I$(MOD_DIR) -J$(MOD_DIR)
  FFREE  = -O -fno-backslash -I$(MOD_DIR) -J$(MOD_DIR)
  FFRED  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
- 
-# FG  = -g -O0  -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments  -ffpe-trap=invalid -fbacktrace -I$(MOD_DIR) -J$(MOD_DIR)
-# FH  = -g -O0  -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments  -ffpe-trap=invalid -fbacktrace -I$(MOD_DIR) -J$(MOD_DIR)
-# FFREE  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
 
- BLAS= -lmy_blas 
- LAPACK = -lmy_lapack
-
-#NExt line was missing.
-
- LOCLIB=-lmkl_gf_lp64  -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm -ldl
-
- # BLAS=-lmy_blas
-# LAPACK=-lmy_lapack
-# LAPACK=-L/opt/intel/compilers_and_libraries/linux/mkl/lib/intel64 -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
-# LAPACK= -L/opt/intel/compilers_and_libraries_/linux/lib/intel64 -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
-
-# LAPACK= -L/opt/intel/compilers_and_libraries_/linux/lib/intel64 -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
+ BLAS=
+ LAPACK=-L/opt/intel/compilers_and_libraries/linux/mkl/lib/intel64 -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
+-L/opt/intel/compilers_and_libraries_/linux/lib/intel64 -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
  X11LIB=-L/usr/X11R6/lib -lX11
  PGLIB=-L/nfs-share/home/hillier/pgplot -lpgplot
+
 endif
 
 # Linking and compilig instructions for gfortran.

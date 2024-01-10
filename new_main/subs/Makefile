@@ -2,7 +2,7 @@
 
 include ../../Makefile_definitions
 
-OPTION=$(FG)
+OPTION=$(FD)
 
 # Library where object files will/are stored
 
@@ -26,6 +26,7 @@ OBJ = $(LIB)(add_par_to_full_v2.o)\
       $(LIB)(check_tmin.o)\
       $(LIB)(chk_cool_rates_consist.o)\
       $(LIB)(cmf_blkband_v3.o)\
+      $(LIB)(cmf_sub_sonic_hydro.o)\
       $(LIB)(create_iv_links_v2.o)\
       $(LIB)(def_new_rg_v1.o)\
       $(LIB)(determine_nse.o)\
@@ -36,7 +37,6 @@ OBJ = $(LIB)(add_par_to_full_v2.o)\
       $(LIB)(do_vel_regrid_v2.o)\
       $(LIB)(do_tau_regrid_v2.o)\
       $(LIB)(do_gam_abs_approx_v2.o)\
-      $(LIB)(do_cmf_hydro_v2.o)\
       $(LIB)(do_ng_accel_band_v4.o)\
       $(LIB)(do_wind_vel_v1.o)\
       $(LIB)(eval_adiabatic_v3.o)\
