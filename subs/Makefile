@@ -233,7 +233,6 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(sup_to_full_v3b.o)\
       $(LIB)(tau.o)\
       $(LIB)(tcompd.o)\
-      $(LIB)(term_io.o)\
       $(LIB)(tfeau.o)\
       $(LIB)(thomas.o)\
       $(LIB)(thomas_pone.o)\

@@ -2,17 +2,19 @@
 
 include ../Makefile_definitions
 
-#
+OPTION=$(FG)
+
+
 # These names are for the fortran linker
-#
+
 LN1=subs
 LN2=pgplt
 LN3=disp
 LN4=spec
 
-#
+
 # These names refer to the full file name
-#
+
 FN1=$(LIB_DIR)lib$(LN1).a
 FN2=$(LIB_DIR)lib$(LN2).a
 
@@ -149,7 +151,7 @@ $(EXE_DIR)wr_f_to_s.exe : wr_f_to_s.o output_term_seq.o $(OANDF)
 # General rule to compile a fortran ".f" file.
 
 %.o : %.f 
-	$(F90)  -c $(FD)  $<
+	$(F90)  -c $(OPTION)  $<
 
 USR = $(LIB_DIR)libsubs.a(usr_option.o)
 GEN = $(LIB_DIR)libsubs.a(gen_in.o)

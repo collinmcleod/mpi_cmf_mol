@@ -54,6 +54,10 @@ $(LIB)(%.o) : %.f  $(LIB)(set_kind_module.o)
 	$(F90) -c $(FG)  $<
 	ar $(AR_OPTION) $(LIB) $*.o
 
+$(LIB)(set_kind_module.o) : set_kind_module.f 
+	$(F90) -c $(FG)  set_kind_module.f
+	ar $(AR_OPTION) $(LIB) set_kind_module.o
+
 $(LIB)(usr_option.o) : usr_option.f $(LIB)(wr_string.o) 
 $(LIB)(usr_hidden.o) : usr_hidden.f $(LIB)(wr_string.o) $(LIB)(sve_file.o)
 

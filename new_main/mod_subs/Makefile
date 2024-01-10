@@ -100,11 +100,11 @@ $(LIB)(comp_grey_v2.o) : comp_grey_v2.f $(LIB_MOD)(control_variable_mod.o) $(LIB
 
 $(LIB)(comp_grey_v4.o) : comp_grey_v4.f $(LIB_MOD)(control_variable_mod.o) $(LIB_MOD)(mod_cmfgen.o)\
                                   $(LIB_MOD)(ang_qw_mod.o)
-	$(F90) -c $(FD) comp_grey_v4.f
+	$(F90) -c $(OPTION) comp_grey_v4.f
 	ar $(AR_OPTION) $(LIB) comp_grey_v4.o
 
 $(LIB)(comp_j_blank.o) : comp_j_blank.f $(LIB)(opac_mod.o) $(LIB_MOD)(control_variable_mod.o) $(LIB_MOD)(radiation_mod.o) $(LIB_MOD)(mod_cmfgen.o) $(LIB_MOD)(ang_qw_mod.o)
-	$(F90) -c $(FD) comp_j_blank.f
+	$(F90) -c $(OPTION) comp_j_blank.f
 	ar $(AR_OPTION) $(LIB) comp_j_blank.o
 
 $(LIB)(comp_opac.o) : comp_opac.f $(LIB)(opac_mod.o) $(LIB_MOD)(control_variable_mod.o) $(LIB_MOD)(mod_cmfgen.o)

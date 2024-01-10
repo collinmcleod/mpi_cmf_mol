@@ -12,6 +12,7 @@
 	USE MOD_USR_OPTION
 	IMPLICIT NONE
 !
+! Altered: 09-Jan-2024  : String increased to a length of 500 & max of 40 columns.
 ! Created: 12-June-2010
 !
 	INTEGER IOS
@@ -22,13 +23,13 @@
 	REAL(KIND=LDP) YVEC(NX_MAX)
 	CHARACTER(LEN=*) FILNAME
 !
-	INTEGER, PARAMETER :: MAX_COL=20
+	INTEGER, PARAMETER :: MAX_COL=40
 	INTEGER, PARAMETER :: T_OUT=6
 !
 	REAL(KIND=LDP) TEMP_VAR(MAX_COL)
 	INTEGER I,K,L,NX_RD
 	INTEGER COLUMN(2)
-	CHARACTER(LEN=200) STRING
+	CHARACTER(LEN=500) STRING
 !
 ! Procedure to read simple plots in column format from file.
 ! Blank lines and comments (begin with a !) are ignored.
