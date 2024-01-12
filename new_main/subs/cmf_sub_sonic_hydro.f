@@ -57,6 +57,11 @@
 	  PRIVATE DO_CMF_DERIVS
 	  PRIVATE STORE_OLD_GRID
 	  PRIVATE CMF_HYDRO_NEW_EST
+	  PRIVATE OUT_ESTIMATES
+!
+	  INTEGER  LUV
+	  INTEGER  LUV_KUTTA
+	  INTEGER  LU_ERR
 !
 	END MODULE CMF_SUB_SONIC_HYDRO
 !
@@ -78,6 +83,8 @@ CONTAINS
 	USE OLD_GRID_MODULE
 	USE UPDATE_KEYWORD_INTERFACE
 	IMPLICIT NONE
+!
+! Created 10-Jan-2023 (based on do_cmf_hyro_v2.f)
 !
 	INTEGER MOD_NC			!Model numbr of core rays
 	INTEGER MOD_ND			!Model number of depth points
@@ -227,8 +234,6 @@ CONTAINS
 	INTEGER  VEL_LAW
 !
 	INTEGER  LU
-	INTEGER  LUV
-	INTEGER  LU_ERR
 !
 	LOGICAL, PARAMETER :: L_FALSE=.FALSE.
 	LOGICAL, PARAMETER :: L_TRUE=.TRUE.
@@ -361,6 +366,10 @@ CONTAINS
 	IF(HYDRO_OPT .EQ. 'FIXED_V_FLUX')THEN
 	  CALL RD_STORE_DBLE(OLD_TEFF,'OLD_TEFF',L_TRUE,'Effective temperatre of input model')
 	END IF
+	IF(TAU_REF .GT. 0.668_LDP .AND. HYDRO_OPT .EQ. 'DEFAULT')THEN
+          HYDRO_OPT='FIXED_R_REF'
+          WRITE(LU_ERR,*)'As TAU_REF > 2/3 HYDRO_DEFAULT is being set to FIXED_R_REF in DO_CMF_HYDRO_V2'
+        END IF
 	CALL CLEAN_RD_STORE()
 !
         CLOSE(UNIT=LUIN)
@@ -379,12 +388,14 @@ CONTAINS
 	  CALL GET_LU(LUV)
 	  OPEN(UNIT=LUV,FILE='HYDRO_ITERATION_INFO',STATUS='UNKNOWN')
 	  CALL SET_LINE_BUFFERING(LUV)
+	  CALL GET_LU(LUV_KUTTA)
+	  OPEN(UNIT=LUV_KUTTA,FILE='HYDRO_ITERATION_KUTTA_INFO',STATUS='UNKNOWN')
   	END IF
 	CALL GET_LU(LU)				!For files open/shut immediately
 !
 ! In TORSCL_V3, TA is TAU, TB is dTAU, and TC is used fro dCHIdR.
 !
-	WRITE(6,'(/,A)')' Updating hydrostatic structure of the model'
+	WRITE(LU_ERR,'(/,A)')' Updating hydrostatic structure of the model'
 	FLUSH(UNIT=6)
 !
 	IF(HYDRO_OPT .EQ. 'FIXED_R_REF')THEN
@@ -393,7 +404,7 @@ CONTAINS
 ! To preserve the specifed effective temperature, the luminosity is
 ! updated.
 !
-	  WRITE(6,'(A)')' Using FIXED_R_REF option in DO_CMF_HYDRO_V3'
+	  WRITE(LU_ERR,'(A)')' Using FIXED_R_REF option in DO_CMF_HYDRO_V3'
 	  CHI_ROSS(1:MOD_ND)=OLD_CLUMP_FAC(1:MOD_ND)*OLD_ROSS_MEAN(1:MOD_ND)
 	  I=7			!Use CHI(1) and CHI(I) to computed exponent.
 	  CALL TORSCL_V3(TA,CHI_ROSS,OLD_R,TB,TC,MOD_ND,'LOGMON','PCOMP',I,L_FALSE)
@@ -409,13 +420,13 @@ CONTAINS
 	  MOD_LUM=4.0E+36_LDP*PI*STEFAN_BC*T1*T1/LUM_SUN()
 	  CALL UPDATE_KEYWORD(MOD_LUM,'[LSTAR]','VADAT',L_TRUE,L_TRUE,LUIN)
 	  CALL UPDATE_KEYWORD('DEFAULT','[HYDRO_OPT]','HYDRO_DEFAULTS',L_TRUE,L_TRUE,LUIN)
-	  WRITE(6,'(A)')' DO_CMF_HYDRO_V3 has adjusted LSTAR in VADAT'
+	  WRITE(LU_ERR,'(A)')' DO_CMF_HYDRO_V3 has adjusted LSTAR in VADAT'
 !
 ! This option is useful for WR models where the key variable controlling the observed
 ! spectrum is the luminosity.
 !
 	ELSE IF(HYDRO_OPT .EQ. 'FIXED_LUM')THEN
-	  WRITE(6,'(A)')' Using FIXED_LUM option in DO_CMF_HYDRO_V3'
+	  WRITE(LU_ERR,'(A)')' Using FIXED_LUM option in DO_CMF_HYDRO_V3'
 	  CHI_ROSS(1:MOD_ND)=OLD_CLUMP_FAC(1:MOD_ND)*OLD_ROSS_MEAN(1:MOD_ND)
 	  I=7			!Use CHI(1) and CHI(I) to computed exponent.
 	  CALL TORSCL_V3(TA,CHI_ROSS,OLD_R,TB,TC,MOD_ND,'LOGMON','PCOMP',I,L_FALSE)
@@ -432,12 +443,12 @@ CONTAINS
 	  T1=4.0E+36_LDP*PI*STEFAN_BC*REFERENCE_RADIUS*REFERENCE_RADIUS
 	  TEFF=(MOD_LUM*LUM_SUN()/T1)**0.25_LDP
 	  CALL UPDATE_KEYWORD(TEFF,'[TEFF]','VADAT',L_TRUE,L_TRUE,LUIN)
-	  WRITE(6,'(A,ES14.4)')' DO_CMF_HYDRO_V3 has adjusted TEFF in VADAT: Teff=',TEFF
+	  WRITE(LU_ERR,'(A,ES14.4)')' DO_CMF_HYDRO_V3 has adjusted TEFF in VADAT: Teff=',TEFF
 !
 ! This option (useful for O stars) attempts to preserve the V =-band flux.
 !
 	ELSE IF(HYDRO_OPT .EQ. 'FIXED_V_FLUX')THEN
-	  WRITE(6,'(A)')' Using FIXED_V_FLUX option in DO_CMF_HYDRO_V3'
+	  WRITE(LU_ERR,'(A)')' Using FIXED_V_FLUX option in DO_CMF_HYDRO_V3'
 	  I=7	!Use CHI(1) and CHI(I) to computed exponent.
 	  CHI_ROSS(1:MOD_ND)=OLD_CLUMP_FAC(1:MOD_ND)*OLD_ROSS_MEAN(1:MOD_ND)
 	  CALL TORSCL_V3(TA,CHI_ROSS,OLD_R,TB,TC,MOD_ND,'LOGMON','PCOMP',I,L_FALSE)
@@ -456,22 +467,22 @@ CONTAINS
 	  CALL UPDATE_KEYWORD(MOD_LUM,'[LSTAR]','VADAT',L_TRUE,L_TRUE,LUIN)
 	  CALL UPDATE_KEYWORD('DEFAULT','[HYDRO_OPT]','HYDRO_DEFAULTS',L_TRUE,L_FALSE,LUIN)
 	  CALL UPDATE_KEYWORD(TEFF,'[OLD_TEFF]','HYDRO_DEFAULTS',L_FALSE,L_TRUE,LUIN)
-	  WRITE(6,'(A)')' DO_CMF_HYDRO_V3 has adjusted LSTAR in VADAT'
+	  WRITE(LU_ERR,'(A)')' DO_CMF_HYDRO_V3 has adjusted LSTAR in VADAT'
 !
 	ELSE IF(HYDRO_OPT .EQ. 'DEFAULT')THEN
 	  IF( ABS(TAU_REF-2.0_LDP/3.0_LDP) .GT. 0.001_LDP)THEN
-	    WRITE(6,*)'Error -- for the DEFAULT HYDRO_OPTION, TAU_REF must be 2/3'
+	    WRITE(LU_ERR,*)'Error -- for the DEFAULT HYDRO_OPTION, TAU_REF must be 2/3'
 	    STOP
 	  END IF
-	  WRITE(6,'(A)')' Reference radius: based on effective temperature and luminosity of star'
+	  WRITE(LU_ERR,'(A)')' Reference radius: based on effective temperature and luminosity of star'
 	  REFERENCE_RADIUS=1.0E-18_LDP*SQRT(MOD_LUM*LUM_SUN()/TEFF**4/STEFAN_BC/4.0_LDP/PI)
 !
 	ELSE
-	  WRITE(6,'(A)')' Error in do_cmf_hydro_v3.f: invlaid HYDRO_OPT option'
-	  WRITE(6,'(2A)')' HYDRO_OPT=',TRIM(HYDRO_OPT)
+	  WRITE(LU_ERR,'(A)')' Error in do_cmf_hydro_v3.f: invlaid HYDRO_OPT option'
+	  WRITE(LU_ERR,'(2A)')' HYDRO_OPT=',TRIM(HYDRO_OPT)
 	  STOP
 	END IF
-	WRITE(6,*)'Reference radius is',REFERENCE_RADIUS; FLUSH(UNIT=6)
+	WRITE(LU_ERR,*)'Reference radius is',REFERENCE_RADIUS; FLUSH(UNIT=6)
 !
 !
 !
@@ -558,12 +569,12 @@ CONTAINS
 	      CONNECTION_RADIUS=OLD_R(I)
 	      CONNECTION_INDX=I
 	      RMAX=RMAX*CONNECTION_RADIUS
-	      WRITE(6,*)'  Connection velocity is',CONNECTION_VEL
-	      WRITE(6,*)'    Connection radius is',CONNECTION_RADIUS
-	      WRITE(6,*)'       Maximum radius is',RMAX
-	      WRITE(6,*)'     Connection INDEX is',CONNECTION_INDX
-	      WRITE(6,*)'          Sound speed is',SOUND_SPEED
-	      WRITE(6,*)' Modified sound speed is',MOD_SOUND_SPEED
+	      WRITE(LU_ERR,*)'  Connection velocity is',CONNECTION_VEL
+	      WRITE(LU_ERR,*)'    Connection radius is',CONNECTION_RADIUS
+	      WRITE(LU_ERR,*)'       Maximum radius is',RMAX
+	      WRITE(LU_ERR,*)'     Connection INDEX is',CONNECTION_INDX
+	      WRITE(LU_ERR,*)'          Sound speed is',SOUND_SPEED
+	      WRITE(LU_ERR,*)' Modified sound speed is',MOD_SOUND_SPEED
 	      EXIT
 	    END IF
 	  END DO
@@ -623,7 +634,7 @@ CONTAINS
 !   (2) We have an old model, but will input a new wind.
 !   (3) We don't have an old model.
 !
-	  WRITE(6,*)'WIND_PRESENT=',WIND_PRESENT
+	  WRITE(LU_ERR,*)'WIND_PRESENT=',WIND_PRESENT
 	  IF(WIND_PRESENT)THEN
 !
 ! In this case will use exactly the same grid as for the old model beyond
@@ -702,7 +713,7 @@ CONTAINS
 	        GAMMA_FULL(I)=GAM_FULL
 	        CHI_ROSS(I)=ED_ON_NA(I)*SIGMA_TH*POP_ATOM(I)*CHI_ROSS(I)
 	        P(I)=(BC*T(I)*(1.0_LDP+ED(I)/POP_ATOM(I))+PTURB_ON_NA)*POP_ATOM(I)
-!	        WRITE(6,'(I5,5ES14.5)')I,R(I),ED(I),GAMMA_FULL(I),CHI_ROSS(I),P(I)
+!	        WRITE(LU_ERR,'(I5,5ES14.5)')I,R(I),ED(I),GAMMA_FULL(I),CHI_ROSS(I),P(I)
 	      END DO
 	      CALL TORSCL(TAU,CHI_ROSS,R,TB,TC,J,'LOGMON',' ')
 	      I=J
@@ -737,7 +748,7 @@ CONTAINS
 	  IF(WIND_PRESENT)THEN
 	    SOUND_SPEED=(1.0_LDP+ED_ON_NA(I))*BC*T(I)/MU_ATOM/AMU
 	    SOUND_SPEED=1.0E-05_LDP*SQRT(SOUND_SPEED)
-	    WRITE(6,'(A,3ES14.4)')'SOUND_SPEED',SOUND_SPEED
+	    WRITE(LU_ERR,'(A,3ES14.4)')'SOUND_SPEED',SOUND_SPEED
 	  ELSE
 	    IF(VTURB .EQ. 0.0_LDP)THEN
 	      SOUND_SPEED=1.0E+30_LDP
@@ -771,13 +782,13 @@ CONTAINS
 	  DO WHILE( TAU(I) .LT. MAX(100.0_LDP,OLD_TAU_MAX) )
 	    I=I+1
 	    IF(I .GT. ND_MAX)THEN
-	      WRITE(6,*)'Error id DO_CMF_HYDRO'
-	      WRITE(6,*)'ND_MAX is too small'
+	      WRITE(LU_ERR,*)'Error id DO_CMF_HYDRO'
+	      WRITE(LU_ERR,*)'ND_MAX is too small'
 	      STOP
 	    END IF
 !
 	    IF(VERBOSE_OUTPUT)THEN
-	      IF(MOD(I-IST,10) .EQ. 0)THEN
+	      IF(MOD(I-IST-1,10) .EQ. 0)THEN
 	        WRITE(LUV,*)' '
 	        WRITE(LUV,'(A4,10A14)')'I','P(I-1)','Pgas','Pturb','R(I-1)','V(I-1)','T(I-1)',
 	1                            'TAU(I-1)','ED/NA','NA(I-1)','GAM_FULL'
@@ -877,8 +888,8 @@ CONTAINS
 !
 	  ALLOCATE(COEF(ND,4),STAT=IOS)
 	  IF(IOS .NE. 0)THEN
-	    WRITE(6,*)'Error allocating COEF DO_CMF_HYDRO_V2'
-	    WRITE(6,*)'ND=',ND
+	    WRITE(LU_ERR,*)'Error allocating COEF DO_CMF_HYDRO_V2'
+	    WRITE(LU_ERR,*)'ND=',ND
 	    STOP
 	  END IF
 	  CALL MON_INT_FUNS_V2(COEF,P,R,ND)
@@ -900,8 +911,8 @@ CONTAINS
 	    ELSE
 	      OPEN(UNIT=LU,FILE='NEW_CALC_GRID',STATUS='UNKNOWN',ACTION='WRITE')
 	    END IF
-	    WRITE(LU,'(A,I5,3I16,14I13)')'!',(I,I=1,17)
-	    WRITE(LU,'(A,3A16,16A13)')'!Index','R','Vel','Tau','T','Pgas','Rho',
+	    WRITE(LU,'(A,I6,3I16,14I13)')'!',(I,I=1,18)
+	    WRITE(LU,'(A,3A16,16A13)')'! Index','R','Vel','Tau','T','Pgas','Rho',
 	1                  'Na','Ne/Na','a^2','Kross','Kr/Kes','Gamma',
 	1                  'dpdR/ROH','VdVdR_TERM','GRAV_TERM','RAD_TERM','SUM'
 	    DO I=1,ND
@@ -909,7 +920,7 @@ CONTAINS
 	      T2=SIGMA_TH*POP_ATOM(I)*ED_ON_NA(I)
 	      T3=1.0D-10*(1.0_LDP+ED_ON_NA(I))*BC*T(I)/MU_ATOM/AMU
 	      HYDRO_SUM=(dPdR_TERM(I)+VdVdR_TERM(I)+GRAV_TERM(I)-RAD_TERM(I))/GRAV_TERM(I)
-	      WRITE(LU,'(I6,3ES16.7,16ES13.4)')I,R(I),V(I),TAU(I),T(I),P(I),MASS_DENSITY(I),
+	      WRITE(LU,'(I7,3ES16.7,16ES13.4)')I,R(I),V(I),TAU(I),T(I),P(I),MASS_DENSITY(I),
 	1              POP_ATOM(I),ED_ON_NA(I),T3,CHI_ROSS(I)/T1,CHI_ROSS(I)/T2,GAMMA_FULL(I),
 	1              dPdR_TERM(I),VdVdR_TERM(I),GRAV_TERM(I),RAD_TERM(I),HYDRO_SUM
 	    END DO
@@ -1247,7 +1258,7 @@ CONTAINS
 	CALL OUT_ESTIMATES('GAM_FULL',GAM_FULL)
 	CALL OUT_ESTIMATES('VTURB',VTURB)
 	CALL OUT_ESTIMATES('LAST',VTURB)
-	FLUSH(UNIT=17)
+	FLUSH(UNIT=LUV_KUTTA)
 !
 	RETURN
 	END SUBROUTINE CMF_HYDRO_DERIVS
@@ -1400,8 +1411,8 @@ CONTAINS
 	  IF(IOS .EQ. 0)ALLOCATE (OLD_dED_ON_NA_dTAU(ND),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (OLD_dlnT_dTAU(ND),STAT=IOS)
 	  IF(IOS .NE. 0)THEN
-	    WRITE(6,*)'Error in STORE_OLD_GRID -- error allocating atmospheric vectors'
-	    WRITE(6,*)'STATUS=',IOS
+	    WRITE(LU_ERR,*)'Error in STORE_OLD_GRID -- error allocating atmospheric vectors'
+	    WRITE(LU_ERR,*)'STATUS=',IOS
 	    STOP
 	  END IF
 	END IF
@@ -1437,6 +1448,7 @@ CONTAINS
 	SUBROUTINE OUT_ESTIMATES(ID,VALUE)
 	USE CMF_SUB_SONIC_HYDRO
 	USE SET_KIND_MODULE
+	IMPLICIT NONE
 	CHARACTER(LEN=*) ID
 	REAL(KIND=LDP) VALUE
 	INTEGER, SAVE :: CNT 
@@ -1447,14 +1459,14 @@ CONTAINS
 	IF(ID .EQ. 'INIT')THEN
 	  HEADER_STRING=' '
 	  VALUE_STRING=' '
-	  CNT=1; HD_CNT=0
+	  CNT=1 
 	ELSE IF(ID .EQ. 'LAST')THEN
 	  IF(MOD(CNT,4) .EQ. 1)THEN
-	    WRITE(17,'(A)')' '
-	    WRITE(17,'(A,4X,A,2X,A)')'!','I',TRIM(HEADER_STRING)
+	    WRITE(LUV_KUTTA,'(A)')' '
+	    WRITE(LUV_KUTTA,'(A,4X,A,2X,A)')'!','I',TRIM(HEADER_STRING)
 	    HEADER_STRING=' '
 	  END IF
-	  WRITE(17,'(I6,2X,A)')DPTH_INDX,TRIM(VALUE_STRING)
+	  WRITE(LUV_KUTTA,'(I6,2X,A)')DPTH_INDX,TRIM(VALUE_STRING)
 	  VALUE_STRING=' '
 	  CNT=CNT+1
 	ELSE

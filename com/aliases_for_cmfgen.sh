@@ -17,8 +17,8 @@ if ($machine =~ *'osiris'*)then
   set sn_atomic  = ~hillier/sn_atomic 
   set SN_ATOMIC  = ~hillier/sn_atomic 
   if ($machine =~ *'wnode04'*)then
-    setenv cmfdist  ~hillier/wnode04/cmf_testing
-    setenv CMFDIST  ~hillier/wnode04/cmf_testing
+    setenv cmfdist  ~hillier/wnode04/cur_cmf
+    setenv CMFDIST  ~hillier/wnode04/cur_cmf
   else
     setenv cmfdist  ~hillier/cur_cmf
     setenv CMFDIST  ~hillier/cur_cmf
