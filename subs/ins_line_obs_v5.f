@@ -8,6 +8,7 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered 17-Jan-2024 : Fixed bug introduced by KIND change.
 ! Altered 13-Apr-2017 : Limit the maximum extent of the red wing to 10,000 km/s.
 ! Altered 02-Jul-2000 : Complete rewrite. Changed from V3 to V4.
 !                       Routine now correctly handles the case where lines are
@@ -219,7 +220,6 @@
 !               photospheric lines (e.g. as for an O star).
 !
 !	  CALL TUNE(1,'MAX_O_EXT')
-	  T3=1.0_LDP
 	  K=LN_INDX
 	  IF(K .LE. N_LINES)THEN
 	    DO WHILE(FREQ(INDX)-dNU .LT. NU_STRT_LINE(MIN(K,N_LINES)))
@@ -228,7 +228,7 @@
 	        NU_END_LINE=NU_LINE(K)-(NU_STRT_LINE(K)-NU_LINE(K))
 	        IF( (FREQ(INDX) .GT. NU_END_LINE .AND.
 	1            T1 .LE. NU_STRT_LINE(K)) )THEN
-	          T3=1.0_LDP + C_KMS*ABS(T3-NU_LINE(K)/FREQ(INDX))/VEC_VMIN_VDOP(K)
+	          T3=1.0_LDP + C_KMS*ABS(1.0_LDP-NU_LINE(K)/FREQ(INDX))/VEC_VMIN_VDOP(K)
 	          T2=FREQ(INDX)*FRAC_DOP_OBS*VEC_VMIN_VDOP(K)*SQRT(T3)/C_KMS
 	          dNU=MIN(dNU,T2)
 	        END IF

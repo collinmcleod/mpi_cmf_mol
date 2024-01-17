@@ -4,6 +4,7 @@
 	USE CONTROL_VARIABLE_MOD
 	IMPLICIT NONE
 !
+! Altered : 13-Jan-2024 : Added MAX_NO_GREY_ITERATIONS
 ! Altered : 19-Jun-2023 : Added SOL_ABUND_REF_SET
 ! Altered : 12-Aug-2022 : Added SN shock variables (following work by LUC.)
 ! Altered : 06-Jun-2022 : Variable COMP_STEQ_T_EHB ([COMP_EHB]) added.
@@ -856,7 +857,10 @@
 	  CALL RD_STORE_LOG(INTERP_T_ON_R_GRID,'T_ON_R',L_FALSE,
 	1       'Interpolate T on R grid - default is SPH tau grid')
 	  CALL RD_STORE_DBLE(GREY_PAR,'GREY_TAU',L_TRUE,
-	1        'SpecifysTau above which T is set to TGREY in iterative process')
+	1        'Specifys Tau above which T is set to TGREY in iterative process')
+	  MAX_NO_GREY_ITERATIONS=5
+	  CALL RD_STORE_INT(MAX_NO_GREY_ITERATIONS,'NGREY_ITS',L_FALSE,
+	1        'Number of TGREY iterations')
 !
 ! We only need to specify the TRANSITION type if GLOBAL_LINE_SWITCH is NONE.
 !

@@ -10,6 +10,7 @@
 	IMPLICIT NONE
 	INTEGER ND,NT,NIT
 !
+! Altered 15-Jan-2024: Added PRN and RFDG options.
 ! Altered 03-Dec-2023: Added AFDG option.
 ! Altered 24-Sep-2023: Added SFDG option (needs work) - 7sep23.
 !                      Added DREP option -- allows one depth to replace other depths.
@@ -44,6 +45,7 @@ C
 	REAL(KIND=LDP), ALLOCATABLE :: Z(:)			!NIT
 	REAL(KIND=LDP), ALLOCATABLE :: TA(:)			!
 	REAL(KIND=LDP), ALLOCATABLE :: TB(:)			!
+	REAL(KIND=LDP), ALLOCATABLE :: COEF(:,:)
 !
 	INTEGER, ALLOCATABLE :: I_BIG(:) 			!NT
 	INTEGER, ALLOCATABLE :: MATCHING_ION_LEV(:)		!NT
@@ -567,7 +569,7 @@ C
           CALL GRAMON_PGPLOT('T(10\u4\ dK))',Ylabel,' ',' ')
           GOTO 200
 !
-	ELSE IF(PLT_OPT(1:2) .EQ. 'PR')THEN
+	ELSE IF(PLT_OPT(1:2) .EQ. 'PR' .OR. PLT_OPT(1:3) .EQ. 'PRN')THEN
 	  IT=NIT; ID=ND
 	  DO WHILE(1 .EQ. 1)
 	    CALL GEN_IN(IT,'Iteration # (zero to exit)',LOW_LIM=IZERO,UP_LIM=NIT)
@@ -575,14 +577,27 @@ C
 	    IVAR=NT
 	    CALL GEN_IN(IVAR,'Variable # (zero to exit)',LOW_LIM=IZERO,UP_LIM=NT)
 	    IF(IVAR .LE. 0 .OR. IVAR .GT. NT)EXIT
-	    T1=1.0_LDP
-	    IF(R(1) .GT. 1.0E+04_LDP)T1=1.0E-04_LDP
 	    DO ID=1,ND
 	      Y(ID)=POPS(IVAR,ID,IT)
 	      Z(ID)=LOG10(POPS(IVAR,ID,IT))
-	      X(ID)=1.0E-04_LDP*R_MAT(ID,IT)
 	    END DO
+	    IF(PLT_OPT(1:3) .EQ. 'PRN')THEN
+	      DO ID=1,ND
+	        X(ID)=R_MAT(ID,IT)/R_MAT(ND,IT)
+	      END DO
+	      XLABEL='Log R/R\d*\u'
+	    ELSE
+	      T1=1.0_LDP
+	      IF(R(1) .GT. 1.0E+04_LDP)T1=1.0E-04_LDP
+	      DO ID=1,ND
+	        X(ID)=T1*R_MAT(ID,IT)
+	      END DO
+	      XLABEL='R(10\u10 \dcm)'
+	      IF(R(1) .GT. 1.0E+04_LDP)XLABEL='R(10\u14 \dcm)'
+	    END IF
 	    WRITE(STRING,*)IVAR; STRING=ADJUSTL(STRING)	
+	    WRITE(TMP_STR,'(I6)')IT
+	    STRING=TRIM(STRING)//'('//TRIM(ADJUSTL(TMP_STR))//')'	
 	    IF(LOG_Y_AXIS)THEN
 	      CALL DP_CURVE_LAB(ND,X,STRING)
 	      Ylabel='Log'
@@ -591,11 +606,7 @@ C
 	      Ylabel=''
 	    END IF
 	  END DO
-	  IF(R(1) .GT. 1.0E+04_LDP)THEN
-	    CALL GRAMON_PGPLOT('R(10\u14 \dcm)',Ylabel,' ',' ')
-	  ELSE
-	    CALL GRAMON_PGPLOT('R(10\u10 \dcm)',Ylabel,' ',' ')
-	  END IF
+	  CALL GRAMON_PGPLOT(XLABEL,Ylabel,' ',' ')
 	  GOTO 200
 !
 	ELSE IF(PLT_OPT(1:2) .EQ. 'VR')THEN
@@ -765,6 +776,58 @@ C
 	  WRITE(6,*)'Populations can be compared with older iterations.'
 	  GOTO 200
 !
+	ELSE IF(PLT_OPT(1:4) .EQ. 'RFDG')THEN
+	  IT=NIT
+	  WRITE(6,'(A)')' '
+	  CALL GEN_IN(T1,'R values belowond this radius are not changed')
+	  CALL GEN_IN(T2,'Value to be subtracted')
+	  I=1
+	  TA(1:ND)=R(1:ND)
+	  DO WHILE(TA(I) .GT. T1)
+	    TA(I)=TA(I)-T2
+	    I=I+1
+	  END DO
+	  IF(TA(I-1) .LT. TA(I))THEN
+	    WRITE(6,'(/,A)')'Error -- R array no longer monotonic'
+	    WRITE(6,'(A,/)')'Change in R has been stopped'
+	    GOTO 200
+	  ELSE
+	    R(1:ND)=TA(1:ND)
+	    WRITE(6,*)'R(1)/R(ND)=',R(1)/R(ND)
+	  END IF
+!
+! Compute SIGMA by performing a monotonic cubic fit to V as a function of R.
+!
+	  ALLOCATE(COEF(ND,4))
+          CALL MON_INT_FUNS_V2(COEF,V,R,ND)
+          DO I=1,ND
+            SIGMA(I)=R(I)*COEF(I,3)/V(I)-1.0_LDP
+          END DO
+	  DEALLOCATE(COEF)
+!
+          CALL GEN_ASCI_OPEN(LU_OUT,'NEW_RVSIG','UNKNOWN',' ','WRITE',I,IOS)
+          WRITE(LU_OUT,'(A)')'!'
+          WRITE(LU_OUT,'(A,7X,A,9X,10X,A,12X,A,3X,A)')'!','R','V(km/s)','Sigma','Depth'
+          WRITE(LU_OUT,'(A)')'!'
+          WRITE(LU_OUT,'(A)')' '
+          WRITE(LU_OUT,'(I4,20X,A)')ND,'!Number of depth points`'
+          WRITE(LU_OUT,'(A)')' '
+          DO I=1,ND
+            WRITE(LU_OUT,'(F18.8,ES17.7,F17.7,4X,I4)')R(I),V(I),SIGMA(I),I
+          END DO
+	  CLOSE(LU_OUT)
+!
+	  IREC=NIT			!IREC is updated on write
+	  NITSF=NITSF+1
+	  CALL SCR_RITE_V2(R,V,SIGMA,POPS(1,1,IT),IREC,NITSF,
+	1              RITE_N_TIMES,LST_NG,WRITE_RVSIG,
+	1              NT,ND,LUSCR,NEWMOD)
+	  WRITE(6,*)'Updated R has been written to SCRTEMP as new (and last) iteration.'
+	  WRITE(6,*)'Restart program if you wish to compare to with pops from last iteration.'
+	  WRITE(6,*)'Populations can be compared with older iterations.'
+	  GOTO 200
+	  
+
 	ELSE IF(PLT_OPT(1:4) .EQ. 'AFDG' .OR. PLT_OPT(1:4) .EQ. 'MFDG')THEN
 	  FDG_COUNTER=FDG_COUNTER+1
 	  IT=NIT; ID=ND; IVAR=NT

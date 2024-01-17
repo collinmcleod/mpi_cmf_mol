@@ -444,7 +444,7 @@
 	CALL TUNE(1,'T_ITERATE')
 	MAIN_COUNTER=1
 	DO WHILE (ITERATE_INIT_T .AND. .NOT. GRID .AND.
-	1                                 MAIN_COUNTER .LE. 5)
+	1                                 MAIN_COUNTER .LE.  MAX_NO_GREY_ITERATIONS)
 !
 	    IF(.NOT. ALLOCATED(U_PAR_FN))THEN
 	      ALLOCATE (U_PAR_FN(ND,NUM_IONS),STAT=IOS)

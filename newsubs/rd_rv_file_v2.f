@@ -10,7 +10,8 @@
 	SUBROUTINE RD_RV_FILE_V2(R,V,SIGMA,RMAX,RP,VINF,LUIN,ND,OPTIONS,N_OPT)
 	USE SET_KIND_MODULE
 !
-! Altered  19-Aug-2015: Added check that SIMGMA < -1.0D0 (cur_hmi,21-Jun-2015).
+! Altered  12-Jan-2024: Altered handling of SIGMA < 1
+! Altered  19-Aug-2015: Added check that SIGMA < -1.0D0 (cur_hmi,21-Jun-2015).
 ! Altered  31-Mar-2008: Check on VINF is now set to 10% accuracy. Done as V(1) is normally
 !                         < Vinf as radius grid does not extend to infinity.
 ! Altered  16-Jan-2007: VINF only checked of > 0.1 km/s (not important for pp models)
@@ -96,14 +97,15 @@
 	  CLOSE(LUIN)
 !
 	  DO I=1,ND-1
-	    IF(V(I) .LE. V(I+1) .AND. V(I) .LT. 0.1_LDP)THEN
-	      SIGMA(I)=-0.999_LDP
+	    IF(V(I) .LE. V(I+1) .AND. V(I) .LT. 1.0_LDP)THEN
 	      WRITE(6,*)'Warning from RD_RV_FILE_V2'
-	      WRITE(6,*)'Adjusting SIGMA in hydrostatic zone to be monotonic'
+	      WRITE(6,*)'Velocity law in hydrostatic sone is not monotonic'
+	      WRITE(6,*)'Starts at depth index (I) and velocities V(I),V(I+1):',I,V(I),V(I+1)
+	      EXIT
 	    ELSE IF(V(I) .LE. V(I+1))THEN
 	      WRITE(LUER,*)'Warning in RD_RV_FILE_V2'
 	      WRITE(6,*)'CMFGEN maynot handle a non-monotonic velocity law'
-	      WRITE(6,*)I,V(I),V(I+1)
+	      WRITE(6,*)'Starts at depth index (I) and velocities V(I),V(I+1):',I,V(I),V(I+1)
 !	      STOP
 	    END IF
 	  END DO
