@@ -12,6 +12,7 @@ LIB=$(LIB_DIR)libsubs.a
 
 OBJ = $(LIB)(det_r_grid_v1.o)\
       $(LIB)(det_r_grid_v2.o)\
+      $(LIB)(get_lte_ross_v3.o)\
       $(LIB)(get_lte_ross_v2.o)\
       $(LIB)(wind_vel_law_v1.o)\
       $(LIB)(wind_vel_law_v2.o)\

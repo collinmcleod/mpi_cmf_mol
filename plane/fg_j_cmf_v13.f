@@ -922,9 +922,10 @@
 !
 	  DO I=1,ND
 	    IF(SIGMA(I) .LT. -1.0_LDP)THEN
-	      WRITE(LUER,*)'Error in FG_J_CMF_V13 - SIGMA .LT. -1.0D0'
+	      WRITE(LUER,*)'Warnining Error in FG_J_CMF_V13 - SIGMA .LT. -1.0D0'
 	      WRITE(LUER,*)I,SIGMA(I)
-	      STOP
+	      EXIT
+!	      STOP
 	    END IF
 	  END DO
 	

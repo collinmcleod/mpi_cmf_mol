@@ -27,7 +27,7 @@
 !
 ! Maximum number of photoionization routes for each species.
 !
-	INTEGER, PARAMETER :: NPHOT_MAX=5
+	INTEGER, PARAMETER :: NPHOT_MAX=10
 !
 ! Actual number of ions in calculation. Stored sequentially.
 !

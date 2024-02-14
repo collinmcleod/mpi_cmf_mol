@@ -9,6 +9,7 @@
 !
 	SUBROUTINE CMF_FLUX_SUB_V5(ND,NC,NP,NDMAX,NPMAX,NT,NLINE_MAX)
 	USE SET_KIND_MODULE
+	USE DUST_MOD
 	USE MOD_CMF_OBS
 	USE MOD_FREQ_OBS
 	USE CMF_FLUX_CNTRL_VAR_MOD
@@ -233,6 +234,11 @@
 	REAL(KIND=LDP) CHI(ND)			!Continuum opacity (all sources)
 	REAL(KIND=LDP) CHI_RAY(ND)
 	REAL(KIND=LDP) CHI_SCAT(ND)
+!
+	REAL(KIND=LDP) ETA_DUST(ND)
+	REAL(KIND=LDP) CHI_ABS_DUST(ND)
+	REAL(KIND=LDP) CHI_SCAT_DUST(ND)
+!
 	REAL(KIND=LDP) ETA(ND)			!Continuum emissivity (all sources)
 	REAL(KIND=LDP) CHIL(ND)			!Line opacity (without prof.)
 	REAL(KIND=LDP) ETAL(ND)			!Line emissivity (without prof.)
@@ -578,6 +584,11 @@
 !
 	IF(XRAYS .AND. .NOT. FF_XRAYS)THEN
 	  CALL RD_XRAY_SPEC(T_SHOCK_1,T_SHOCK_2,LUIN)
+	END IF
+!
+	IF(INCL_DUST)THEN
+	  CALL RD_DUST_CNTRL_FILE()
+	  CALL SET_DUST_EJECTA_PROPERTIES(R,V,DENSITY,CLUMP_FAC,ND)
 	END IF
 !
 ! We now need to compute the populations for the model atom with Super-levels.

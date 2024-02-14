@@ -41,8 +41,14 @@
 	    CALL RAYLEIGH_SCAT(CHI_RAY,ATM(1)%XzV_F,ATM(1)%AXzV_F,ATM(1)%EDGEXZV_F,
 	1             ATM(1)%NXzV_F,CONT_FREQ,ND)
 	  END IF
+!
+	  CALL COMPUTE_DUST_OPACITY(CHI_ABS_DUST,CHI_SCAT_DUST,DENSITY,CONT_FREQ,ND)
+!
+! At present assume dust scattering is isotropic
+!
+	  CHI_RAY(1:ND)=CHI_RAY(1:ND)+CHI_SCAT_DUST(1:ND)
 	  CHI_SCAT(1:ND)=ESEC(1:ND)+CHI_RAY(1:ND)
-	  CHI(1:ND)=CHI_SCAT(1:ND)
+	  CHI(1:ND)=CHI_SCAT(1:ND)+CHI_ABS_DUST(1:ND)
 !
 ! Free-free and bound-free opacities.
 !
@@ -126,6 +132,12 @@
 	END IF
 !
 ! 
+!
+	IF(INCL_DUST)THEN
+	  T1= EXP(-HDKT*CONT_FREQ/DUST_T4)
+	  T2= EXP(-HDKT*CONT_FREQ/DUST_T4)
+	  ETA(1:ND) = ETA(1:ND) + CHI_ABS_DUST(1:ND)*T2
+	END IF
 !
 ! The shock emission is added separately since it does not occur at the
 ! local electron temperature.

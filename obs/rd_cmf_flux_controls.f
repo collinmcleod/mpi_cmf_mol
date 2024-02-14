@@ -271,6 +271,8 @@
 	  TWO_PHOTON_METHOD='USE_RAD'
           CALL RD_STORE_CHAR(TWO_PHOTON_METHOD,'TWO_METH',L_FALSE,'USE_RAD, LTE, NOSTIM or OLD_DEFAULT')
 	  CALL RD_STORE_LOG(INCL_RAY_SCAT,'INC_RAY',L_TRUE,'Include Rayeligh scattering?')
+	  INCL_DUST=.FALSE.
+	  CALL RD_STORE_LOG(INCL_DUST,'INC_DUST',L_FALSE,'Include dust?')
 !
 	  CALL RD_STORE_LOG(XRAYS,'INC_XRAYS',L_TRUE,'Include X-ray emission')
 	  CALL RD_STORE_LOG(FF_XRAYS,'FF_XRAYS',XRAYS,'Use free-free processes to compute X-ray emission')

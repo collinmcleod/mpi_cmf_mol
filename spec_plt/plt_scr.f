@@ -31,6 +31,7 @@
 !
 	REAL(KIND=LDP), ALLOCATABLE :: POPS(:,:,:)		!NT,ND,NIT
 	REAL(KIND=LDP), ALLOCATABLE :: R_MAT(:,:)		!ND,NIT
+	REAL(KIND=LDP), ALLOCATABLE :: SIGMA_MAT(:,:)		!ND,NIT
 	REAL(KIND=LDP), ALLOCATABLE :: V_MAT(:,:)		!ND,NIT
 	REAL(KIND=LDP), ALLOCATABLE :: RAT(:,:)			!NT,ND
 	REAL(KIND=LDP), ALLOCATABLE :: SOLS(:,:)		!NT,ND
@@ -173,6 +174,7 @@ C
 	ALLOCATE (POPS(NT,ND,NIT))
 	ALLOCATE (R_MAT(ND,NIT))
 	ALLOCATE (V_MAT(ND,NIT))
+	ALLOCATE (SIGMA_MAT(ND,NIT))
 	ALLOCATE (CORRECTIONS(NT,ND))
 	ALLOCATE (RAT(NT,ND))
 	ALLOCATE (SOLS(NT,ND))
@@ -201,6 +203,7 @@ C
 	1              NT,ND,LUSCR,NEWMOD)
 	  R_MAT(:,IREC)=R(:)
 	  V_MAT(:,IREC)=V(:)
+	  SIGMA_MAT(:,IREC)=SIGMA(:)
 	END DO
 !
 	NANS_PRESENT=.FALSE.
@@ -609,7 +612,7 @@ C
 	  CALL GRAMON_PGPLOT(XLABEL,Ylabel,' ',' ')
 	  GOTO 200
 !
-	ELSE IF(PLT_OPT(1:2) .EQ. 'VR')THEN
+	ELSE IF(PLT_OPT(1:2) .EQ. 'VR' .OR. PLT_OPT(1:4) .EQ. 'SIGR')THEN
 	  IT=NIT; ID=ND
 	  NORM_R=.TRUE.
 	  CALL GEN_IN(NORM_R,'Normlize R by R(ND)?')
@@ -631,12 +634,17 @@ C
 	    IF(V(1) .GT. 1.0E+04_LDP)T2=1.0E-04_LDP
 	    DO ID=1,ND
 	      X(ID)=T1*R_MAT(ID,IT)
-	      Y(ID)=T2*V_MAT(ID,IT)
 	    END DO
+	    IF(PLT_OPT(1:2) .EQ. 'VR')THEN
+	      Y(1:ND)=T2*V_MAT(1:ND,IT)
+	      Ylabel='V(km/s)'
+	      IF(V(1) .GT. 1.0E+04_LDP)Ylabel='V(Mm/s)'
+	    ELSE
+	      Y(1:ND)=T2*SIGMA_MAT(1:ND,IT)
+	      Ylabel='dlnVdR-1'
+	    END IF
 	    CALL DP_CURVE(ND,X,Y)
 	  END DO
-	  Ylabel='V(km/s)'
-	  IF(V(1) .GT. 1.0E+04_LDP)Ylabel='V(Mm/s)'
 	  CALL GRAMON_PGPLOT(XLABEL,Ylabel,' ',' ')
 	  GOTO 200
 !
