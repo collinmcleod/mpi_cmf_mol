@@ -1,5 +1,6 @@
 	SUBROUTINE READ_ARNAUD_ION_DATA(ND)
 	USE SET_KIND_MODULE
+	USE STEQ_DATA_MOD               !, :: ONLY SE%XRAY_EQ
 	USE MOD_CMFGEN
 	USE MOD_NON_THERM
 	IMPLICIT NONE
@@ -42,6 +43,7 @@
 	    WRITE(LU_ER,*)'IOS=',IOS
 	    STOP
 	  END IF
+	  WRITE(6,*)'Opened arnaud_rothenflug.dat'; FLUSH(UNIT=6)
 !
 ! All names must begin in the same column.
 !
@@ -138,11 +140,14 @@
 !
 ! Find level(s) in ion.
 !
+
 	             TMP_NAME=ADJUSTL(STRING(NM_POS:))
+	             WRITE(6,*)ID,TRIM(ION_ID(ID)),TRIM(TMP_NAME),TRIM(ATM(ID)%XZVLEVNAME_F(1))
 	             IF(ID .EQ. SPECIES_END_ID(ISPEC)-1)THEN
 	               THD(IT)%SUM_GION=ATM(ID)%GIONXzV_F
 	               THD(IT)%N_ION_ROUTES=1
 	               THD(IT)%ION_LEV(1)=1
+	               THD(IT)%ION_LEV(1)=SE(ID)%XRAY_EQ
 	             ELSE
 	               THD(IT)%SUM_GION=0.0_LDP
 	               THD(IT)%N_ION_ROUTES=0
@@ -156,26 +161,28 @@
 	                   THD(IT)%SUM_GION=THD(IT)%SUM_GION+ATM(ID_ION)%GXzV_F(I)
 	                 END IF
 	               END DO
-	               IF(INDEX(TMP_NAME,'&') .NE. 0)THEN
-	                 THD(IT)%SUM_GION=ATM(ID)%GIONXzV_F
+	               IF(INDEX(TMP_NAME,'&') .NE. 0 .AND. THD(IT)%N_ION_ROUTES .EQ.0)THEN
+	                 THD(IT)%SUM_GION=ATM(ID+1)%GIONXzV_F
 	                 THD(IT)%N_ION_ROUTES=1
-	                 THD(IT)%ION_LEV(1)=1
-!	                 IT=IT-1
-	               ELSE IF(THD(IT)%N_ION_ROUTES .EQ. 0)THEN
-	                 WRITE(6,*)'Error in RD_ARNAUD_ION_DATA -- unmatched ion level name'
-	                 WRITE(6,*)TRIM(STRING)
-	                 WRITE(6,*)'Extracted ion level name is: ',TRIM(TMP_NAME)
-	                 T1=ATM(ID_ION)%EDGEXzV_F(1)-ATM(ID_ION)%EDGEXzV_F(ATM(ID_ION)%NXzV_F)
-	                 T1=ATM(ID)%EDGEXzV_F(1)+T1
-	                 T2=ATM(ID)%EDGEXzV_F(1)+ATM(ID_ION)%EDGEXzV_F(1)
-	                 WRITE(6,*)THD(IT)%ION_POT,Hz_TO_eV*T1,Hz_TO_eV*T2
-	                 IF(THD(IT)%ION_POT .GT. Hz_TO_eV*T1 .AND. THD(IT)%ION_POT .LT. Hz_TO_eV*T2)THEN
-	                   WRITE(6,*)'Continuing execution as level not included'
-	                   THD(IT)%NTAB=0
-	                   IT=IT-1
-	                 ELSE
-	                   STOP
-	                 END IF
+	                 THD(IT)%ION_LEV(THD(IT)%N_ION_ROUTES)=SE(ID)%XRAY_EQ
+	                 WRITE(6,*)'SE(ID)%XRAY_EQ=',SE(ID)%XRAY_EQ,TRIM(ATM(ID_ION)%XZVLEVNAME_F(1))
+	               END IF
+	             END IF
+!
+	             IF(THD(IT)%N_ION_ROUTES .EQ. 0)THEN
+	               WRITE(6,*)'Error in RD_ARNAUD_ION_DATA -- unmatched ion level name'
+	               WRITE(6,*)TRIM(STRING)
+	               WRITE(6,*)'Extracted ion level name is: ',TRIM(TMP_NAME)
+	               T1=ATM(ID_ION)%EDGEXzV_F(1)-ATM(ID_ION)%EDGEXzV_F(ATM(ID_ION)%NXzV_F)
+	               T1=ATM(ID)%EDGEXzV_F(1)+T1
+	               T2=ATM(ID)%EDGEXzV_F(1)+ATM(ID_ION)%EDGEXzV_F(1)
+	               WRITE(6,*)THD(IT)%ION_POT,Hz_TO_eV*T1,Hz_TO_eV*T2
+	               IF(THD(IT)%ION_POT .GT. Hz_TO_eV*T1 .AND. THD(IT)%ION_POT .LT. Hz_TO_eV*T2)THEN
+	                 WRITE(6,*)'Continuing execution as level not included'
+	                 THD(IT)%NTAB=0
+	                 IT=IT-1
+	               ELSE
+	                 STOP
 	               END IF
 	             END IF
 !

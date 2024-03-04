@@ -48,8 +48,8 @@
 	  INTEGER N_SE                        	!Number of S.E. Eqns. for XzV
 	  INTEGER N_IV                        	!Number of important variables for XzV
 	  INTEGER NUMBER_BAL_EQ			!Conservation equation
-	  INTEGER XRAY_EQ				!Equation for Auger ionizations
-	  LOGICAL Xzv_PRES                      	!Indicates whether ion is present.
+	  INTEGER XRAY_EQ			!Equation for Auger ionizations
+	  LOGICAL Xzv_PRES                     	!Indicates whether ion is present.
           LOGICAL IMPURITY_SPECIES
 	END TYPE STAT_EQ_DATA
 !

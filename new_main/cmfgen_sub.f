@@ -794,13 +794,6 @@
 !
 	CALL ALLOCATE_WSE_ARRAYS(ND)
 !
-! Read in data for treating non-thermal ionization.
-!
-	IF(TREAT_NON_THERMAL_ELECTRONS)THEN
-	  CALL READ_ARNAUD_ION_DATA(ND)
-	  CALL READ_NT_OMEGA_DATA()
-	END IF
-!
 ! 
 !
 ! We open a new MODEL file so that the information is at the head of the
@@ -1199,6 +1192,13 @@
 	CALL DETERMINE_NSE(NION,XRAYS)
         CALL CREATE_IV_LINKS_V2(NT,NION)
 	CALL WR_LEVEL_LINKS
+!
+! Read in data for treating non-thermal ionization.
+!
+	IF(TREAT_NON_THERMAL_ELECTRONS)THEN
+	  CALL READ_ARNAUD_ION_DATA(ND)
+	  CALL READ_NT_OMEGA_DATA()
+	END IF
 !
 ! Allocate memory for STEQ and BA arrays.
 !
@@ -3020,15 +3020,22 @@
 	  DO ID=1,NUM_IONS-1
 	    IF(ATM(ID)%XzV_PRES)THEN
 	      J=0
-	      IF(ID .NE. 1)J=ATM(ID-1)%INDX_XzV
+	      TC=0.0D0
+	      IF(ID .NE. 1)THEN
+	        J=ATM(ID-1)%INDX_XzV
+	        IF(ATM(ID-1)%XzV_PRES)THEN
+	          TC(1:ND)=ATM(ID-1)%NTIXzV_2E(1:ND)
+	        END IF
+	      END IF
 	      TMP_STRING=TRIM(ION_ID(ID))//'PRRR'
-	      CALL WRRECOMCHK_V4(ATM(ID)%APRXzV, ATM(ID)%ARRXzV,
+	      CALL WRRECOMCHK_V5(ATM(ID)%APRXzV, ATM(ID)%ARRXzV,
 	1          ATM(ID)%CPRXzV, ATM(ID)%CRRXzV,
 	1          ATM(ID)%CHG_PRXzV, ATM(ID)%CHG_RRXzV, SE(ID)%STEQ_ADV,
 	1          DIERECOM(1,ATM(ID)%INDX_XzV),ADDRECOM(1,ATM(ID)%INDX_XzV),
-	1          X_RECOM(1,J),X_RECOM(1,ATM(ID)%INDX_XzV),ATM(ID)%NTIXzV,
+	1          X_RECOM(1,J),X_RECOM(1,ATM(ID)%INDX_XzV),
+	1          ATM(ID)%NTIXzV,TC,ATM(ID)%NTIXzV_2E,
 	1          R,T,ED,ATM(ID)%DXzV,TA,TB, ATM(ID)%NXzV,
-	1          ND,LU_REC_CHK,TMP_STRING,ION_ID(ID))
+	1          ND,LU_REC_CHK,TMP_STRING,ION_ID,ID)
 	    END IF
 	  END DO
 !

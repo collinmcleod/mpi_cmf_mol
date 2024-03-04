@@ -283,7 +283,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(write_vec.o)\
       $(LIB)(writv.o)\
       $(LIB)(writv_v2.o)\
-      $(LIB)(wrrecomchk_v4.o)\
+      $(LIB)(wrrecomchk_v5.o)\
       $(LIB)(x02ajf.o)\
       $(LIB)(x_rrr_cool_v6.o)\
       $(LIB)(xcross.o)\

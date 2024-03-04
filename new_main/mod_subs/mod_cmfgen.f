@@ -139,7 +139,8 @@
 	  REAL(KIND=LDP), ALLOCATABLE :: COOLXzV(:)
 !
 	  REAL(KIND=LDP), ALLOCATABLE :: NTCXzV(:)                   !Non-thermal cooling rate for species XzV
-	  REAL(KIND=LDP), ALLOCATABLE :: NTIXzV(:)                   !Non-thermal ionization rate
+	  REAL(KIND=LDP), ALLOCATABLE :: NTIXzV(:)                   !Non-thermal ionization rate (1 electron)
+	  REAL(KIND=LDP), ALLOCATABLE :: NTIXzV_2E(:)                !Non-thermal ionization rate (2 electron)
 	  REAL(KIND=LDP), ALLOCATABLE :: NT_ION_CXzV(:)              !Non thermal cooling rate (ionization)
 	  REAL(KIND=LDP), ALLOCATABLE :: NT_EXC_CXzV(:)              !Non thermal cooling rate (excitation)
 	  REAL(KIND=LDP), ALLOCATABLE :: NT_OMEGA(:,:)               !Non thermal collision strength

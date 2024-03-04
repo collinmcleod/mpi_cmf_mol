@@ -40,11 +40,11 @@ CNT = $(LIB_DIR)libmod.a(control_variable_mod.o)
 # General rules to make obects in a library and object files
 
 $(LIB_DIR)libmod.a(mod_non_therm.o) : mod_non_therm.f90
-	$(F90) -c $(FFREE) -I..  mod_non_therm.f90
+	$(F90) -c $(FFRED) -I..  mod_non_therm.f90
 	ar $(AR_OPTION) $(LIB_DIR)libmod.a mod_non_therm.o
 
 $(LIB)(%.o) : %.f90 $(LIB_DIR)libmod.a(mod_non_therm.o) $(ST) $(CMF) $(CNT)
-	$(F90) -c $(FFREE) -I..  $<
+	$(F90) -c $(FFRED) -I..  $<
 	ar $(AR_OPTION) $(LIB) $*.o
 
 $(ST):

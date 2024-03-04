@@ -59,6 +59,7 @@
 	REAL(KIND=LDP) DEC_NRG_SCL_FAC
 	REAL(KIND=LDP), PARAMETER :: Hz_to_eV=13.60_LDP/3.2897_LDP
 	REAL(KIND=LDP), PARAMETER :: Hz_to_erg=6.6261965E-12_LDP
+	LOGICAL ONE_ELEC
 !
 	LOCAL_ION_HEATING=0.0_LDP
 	LOCAL_EXC_HEATING=0.0_LDP
@@ -89,6 +90,7 @@
 	DO I=1,NUM_IONS
 	  ATM(I)%NTCXzV(:)=0.0_LDP
 	  ATM(I)%NTIXzV(:)=0.0_LDP
+	  ATM(I)%NTIXzV_2E(:)=0.0_LDP
 	  ATM(I)%NT_ION_CXzV(:)=0.0_LDP
 	  ATM(I)%NT_EXC_CXzV(:)=0.0_LDP
 	END DO
@@ -120,20 +122,32 @@
                   SE_ION_LEV=ATM(ID)%NXzV+1
 	          GUPPER=THD(IT)%SUM_GION
 	          ION_EXC_EN=0.0_LDP
+	          ONE_ELEC=.TRUE.
+	        ELSE IF(THD(IT)%ION_LEV(J) .EQ. SE(ID)%XRAY_EQ)THEN
+                  SE_ION_LEV=SE(ID)%XRAY_EQ
+	          GUPPER=THD(IT)%SUM_GION
+	          ION_EXC_EN=ATM(ID+1)%EDGEXzV_F(1)
+	          ONE_ELEC=.FALSE.
 	        ELSE
 	          NUP_F=THD(IT)%ION_LEV(J); NUP=ATM(ID+1)%F_TO_S_XzV(NUP_F)
                   SE_ION_LEV=SE(ID)%ION_LEV_TO_EQ_PNT(NUP)
 	          GUPPER=ATM(ID+1)%GXzV_F(NUP_F)
                   SE_ION_LEV=ATM(ID)%NXzV+1               !NUP -- assume all to ground state at  present.
 	          ION_EXC_EN=0.0_LDP                        !=ATM(ID+1)%EDGEXzV_F(1)-ATM(ID+1)%EDGEXzV_F(NUP_F)
+	          ONE_ELEC=.TRUE.
 	        END IF
 	        DO I=1,THD(IT)%N_STATES
 	          NL_F=THD(IT)%ATOM_STATES(I); NL=ATM(ID)%F_TO_S_XzV(NL_F)
 	          T1=RATE*ATM(ID)%XzV_F(NL_F,DPTH_INDX)*GUPPER/THD(IT)%SUM_GION
-	          ATM(ID)%NTIXzV(DPTH_INDX)=ATM(ID)%NTIXzV(DPTH_INDX)+T1             ! non-thermal rates?
+	          IF(ONE_ELEC)THEN
+	            ATM(ID)%NTIXzV(DPTH_INDX)=ATM(ID)%NTIXzV(DPTH_INDX)+T1             ! non-thermal rates?
+	          ELSE
+	            ATM(ID)%NTIXzV_2E(DPTH_INDX)=ATM(ID)%NTIXzV_2E(DPTH_INDX)+T1             ! non-thermal rates?
+	          END IF
 	          ATM(ID)%NTCXzV(DPTH_INDX)=ATM(ID)%NTCXzV(DPTH_INDX)  &
 	                          +Hz_to_erg*T1*(ATM(ID)%EDGEXzV_F(NL_F)+ION_EXC_EN)  ! non-thermal cooling?
 !
+	          IF(DPTH_INDX .EQ. 1)WRITE(6,*)TRIM(ION_ID(ID)),I,T1
 	          SE(ID)%STEQ(NL,DPTH_INDX)=SE(ID)%STEQ(NL,DPTH_INDX)-T1
 	          SE(ID)%STEQ(SE_ION_LEV,DPTH_INDX)=SE(ID)%STEQ(SE_ION_LEV,DPTH_INDX)+T1
 	          LOCAL_ION_HEATING(DPTH_INDX)=LOCAL_ION_HEATING(DPTH_INDX)+ T1*(ATM(ID)%EDGEXzV_F(NL_F)+ION_EXC_EN)
@@ -148,6 +162,9 @@
 	        DO J=1,THD(IT)%N_ION_ROUTES
 	          IF(ID .EQ. SPECIES_END_ID(ISPEC)-1)THEN
                     SE_ION_LEV=ATM(ID)%NXzV+1
+	            GUPPER=THD(IT)%SUM_GION
+	          ELSE IF(THD(IT)%ION_LEV(J) .EQ. SE(ID)%XRAY_EQ)THEN
+                    SE_ION_LEV=SE(ID)%XRAY_EQ
 	            GUPPER=THD(IT)%SUM_GION
 	          ELSE
 	            NUP_F=THD(IT)%ION_LEV(J); NUP=ATM(ID+1)%F_TO_S_XzV(NUP)
