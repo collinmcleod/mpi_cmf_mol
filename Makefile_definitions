@@ -19,6 +19,12 @@ AR_OPTION = ruv
 
 HOST :=$(shell hostname)
 
+HOST:='CRC'
+
+ifeq ($(HOST),'CRC')
+INSTALL_DIR=/ihome/dhillier/hillier/cur_cmf/
+endif
+
 ifeq ($(HOST),ibis.phyast.pitt.edu)
 INSTALL_DIR=/Users/jdh/Dropbox/Ibis/cur_cmf/
 endif
@@ -104,9 +110,12 @@ ifeq ($(HOST),osiris-inode01.phyast.pitt.edu)
  PGLIB=-L/nfs-share/home/hillier/pgplot -lpgplot
 endif
 
-ifeq ($(HOST),osiris-wnode04.phyast.pitt.edu)
- F90 = gfortran -fopenmp -m64 -I/opt/intel/compilers_and_libraries/linux/include
- F90nomp = gfortran -I/opt/intel/compilers_and_libraries/linux/mkl/lib/intel64/lp64 -m64 -I/opt/intel/compilers_and_libraries/linux/include
+ifeq ($(HOST),'CRC')
+
+$(info Creating CRC compiler definitions)
+
+ F90 = gfortran -fopenmp -m64
+ F90nomp = gfortran -m64
  FG  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -ffpe-trap=invalid -I$(MOD_DIR) -J$(MOD_DIR)
  FH  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -I$(MOD_DIR) -J$(MOD_DIR)
 # FG  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments  -ffpe-trap=invalid -fbacktrace -I$(MOD_DIR) -J$(MOD_DIR)
@@ -115,10 +124,10 @@ ifeq ($(HOST),osiris-wnode04.phyast.pitt.edu)
  FFRED  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
 
  BLAS=
- LAPACK=-L/opt/intel/compilers_and_libraries/linux/mkl/lib/intel64 -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
--L/opt/intel/compilers_and_libraries_/linux/lib/intel64 -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
+ LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
+-Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
  X11LIB=-L/usr/X11R6/lib -lX11
- PGLIB=-L/nfs-share/home/hillier/pgplot -lpgplot
+ PGLIB=-L$(PGPLOT_DIR) -lpgplot
 
 endif
 

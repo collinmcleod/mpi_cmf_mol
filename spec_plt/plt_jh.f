@@ -809,7 +809,7 @@
 	    ALLOCATE(NEW_R(NEW_ND))
 	    DO I=1,NEW_ND
 	      READ(LU_IN,*)NEW_R(I)
-	      READ(LU_IN,*)(T1,J=1,K)
+	      IF(K .NE. 0)READ(LU_IN,*)(T1,J=1,K)
 	    END DO
 	   CLOSE(LU_IN)
 !

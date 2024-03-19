@@ -38,9 +38,23 @@ else if ($machine =~ *'Emu'* )then
   set sn_atomic  = ~jdh/sn_atomic 
   set SN_ATOMIC  = ~jdh/sn_atomic 
 else
-  echo 'Name of machine not recognized'
-  echo 'Update cmfdist/com/aliases_for_cmfgen.sh'
+  setenv cmfdist  $home/cur_cmf
+  setenv CMFDIST  $home/cur_cmf
+  set atomic  = $home/atomic 
+  set ATOMIC  = $home/atomic 
+  set sn_atomic  = $home/sn_atomic 
+  set SN_ATOMIC  = $home/sn_atomic 
 endif
+
+  set atomic  = ~hillier/cmfgen_atomic_data/atomic_9may23
+  set ATOMIC   = ~hillier/cmfgen_atomic_data/atomic_9may23
+  set sn_atomic  = ~hillier/sn_atomic 
+  set SN_ATOMIC  = ~hillier/sn_atomic 
+  setenv cmfdist  ~hillier/cur_cmf
+  setenv CMFDIST  ~hillier/cur_cmf
+  
+#  echo 'Name of machine not recognized'
+#  echo 'Update cmfdist/com/aliases_for_cmfgen.sh'
 
 
 # Used to assign help fles for DISPGEN, PLT_SPEC etc

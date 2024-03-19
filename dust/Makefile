@@ -1,6 +1,6 @@
 # Include local system definitions
 
-include ../../Makefile_definitions
+include ../Makefile_definitions
 
 # Library where object files will/are stored
 
