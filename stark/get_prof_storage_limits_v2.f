@@ -5,6 +5,7 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered: 19-MAr-2023  Now initialize MAX_SIM, NPROF_CNT_VOIGT, and NFREQ_AV_VOIGT
 ! Altered: 05-Jul-2022 	Call changed to V2
 !			VOIGT variables and MAX_SIM added to call.
 !			Extra diagnostic output to LUER.
@@ -46,8 +47,10 @@
 ! Get maximum number of frequencies required by Voigt and Stark intrinsic line profiles.
 ! Potentially used by other routines to set profile storage.
 !
+	MAX_SIM=0
 	NFREQ_MAX=0;  NFREQ_MAX_VOIGT=0
 	NPROF_CNT=0;  NPROF_CNT_VOIGT=0
+	NPROF_CNT_VOIGT=0; NFREQ_AV_VOIGT=0
 	DO NL=1,NLINES
 	  ML=LINE_END_INDX_IN_NU(NL)-LINE_ST_INDX_IN_NU(NL)+1
 	  IF(VEC_TRANS_TYPE(NL) .EQ. 'SOB')THEN

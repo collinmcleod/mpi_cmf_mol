@@ -23,42 +23,50 @@
 	  ALLOCATE (WRK(ND), WRK_ABS(ND),WRK_SCAT(ND))
 	  ALLOCATE (LOCAL_DUST_TO_GAS_RATIO(ND)) ; LOCAL_DUST_TO_GAS_RATIO=0.0_LDP
 !
-	  IF (MASS_DUST .LE .0.0_LDP) THEN
-	    LOCAL_DUST_TO_GAS_RATIO(1:ND) = FIXED_DUST_TO_GAS_RATIO
+	  IF(DUST_DIST_LAW .EQ. 'OUTER_SHELL')THEN
+	    DO I=1,ND
+	      IF(V(I) .LT. VMIN_DUST)THEN
+	        LOCAL_DUST_TO_GAS_RATIO(I) = FIXED_DUST_TO_GAS_RATIO*EXP(-(VMIN_DUST-V(I))/DV_DUST )
+	      ELSE IF(V(I) .GT. VMAX_DUST)THEN
+	        LOCAL_DUST_TO_GAS_RATIO(I)=FIXED_DUST_TO_GAS_RATIO*EXP(-(V(I)-VMAX_DUST)/DV_DUST )
+	      ELSE 
+	        LOCAL_DUST_TO_GAS_RATIO(I) = FIXED_DUST_TO_GAS_RATIO
+	      END IF
+	    END DO
+	  ELSE IF(DUST_DIST_LAW .EQ. 'SHELL')THEN
+	    DO I=1,ND 
+	      T1 = (V(I)-V_SHELL_LOC) / dV_SHELL
+	      IF (DABS(T1) .GT. 10.0_LDP) THEN
+	        LOCAL_DUST_TO_GAS_RATIO(I) = 0.0_LDP
+	      ELSE
+	        LOCAL_DUST_TO_GAS_RATIO(I) = DEXP(-T1*T1)
+	      ENDIF
+	    END DO
 	  ELSE
-	    IF (VMIN_DUST .EQ. VMAX_DUST) THEN 
-	      DO I=1,ND 
-	        T1 = (V(I)-VMAX_DUST) / DV_DUST
-	        IF (DABS(T1) .GT. 10.0_LDP) THEN
-	          LOCAL_DUST_TO_GAS_RATIO(I) = 0.0_LDP
-	        ELSE
-		  LOCAL_DUST_TO_GAS_RATIO(I) = DEXP(-T1*T1)
-	        ENDIF
-	      END DO
-	    ENDIF
-!
-	    IF (DV_DUST .GT. 1D10) THEN		  
-	      LOCAL_DUST_TO_GAS_RATIO(1:ND) = 1.0D0
-	    ENDIF
-	    IF (VMIN_DUST.LE.0.) THEN
-	      DO I=1,ND
-	        IF (V(I).LT.VMAX_DUST) THEN 
-	 	 LOCAL_DUST_TO_GAS_RATIO(I) = 1.0D0
-	       ELSE
-		 LOCAL_DUST_TO_GAS_RATIO(I) = 1.0D0 - (1.0D0-DEXP(-(V(I)-VMAX_DUST)/DV_DUST))
-	       ENDIF
-	      ENDDO
-	    ENDIF	  
+	     IF (DV_DUST .GT. 1D10) THEN		  
+	       LOCAL_DUST_TO_GAS_RATIO(1:ND) = 1.0D0
+	     ENDIF
+	     IF (VMIN_DUST.LE.0.) THEN
+	       DO I=1,ND
+	         IF (V(I).LT.VMAX_DUST) THEN 
+	   	   LOCAL_DUST_TO_GAS_RATIO(I) = 1.0D0
+	         ELSE
+		   LOCAL_DUST_TO_GAS_RATIO(I) = 1.0D0 - (1.0D0-DEXP(-(V(I)-VMAX_DUST)/DV_DUST))
+	         ENDIF
+	       ENDDO
+	     ENDIF
+	  END IF
 !   
-	    WRK = LOCAL_DUST_TO_GAS_RATIO * DENSITY * CLUMP_FAC * R * R
-	    CALL LUM_FROM_ETA_V2(WRK,R,'LINMON',ND)
-	    T1 = 4.*acos(-1.0_LDP)*sum(WRK)/1.989E3_LDP
-	    WRITE(6,*)LOCAL_DUST_TO_GAS_RATIO(1:ND)
-	    WRITE(6,*)T1
-	    WRITE(6,*)MASS_DUST
-	    FLUSH(UNIT=6)
+	  WRK = LOCAL_DUST_TO_GAS_RATIO * DENSITY * CLUMP_FAC * R * R
+	  CALL LUM_FROM_ETA_V2(WRK,R,'LINMON',ND)
+	  T1 = 4.*acos(-1.0_LDP)*sum(WRK)/1.989E3_LDP
+	  WRITE(6,*)LOCAL_DUST_TO_GAS_RATIO(1:ND)
+	  FLUSH(UNIT=6)
+	  IF(MASS_DUST .NE. 0)THEN
 	    LOCAL_DUST_TO_GAS_RATIO(1:ND) = LOCAL_DUST_TO_GAS_RATIO(1:ND) * MASS_DUST / T1
-          ENDIF
+	    WRITE(6,*)'Mass of dust before scaling',T1
+	  END IF
+	  WRITE(6,*)'Final mass of dust' 
 !
 	  WRITE(6,'(/,A,/)')' Summary of dust properties written do CMF_DUST_SUMMARY'
 !
@@ -77,17 +85,18 @@
 !
 ! If we do not multiple by R^2, we can use LUM_FROM_ETA_V2 to estimate the optical depth scale.
 !
-	    WRITE(UNIT_DUST,'(A15)') 'Lambda(um)','Tau(abs)','Kappa(abs)','Tau(scat)','Kappa(SCAT)'
+	    WRITE(UNIT_DUST,'(/,6A15)') 'Lambda(um)','Lambda(Ang)','Tau(abs)','Kappa(abs)','Tau(scat)','Kappa(SCAT)'
 	    DO I=1,N_DUST_FILE,INT(N_DUST_FILE/20)
 	      WRK_ABS(1:ND) = KAP_ABS_DUST_IN(I) * LOCAL_DUST_TO_GAS_RATIO(1:ND) * DENSITY(1:ND) * CLUMP_FAC(1:ND)*1D10
 	      CALL LUM_FROM_ETA_V2(WRK_ABS,R,'LINMON',ND)
 	      WRK_SCAT(1:ND) = KAP_SCAT_DUST_IN(I) * LOCAL_DUST_TO_GAS_RATIO(1:ND) * DENSITY(1:ND) * CLUMP_FAC(1:ND)*1D10
 	      CALL LUM_FROM_ETA_V2(WRK_SCAT,R,'LINMON',ND)
-	      WRITE(UNIT_DUST,'(5ES15.3)')LAM_DUST_IN(I),SUM(WRK_ABS), KAP_ABS_DUST_IN(I), SUM(WRK_SCAT), KAP_SCAT_DUST_IN(I)
+	      WRITE(UNIT_DUST,'(6ES15.3)')LAM_DUST_IN(I),1.0E+04*LAM_DUST_IN(I),SUM(WRK_ABS), 
+	1            KAP_ABS_DUST_IN(I), SUM(WRK_SCAT), KAP_SCAT_DUST_IN(I)
 	    ENDDO
-	    WRITE(UNIT_DUST,'(A15)') 'Lambda(um)','Tau(abs)','Kappa(abs)','Tau(scat)','Kappa(SCAT)'
+	    WRITE(UNIT_DUST,'(6A15)') 'Lambda(um)','Lambda(Ang)','Tau(abs)','Kappa(abs)','Tau(scat)','Kappa(SCAT)'
 !
-	    WRITE(UNIT_DUST,'(A5,A20,A20)') 'I','Velocity','Dust to gas ratio'
+	    WRITE(UNIT_DUST,'(/,A5,A20,A20)') 'I','Velocity','Dust to gas ratio'
 	    DO I=1,ND 
 	      WRITE(UNIT_DUST,'(I5,2ES20.5)') I, V(I), LOCAL_DUST_TO_GAS_RATIO(I)
 	    ENDDO

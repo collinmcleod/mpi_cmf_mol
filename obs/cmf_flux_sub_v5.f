@@ -17,6 +17,9 @@
 	USE EDDFAC_REC_DEFS_MOD
 	IMPLICIT NONE
 !
+! Altered: 19-Mar-2024 : Added routines for dust treatment. All routines will treat isotropic 
+!                          scattering. Only formal rel treats scattering with a HG phase function.
+!                          Altered SRCE check for neg opacities (issue when dust added -- needs fixing)
 ! Altered: 28-Aug-2022 : Fixed bug - MAX_SIM now set for SOB computation with continuum calculation.
 ! Altered: 24-Aug-2022 : Added SOB_EW_LAM_BEG (and _END) to make Sobolev EW calculation more transparent
 ! Altered: 05-Jul-2022 : MAX_SIM is now determined by model, and vectors using
@@ -206,6 +209,7 @@
 	REAL(KIND=LDP), ALLOCATABLE :: CHI_CMF_ST(:,:)
 	REAL(KIND=LDP), ALLOCATABLE :: RJ_CMF_ST(:,:)
 	REAL(KIND=LDP), ALLOCATABLE :: RAY_CMF_ST(:,:)			!Rayleigh scattering opacity
+	REAL(KIND=LDP), ALLOCATABLE :: DUST_CMF_ST(:,:)			!Dust scattering
 	REAL(KIND=LDP), ALLOCATABLE :: ION_LINE_FORCE(:,:)
 !
 ! Vectors for treating lines simultaneously with the continuum.
@@ -257,6 +261,7 @@
 !
 ! These parameters are used when computing J and the variation of J.
 !
+	REAL(KIND=LDP) CHI_SCAT_DUST_CLUMP(ND)
 	REAL(KIND=LDP) CHI_SCAT_CLUMP(ND)
 	REAL(KIND=LDP) CHI_RAY_CLUMP(ND)
 	REAL(KIND=LDP) CHI_CLUMP(ND)		!==CHI(I)*CLUMP_FAC(I)
@@ -362,6 +367,7 @@
 	REAL(KIND=LDP) TEXT(NDMAX),SIGMAEXT(NDMAX)
 	REAL(KIND=LDP) CHIEXT(NDMAX),ESECEXT(NDMAX),ETAEXT(NDMAX)
 	REAL(KIND=LDP) CHI_RAY_EXT(NDMAX),CHI_SCAT_EXT(NDMAX)
+	REAL(KIND=LDP) CHI_SCAT_DUST_EXT(NDMAX)
 	REAL(KIND=LDP) ZETAEXT(NDMAX),THETAEXT(NDMAX)
 	REAL(KIND=LDP) RJEXT(NDMAX),RJEXT_ES(NDMAX)
 	REAL(KIND=LDP) FOLD(NDMAX),FEXT(NDMAX),QEXT(NDMAX),SOURCEEXT(NDMAX)
@@ -1139,6 +1145,7 @@
 	IF(IOS .EQ. 0)ALLOCATE (CHI_CMF_ST(ND,NCF),STAT=IOS)
 	IF(IOS .EQ. 0)ALLOCATE (RJ_CMF_ST(ND,NCF),STAT=IOS)
 	IF(IOS .EQ. 0 .AND. INCL_RAY_SCAT)ALLOCATE(RAY_CMF_ST(ND,NCF),STAT=IOS)
+	IF(IOS .EQ. 0 .AND. INCL_DUST)ALLOCATE(DUST_CMF_ST(ND,NCF),STAT=IOS)
 	IF(IOS .NE. 0)THEN
 	  WRITE(LUER,*)'Error in CMF_FLUX_SUB'
 	  WRITE(LUER,*)'Unable to allocate memory for IPLUS_STORE'
@@ -1463,8 +1470,13 @@
 	    CHI_RAY(1:ND)=RAY_CMF_ST(1:ND,ML)
 	    CHI_SCAT=CHI_SCAT+CHI_RAY
 	  END IF
+	  IF(INCL_DUST .AND. USE_HEN_GREEN)THEN
+	    CHI_SCAT_DUST(1:ND)=DUST_CMF_ST(1:ND,ML)
+	    CHI_SCAT=CHI_SCAT+CHI_SCAT_DUST
+	  END IF
 	  CHI(1:ND)=CHI_CMF_ST(1:ND,ML)
 	  ETA(1:ND)=ETA_CMF_ST(1:ND,ML)
+	  EMHNUKT(1:ND)=EXP(-HDKT*FL/T(1:ND))
 	ELSE
 !
 ! Compute profile: Doppler or Stark: T2 and T3 are presently garbage.
@@ -1535,7 +1547,8 @@
 	  NEG_OPACITY(1:ND)=.FALSE.
 	  IF(NEG_OPAC_OPTION .EQ. 'SRCE_CHK')THEN
 	    DO I=1,ND
-	      IF(CHI(I) .LT. CHI_CONT(I) .AND.
+!	      IF(CHI(I) .LT. CHI_CONT(I) .AND.
+	      IF(CHI(I) .LT. 0.1*CHI_CONT(I) .AND.
 	1            CHI(I) .LT. 0.1_LDP*ETA(I)*(CHI_CONT(I)-ESEC(I))/ETA_CONT(I) )THEN
 	        CHI(I)=0.1_LDP*ETA(I)*(CHI_CONT(I)-ESEC(I))/ETA_CONT(I)
 	        NEG_OPACITY(I)=.TRUE.
@@ -1801,6 +1814,7 @@
 !
 	IF(ES_COUNTER .EQ. 1)THEN
 	  IF(INCL_RAY_SCAT)RAY_CMF_ST(1:ND,ML)=CHI_RAY(1:ND)
+	  IF(INCL_DUST .AND. USE_HEN_GREEN)DUST_CMF_ST(1:ND,ML)=CHI_SCAT_DUST(1:ND)
 	  ETA_CMF_ST(1:ND,ML)=ETA(1:ND)
 	  CHI_CMF_ST(1:ND,ML)=CHI(1:ND)
 	END IF
@@ -1858,6 +1872,14 @@
 	IF(INCL_RAY_SCAT)THEN
 	  DO ML=1,NCF
 	    ETA_CMF_ST(1:ND,ML)=ETA_CMF_ST(1:ND,ML)+RAY_CMF_ST(1:ND,ML)*RJ_CMF_ST(1:ND,ML)
+	  END DO
+	END IF
+!
+! At present we assume isotropic dust scattering in OBSFRAME.
+!
+	IF(INCL_DUST)THEN
+	  DO ML=1,NCF
+	    ETA_CMF_ST(1:ND,ML)=ETA_CMF_ST(1:ND,ML)+DUST_CMF_ST(1:ND,ML)*RJ_CMF_ST(1:ND,ML)
 	  END DO
 	END IF
 !

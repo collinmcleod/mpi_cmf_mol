@@ -786,6 +786,7 @@
               END DO
 	    END DO
 !
+	  ELSE IF(XM_CHK_OPTION .EQ. 'NONE')THEN
 	  ELSE
             WRITE(6,*)'Error - XM_CHK_OPTION not recognized in MOM_JREL_V9'
             WRITE(6,*)'Value is :',TRIM(XM_CHK_OPTION)
@@ -1031,7 +1032,7 @@
           RSQHNU_SM(I)=T1*GAM_RSQHNU(K)
         END DO
 !
-	HFLUX_AT_OB=IN_HBC_SAVE/R_SM(ND)/R_SM(ND)
+	HFLUX_AT_IB=IN_HBC_SAVE/R_SM(ND_SM)/R_SM(ND_SM)
 	IF(OUTER_BND_METH .EQ. 'HONJ')THEN
 	  HFLUX_AT_OB=HBC*JNU_SM(1)
 	END IF

@@ -26,12 +26,12 @@ OBJ = $(LIB)(add_par_to_full_v2.o)\
       $(LIB)(check_tmin.o)\
       $(LIB)(chk_cool_rates_consist.o)\
       $(LIB)(cmf_blkband_v3.o)\
-      $(LIB)(cmf_sub_sonic_hydro.o)\
       $(LIB)(create_iv_links_v2.o)\
       $(LIB)(def_new_rg_v1.o)\
       $(LIB)(determine_nse.o)\
       $(LIB)(det_lte_ed.o)\
       $(LIB)(ddt_work.o)\
+      $(LIB)(do_cmf_hydro_v2.o)\
       $(LIB)(do_species_decays_v2.o)\
       $(LIB)(do_full_r_grid_v1.o)\
       $(LIB)(do_vel_regrid_v2.o)\
@@ -93,6 +93,8 @@ OBJ = $(LIB)(add_par_to_full_v2.o)\
       $(LIB)(update_ba_for_line.o)\
       $(LIB)(wr_asci_steq.o)\
       $(LIB)(wr_level_links.o)
+
+#cmf_sub_sonic_hydro.o
 
 all : $(LIB) XNUC XAUTO XCHG XTWO XNON
 	cp -f $(INSTALL_DIR)perm_mod_file jnk.mod

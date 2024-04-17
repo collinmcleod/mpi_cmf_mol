@@ -2,7 +2,7 @@
 
 include ../Makefile_definitions
 
-OPTION=$(FD)
+OPTION=$(FG)
 
 
 # These names are for the fortran linker

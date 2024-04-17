@@ -40,6 +40,7 @@ GEN =  $(LIB_DIR)libsubs.a(gen_in.o)\
 		$(LIB_DIR)libsubs.a(usr_hidden.o)\
 		$(LIB_DIR)libmod.a(mod_lev_dis_blk.o)\
 		$(LIB_DIR)libsubs.a(mod_color_pen_def.o)\
+		$(LIB_DIR)libsubs.a(zm_data_module.o)\
 		$(LIB_DIR)libsubs.a(wr_string.o)
 
 # Give the dependencies of dispgen.exe and how it is created.

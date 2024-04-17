@@ -10,6 +10,7 @@
 	SUBROUTINE RD_RV_FILE_V2(R,V,SIGMA,RMAX,RP,VINF,LUIN,ND,OPTIONS,N_OPT)
 	USE SET_KIND_MODULE
 !
+! Altered  17-Apr-2024: Added check that R grid is monotonic.
 ! Altered  12-Jan-2024: Altered handling of SIGMA < 1
 ! Altered  19-Aug-2015: Added check that SIGMA < -1.0D0 (cur_hmi,21-Jun-2015).
 ! Altered  31-Mar-2008: Check on VINF is now set to 10% accuracy. Done as V(1) is normally
@@ -95,6 +96,15 @@
 	    END IF
 	  END DO
 	  CLOSE(LUIN)
+!
+	  DO I=1,ND-1
+	    IF(R(I) .LE. R(I+1))THEN
+	      WRITE(6,*)'Error fro RD_RV_FILE_V2'
+	      WRITE(6,*)'R grid must decrease monotinically with depth index'
+	      WRITE(6,*)I,R(I),R(I+1)
+	      STOP
+	    END IF
+	  END DO
 !
 	  DO I=1,ND-1
 	    IF(V(I) .LE. V(I+1) .AND. V(I) .LT. 1.0_LDP)THEN

@@ -22,11 +22,14 @@ MOD=  $(LIB)(mod_ray_mom_store.o)\
 MODS= $(LIB_MOD)(gam_mu_mod.o)\
       $(LIB_MOD)(mod_rd_gamray_cntrl_variables.o)
 
-OBJ = $(LIB)(comp_add_edd_facs.o)\
+OBJ = $(LIB)(add_dust_eta.o)\
+      $(LIB)(comp_add_edd_facs.o)\
       $(LIB)(characteristics_v2.o)\
       $(LIB)(characteristics_v2_gam.o)\
       $(LIB)(cmf_formal_rel_v4.o)\
+      $(LIB)(cmf_formal_rel_v5.o)\
       $(LIB)(cmf_formal_rel_v4_gam.o)\
+      $(LIB)(cmf_rel_dust_qw.o)\
       $(LIB)(derivr.o)\
       $(LIB)(derivs.o)\
       $(LIB)(drhsdchi_pp.o)\
@@ -40,6 +43,7 @@ OBJ = $(LIB)(comp_add_edd_facs.o)\
       $(LIB)(fg_j_cmf_v12.o)\
       $(LIB)(fg_j_cmf_v13.o)\
       $(LIB)(gauleg.o)\
+      $(LIB)(get_hg_fun.o)\
       $(LIB)(get_ibound.o)\
       $(LIB)(get_jh_at_prev_time_step.o)\
       $(LIB)(get_rsqj_from_j.o)\
@@ -56,6 +60,7 @@ OBJ = $(LIB)(comp_add_edd_facs.o)\
       $(LIB)(mom_j_cmf_v11.o)\
       $(LIB)(mom_j_ddt_v6.o)\
       $(LIB)(mom_j_pp_v1.o)\
+      $(LIB)(mom_jrel_v8.o)\
       $(LIB)(mom_jrel_v9.o)\
       $(LIB)(mom_jrel_grey_v1.o)\
       $(LIB)(mom_jrel_grey_v2.o)\
@@ -69,6 +74,7 @@ OBJ = $(LIB)(comp_add_edd_facs.o)\
       $(LIB)(rel_variables.o)\
       $(LIB)(runge_kutta.o)\
       $(LIB)(solve_cmf_formal_v2.o)\
+      $(LIB)(solve_cmf_formal_v3.o)\
       $(LIB)(solve_cmf_formal_v3_gam.o)\
       $(LIB)(var_jrel_v5.o)\
       $(LIB)(var_mom_j_ddt_v6.o)\
@@ -106,6 +112,18 @@ $(LIB)(characteristics_v2_gam.o) : characteristics_v2_gam.f $(LIB)(mod_space_gri
 $(LIB)(cmf_formal_rel_v4.o) : cmf_formal_rel_v4.f $(LIB)(mod_space_grid_v2.o) $(LIB)(mod_ray_mom_store.o)
 	$(F90) -c $(OPTION) cmf_formal_rel_v4.f
 	ar $(AR_OPTION) $(LIB) cmf_formal_rel_v4.o
+
+$(LIB)(cmf_formal_rel_v5.o) : cmf_formal_rel_v5.f $(LIB)(mod_space_grid_v2.o) $(LIB)(mod_ray_mom_store.o)
+	$(F90) -c $(OPTION) cmf_formal_rel_v5.f
+	ar $(AR_OPTION) $(LIB) cmf_formal_rel_v5.o
+
+$(LIB)(cmf_rel_dust_qw.o) : cmf_rel_dust_qw.f $(LIB)(mod_space_grid_v2.o)
+	$(F90) -c $(OPTION) cmf_rel_dust_qw.f
+	ar $(AR_OPTION) $(LIB) cmf_rel_dust_qw.o
+
+$(LIB)(add_dust_eta.o) : add_dust_eta.f $(LIB)(mod_space_grid_v2.o)
+	$(F90) -c $(OPTION) add_dust_eta.f
+	ar $(AR_OPTION) $(LIB) add_dust_eta.o
 
 $(LIB)(cmf_formal_rel_v4_gam.o) : cmf_formal_rel_v4_gam.f $(LIB)(mod_space_grid_v2_gam.o) $(LIB_MOD)(mod_ray_mom_store.o)
 	$(F90) -c $(OPTION) cmf_formal_rel_v4_gam.f

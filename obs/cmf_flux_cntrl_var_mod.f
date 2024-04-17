@@ -4,6 +4,7 @@
 ! Set constants that are regularly used, and passed to subroutines.
 !
 !
+! Altered 19-Mar-2024 : Added dust control variables
 ! Altered 24-Aug-2022 : Added SOB_EW_LAM_BEG (and _END) to make Sobolev EW calculation more transparent
 ! Altered 26-Apr-2019 : Added RD_NU_MAX_OBS, RD_NU_MIN_OBS to restrict the range of observer's frame int.
 !
@@ -218,9 +219,12 @@
 	LOGICAL DO_LEV_DISSOLUTION
 	LOGICAL INCL_TWO_PHOT
 	LOGICAL INCL_RAY_SCAT
-	LOGICAL INCL_DUST
 	LOGICAL COHERENT_ES
 	LOGICAL RD_COHERENT_ES
+!
+	LOGICAL INCL_DUST
+	LOGICAL USE_HEN_GREEN
+	REAL(KIND=LDP) G_HEN_GREEN
 !
 ! Variables etc for computation of continuum in comoving frame.
 !

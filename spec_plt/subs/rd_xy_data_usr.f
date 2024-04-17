@@ -12,6 +12,7 @@
 	USE MOD_USR_OPTION
 	IMPLICIT NONE
 !
+! Altered: 19-MAr-2024  : Can now rread only 1 column -- index used for x.
 ! Altered: 09-Jan-2024  : String increased to a length of 500 & max of 40 columns.
 ! Created: 12-June-2010
 !
@@ -60,9 +61,7 @@
 	NX_RD=MIN(NX_RD,NX_MAX)
 	BACKSPACE(UNIT=LU)
 !
-!	COLUMN(1)=1; COLUMN(2)=2; K=2
-!	CALL NEW_GEN_IN(COLUMN,I,K,'Data columns')
-	CALL USR_OPTION(COLUMN,2,2,'COLS','1,2','Data columns')
+	CALL USR_OPTION(COLUMN,2,2,'COLS','1,2','Data columns (0 indicates only 1 col.')
 	K=MAX(COLUMN(1),COLUMN(2))
 	IF(K .GT. MAX_COL)THEN
 	   WRITE(T_OUT,*)'Maximum number of columns in RD_XY_DATA_USR is currently',MAX_COL
@@ -77,7 +76,11 @@
 	  IF(IOS .EQ. 0 .AND. STRING(1:1) .NE. '!' .AND. STRING .NE. ' ')THEN
 	    READ(STRING,*,IOSTAT=IOS)(TEMP_VAR(L),L=1,K)
 	    IF(IOS .EQ. 0)THEN
-	      XVEC(NX+1)=TEMP_VAR(COLUMN(1))
+	      IF(COLUMN(1) .EQ. 0)THEN
+	        XVEC(NX+1)=NX+1
+	      ELSE
+	        XVEC(NX+1)=TEMP_VAR(COLUMN(1))
+	      END IF
 	      YVEC(NX+1)=TEMP_VAR(COLUMN(2))
 	      NX=NX+1
 	    END IF

@@ -29,12 +29,20 @@
         USE_DUST_FILE           = .FALSE.
         MASS_DUST               = 0.0_LDP
         FIXED_DUST_TO_GAS_RATIO = 0.0_LDP
+        DUST_T4                 =0.1_LDP           
         CALL RD_STORE_LOG(USE_DUST_FILE,'USE_DUST_FILE',L_TRUE,'Use a input file for the dust lam/kappa?')
         CALL RD_STORE_DBLE(FIXED_DUST_TO_GAS_RATIO,'FIXED_DUST_TO_GAS_RATIO',USE_DUST_FILE,'Fraction of the mass locked up in dust')
-        CALL RD_STORE_DBLE(MASS_DUST,'MASS_DUST',USE_DUST_FILE,'Dust mass in Msun')
-        CALL RD_STORE_DBLE(VMIN_DUST,'VMIN_DUST',USE_DUST_FILE,'Dust Vmin')
-        CALL RD_STORE_DBLE(VMAX_DUST,'VMAX_DUST',USE_DUST_FILE,'Dust Vmax')
-        CALL RD_STORE_DBLE(DV_DUST  ,'DV_DUST'  ,USE_DUST_FILE,'Dust profile DV in km/s')
+ 	CALL RD_STORE_CHAR(DUST_DIST_LAW,'DUST_DIST_LAW',L_TRUE,'Dust distribution -- OUTER_SHELL')
+	CALL RD_STORE_DBLE(MASS_DUST,'MASS_DUST',USE_DUST_FILE,'Dust mass in Msun')
+	CALL RD_STORE_DBLE(DUST_T4,'DUST_T4',USE_DUST_FILE,'Dust temperature in units of 10^4 K')
+        IF(DUST_DIST_LAW .EQ. 'SHELL')THEN
+          CALL RD_STORE_DBLE(V_SHELL_LOC,'V_SHELL_LOC',USE_DUST_FILE,'Shell location')
+	  CALL RD_STORE_DBLE(dv_SHELL   ,'dV_SHELL'    ,USE_DUST_FILE,'Shell windthin km/s')
+	ELSE
+          CALL RD_STORE_DBLE(VMIN_DUST,'VMIN_DUST',USE_DUST_FILE,'Dust Vmin')
+          CALL RD_STORE_DBLE(VMAX_DUST,'VMAX_DUST',USE_DUST_FILE,'Dust Vmax')
+	  CALL RD_STORE_DBLE(DV_DUST  ,'DV_DUST'  ,USE_DUST_FILE,'Dust profile DV in km/s')
+	END IF
 !
 	CALL CLEAN_RD_STORE()
 	CLOSE(LUER)

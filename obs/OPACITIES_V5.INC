@@ -1,4 +1,5 @@
 !
+! Altered 19-Mar-2024 - Added dust opacity and emissivity.
 ! Altered 17-Dec-2011: Changed opcity call to GENOPAETA_V10. This contains LOG_XzVLTE_F
 !                        which is designed to allow lower wind temperatures.
 !                        Altered computation of IC.
@@ -42,13 +43,20 @@
 	1             ATM(1)%NXzV_F,CONT_FREQ,ND)
 	  END IF
 !
-	  CALL COMPUTE_DUST_OPACITY(CHI_ABS_DUST,CHI_SCAT_DUST,DENSITY,CONT_FREQ,ND)
+	  IF(INCL_DUST)THEN
+	    CALL COMPUTE_DUST_OPACITY(CHI_ABS_DUST,CHI_SCAT_DUST,DENSITY,CONT_FREQ,ND)
+	  ELSE
+	    CHI_SCAT_DUST(1:ND)=1.0E-30_LDP
+	    CHI_ABS_DUST(1:ND)=1.0E-30_LDP
+	  END IF
 !
 ! At present assume dust scattering is isotropic
 !
-	  CHI_RAY(1:ND)=CHI_RAY(1:ND)+CHI_SCAT_DUST(1:ND)
-	  CHI_SCAT(1:ND)=ESEC(1:ND)+CHI_RAY(1:ND)
+	  CHI_SCAT(1:ND)=ESEC(1:ND)+CHI_RAY(1:ND)+CHI_SCAT_DUST(1:ND)
 	  CHI(1:ND)=CHI_SCAT(1:ND)+CHI_ABS_DUST(1:ND)
+	  IF(.NOT. USE_HEN_GREEN)THEN
+	    CHI_RAY(1:ND)=CHI_RAY(1:ND)+CHI_SCAT_DUST(1:ND)
+	  END IF
 !
 ! Free-free and bound-free opacities.
 !
@@ -134,8 +142,8 @@
 ! 
 !
 	IF(INCL_DUST)THEN
-	  T1= EXP(-HDKT*CONT_FREQ/DUST_T4)
-	  T2= EXP(-HDKT*CONT_FREQ/DUST_T4)
+	  T1= EXP(-HDKT*FL/DUST_T4)
+	  T2= TWOHCSQ*(FL**3)*T1/(1.0_LDP-T1)
 	  ETA(1:ND) = ETA(1:ND) + CHI_ABS_DUST(1:ND)*T2
 	END IF
 !
@@ -153,9 +161,9 @@
 ! in the X-ray emitting plasma. All other species are assumed to have Z=6.0
 !
 	    DO I=1,ND
-	      ZETA(I)=0._LDP	 !Zeta is temporary
+	      ZETA(I)=0.0_LDP	 !Zeta is temporary
 	    END DO
-	    IF((T_SHOCK_1.GT.0.0_LDP).AND.(FILL_FAC_XRAYS_1.GT.0._LDP))THEN
+	    IF((T_SHOCK_1.GT.0.0_LDP) .AND. (FILL_FAC_XRAYS_1 .GT. 0.0_LDP))THEN
 	      T1=CHIFF*TWOHCSQ*(FILL_FAC_XRAYS_1**2)*
 	1                    EXP(-HDKT*CONT_FREQ/T_SHOCK_1)/SQRT(T_SHOCK_1)
 	      T2=1.0_LDP ; TA(1)=GFF(CONT_FREQ,T_SHOCK_1,T2)
@@ -169,7 +177,7 @@
 	        ZETA(I)=ZETA(I)+T1*T2*T3*EXP(-V_SHOCK_1/V(I))	 !Zeta is temporary
               END DO
 	    END IF
-	    IF((T_SHOCK_2 .GT. 0.0_LDP).AND.(FILL_FAC_XRAYS_2.GT.0._LDP))THEN
+	    IF((T_SHOCK_2 .GT. 0.0_LDP) .AND. (FILL_FAC_XRAYS_2 .GT. 0.0_LDP))THEN
 	      T1=CHIFF*TWOHCSQ*(FILL_FAC_XRAYS_2**2)*
 	1                    EXP(-HDKT*CONT_FREQ/T_SHOCK_2)/SQRT(T_SHOCK_2)
 	      T2=1.0_LDP ; TA(1)=GFF(CONT_FREQ,T_SHOCK_2,T2)
@@ -198,11 +206,11 @@
 ! We use T3 for the Electron density. We asume H, He, and C are fully ionized
 ! in the X-ray emitting plasma. All other species are assumed have Z=6.0
 	    DO I=1,ND
-	    T1=0._LDP
-	    T2=0._LDP
-	    ZETA(I)=0._LDP
-	    IF(FILL_FAC_XRAYS_1.GT.0._LDP) T1=EXP(-V_SHOCK_1/V(I))*(FILL_FAC_XRAYS_1)**2
-	    IF(FILL_FAC_XRAYS_2.GT.0._LDP) T2=EXP(-V_SHOCK_2/V(I))*(FILL_FAC_XRAYS_2)**2
+	    T1=0.0_LDP
+	    T2=0.0_LDP
+	    ZETA(I)=0.0_LDP
+	    IF(FILL_FAC_XRAYS_1.GT.0.0_LDP) T1=EXP(-V_SHOCK_1/V(I))*(FILL_FAC_XRAYS_1)**2
+	    IF(FILL_FAC_XRAYS_2.GT.0.0_LDP) T2=EXP(-V_SHOCK_2/V(I))*(FILL_FAC_XRAYS_2)**2
 	    T3=POP_SPECIES(I,1)+2.0_LDP*POP_SPECIES(I,2)+
 	1            6.0_LDP*(POP_ATOM(I)-POP_SPECIES(I,1)-POP_SPECIES(I,2))
 	    ZETA(I)=(T1*XRAY_EMISS_1+T2*XRAY_EMISS_2)*T3*POP_ATOM(I)
@@ -229,6 +237,7 @@
 !
 ! The continuum source function is defined by:
 !     S= ZETA + THETA.J
+!
 	DO I=1,ND
 	  ZETA(I)=ETA(I)/CHI(I)
 	  THETA(I)=CHI_SCAT(I)/CHI(I)

@@ -72,7 +72,7 @@
 !
        IF(TRAN_NAME.EQ. 'Continuum')THEN
          DO I=1,ND
-           WRITE(LUOUT,'(1X,11ES14.6)')R(I),T(I),SIGMA(I),V(I),
+           WRITE(LUOUT,'(1X,11ES14.7,10ES14.6)')R(I),T(I),SIGMA(I),V(I),
 	1                 ETA(I),TA(I),
 	1                 ESEC(I),1.0D-10,1.0D-10,MASS_DENSITY(I),CLUMP_FAC(I)
 	  END DO

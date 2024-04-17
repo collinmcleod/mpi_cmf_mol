@@ -53,8 +53,16 @@
 	  INTEGER  NZ	 	                    	!number of grid points along a p-ray
 !
 	END TYPE RAY_DATA
-!
 	TYPE (RAY_DATA) RAY(500)
+!
+        TYPE DUST_WGHTS
+          REAL(KIND=LDP), ALLOCATABLE :: WGT_P_TO_P(:,:)
+          REAL(KIND=LDP), ALLOCATABLE :: WGT_P_TO_M(:,:)
+          REAL(KIND=LDP), ALLOCATABLE :: WGT_M_TO_P(:,:)
+          REAL(KIND=LDP), ALLOCATABLE :: WGT_M_TO_M(:,:)
+        END TYPE DUST_WGHTS
+	INTEGER, PARAMETER :: NDUST_WGT_MAX=500
+        TYPE(DUST_WGHTS) DW(NDUST_WGT_MAX)
 !
 ! Arrays for "optical depth"
 !

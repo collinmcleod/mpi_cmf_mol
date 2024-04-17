@@ -4,6 +4,7 @@
 	USE CMF_FLUX_CNTRL_VAR_MOD
 	IMPLICIT NONE
 !
+! Altered 19-Mar-2024 : Added parameters for the inclusion of dust.
 ! Altered 24-Aug-2022 : Added SOB_EW_LAM_BEG (and _END) to make Sobolev EW calculation more transparent.
 ! Altered 05-Jul-2022 : Added WRITE_TRANS_INFO option (not required).
 ! Altered 26-Apr-2019 : Added  J_CHK_OPTION (CHK_J)
@@ -104,7 +105,7 @@
 !
 	  J_CHK_OPTION='ABS_VAL'
 	  H_CHK_OPTION='MAX_VAL'
-	  XM_CHK_OPTION='SET_POS'
+	  XM_CHK_OPTION='NONE'
 	  CALL RD_STORE_CHAR(J_CHK_OPTION,'CHK_J',L_FALSE,'ABS_VAL, FORM_VAL, NONE')
 	  CALL RD_STORE_CHAR(H_CHK_OPTION,'CHK_H',L_FALSE,'MAX_VAL, AV_VAL, NONE')
 	  CALL RD_STORE_CHAR(XM_CHK_OPTION,'CHK_XM',L_FALSE,'SET_POS, NONE ')
@@ -271,8 +272,11 @@
 	  TWO_PHOTON_METHOD='USE_RAD'
           CALL RD_STORE_CHAR(TWO_PHOTON_METHOD,'TWO_METH',L_FALSE,'USE_RAD, LTE, NOSTIM or OLD_DEFAULT')
 	  CALL RD_STORE_LOG(INCL_RAY_SCAT,'INC_RAY',L_TRUE,'Include Rayeligh scattering?')
-	  INCL_DUST=.FALSE.
+!
+	  INCL_DUST=.FALSE.; USE_HEN_GREEN=.FALSE.; G_HEN_GREEN=0.0_LDP
 	  CALL RD_STORE_LOG(INCL_DUST,'INC_DUST',L_FALSE,'Include dust?')
+	  CALL RD_STORE_LOG(USE_HEN_GREEN,'USE_HG',INCL_DUST,'Use Henyey-Greenstein phase function?')
+	  CALL RD_STORE_DBLE(G_HEN_GREEN,'G_HEN_GREEN',USE_HEN_GREEN,'G value in Henyey-Greenstein phase function?')
 !
 	  CALL RD_STORE_LOG(XRAYS,'INC_XRAYS',L_TRUE,'Include X-ray emission')
 	  CALL RD_STORE_LOG(FF_XRAYS,'FF_XRAYS',XRAYS,'Use free-free processes to compute X-ray emission')

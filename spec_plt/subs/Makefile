@@ -19,6 +19,7 @@ OBJ    = $(LIB)(convolve.o)\
          $(LIB)(create_gauss.o)\
          $(LIB)(divide_by_cont.o)\
          $(LIB)(do_int_rec_ap.o)\
+         $(LIB)(do_sn_shell_shift.o)\
          $(LIB)(determ_reddening.o)\
          $(LIB)(fix_pop_oscillations.o)\
          $(LIB)(get_assoc_ion.o)\
@@ -52,8 +53,11 @@ OBJ    = $(LIB)(convolve.o)\
          $(LIB)(rd_row_data.o)\
          $(LIB)(rd_xy_data_usr.o)\
          $(LIB)(rd_monte_line.o)\
+         $(LIB)(rite_2dj_asc_jh.o)\
          $(LIB)(dp_rd_obs_data_v2.o)\
-         $(LIB)(rd_obs_data_v2.o)
+         $(LIB)(rd_obs_data_v2.o)\
+         $(LIB)(rd_zm_data.o)\
+         $(LIB)(zm_data_module.o)
   
 OBJ2    = $(LIB2)(poidev.o)\
           $(LIB2)(ran2.o)

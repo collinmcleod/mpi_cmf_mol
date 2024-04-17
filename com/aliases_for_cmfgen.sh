@@ -48,8 +48,8 @@ endif
 
   set atomic  = ~hillier/cmfgen_atomic_data/atomic_9may23
   set ATOMIC   = ~hillier/cmfgen_atomic_data/atomic_9may23
-  set sn_atomic  = ~hillier/sn_atomic 
-  set SN_ATOMIC  = ~hillier/sn_atomic 
+  set sn_atomic  = ~hillier/cmfgen_atomic_data/sn_atomic 
+  set SN_ATOMIC  = ~hillier/cmfgen_atomic_data/sn_atomic 
   setenv cmfdist  ~hillier/cur_cmf
   setenv CMFDIST  ~hillier/cur_cmf
   
