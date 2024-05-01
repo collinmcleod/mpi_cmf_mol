@@ -71,6 +71,10 @@ $(LIB) : $(OBJ) $(OBJ2)
 
 # General rules to make obects in a library and object files
 
+$(LIB)(rd_zm_data.o) : rd_zm_data.f  $(LIB)(zm_data_module.o)
+	$(F90) -c $(FG)  rd_zm_data.f
+	ar $(AR_OPTION) $(LIB) rd_zm_data.o
+
 $(LIB)(%.o) : %.f
 	$(F90) -c $(FG)  $<
 	ar $(AR_OPTION) $(LIB) $*.o

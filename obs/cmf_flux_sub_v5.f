@@ -1470,7 +1470,7 @@
 	    CHI_RAY(1:ND)=RAY_CMF_ST(1:ND,ML)
 	    CHI_SCAT=CHI_SCAT+CHI_RAY
 	  END IF
-	  IF(INCL_DUST .AND. USE_HEN_GREEN)THEN
+	  IF(INCL_DUST)THEN
 	    CHI_SCAT_DUST(1:ND)=DUST_CMF_ST(1:ND,ML)
 	    CHI_SCAT=CHI_SCAT+CHI_SCAT_DUST
 	  END IF
@@ -1814,7 +1814,7 @@
 !
 	IF(ES_COUNTER .EQ. 1)THEN
 	  IF(INCL_RAY_SCAT)RAY_CMF_ST(1:ND,ML)=CHI_RAY(1:ND)
-	  IF(INCL_DUST .AND. USE_HEN_GREEN)DUST_CMF_ST(1:ND,ML)=CHI_SCAT_DUST(1:ND)
+	  IF(INCL_DUST)DUST_CMF_ST(1:ND,ML)=CHI_SCAT_DUST(1:ND)
 	  ETA_CMF_ST(1:ND,ML)=ETA(1:ND)
 	  CHI_CMF_ST(1:ND,ML)=CHI(1:ND)
 	END IF
@@ -1864,23 +1864,6 @@
 	    CLOSE(UNIT=J)
 	  END IF
 !
-	END IF
-!
-! Update the emissivity for Rayleigh scattering which is is assumed to be coherent
-! in the comoving frame.
-!
-	IF(INCL_RAY_SCAT)THEN
-	  DO ML=1,NCF
-	    ETA_CMF_ST(1:ND,ML)=ETA_CMF_ST(1:ND,ML)+RAY_CMF_ST(1:ND,ML)*RJ_CMF_ST(1:ND,ML)
-	  END DO
-	END IF
-!
-! At present we assume isotropic dust scattering in OBSFRAME.
-!
-	IF(INCL_DUST)THEN
-	  DO ML=1,NCF
-	    ETA_CMF_ST(1:ND,ML)=ETA_CMF_ST(1:ND,ML)+DUST_CMF_ST(1:ND,ML)*RJ_CMF_ST(1:ND,ML)
-	  END DO
 	END IF
 !
 ! We output the PLANCKMEAN -- this was need for testing.
@@ -2052,6 +2035,24 @@
 	  ETA_CMF_ST(1:ND,ML)=ETA_CMF_ST(1:ND,ML) +
 	1                        RJ_CMF_ST(1:ND,ML)*ESEC(1:ND)
 	END DO
+!
+! Update the emissivity for Rayleigh scattering which is is assumed to be coherent
+! in the comoving frame.
+!
+	IF(INCL_RAY_SCAT)THEN
+	  DO ML=1,NCF
+	    ETA_CMF_ST(1:ND,ML)=ETA_CMF_ST(1:ND,ML)+RAY_CMF_ST(1:ND,ML)*RJ_CMF_ST(1:ND,ML)
+	  END DO
+	END IF
+!
+! At present we assume isotropic dust scattering in OBSFRAME.
+!
+	IF(INCL_DUST)THEN
+	  DO ML=1,NCF
+	    ETA_CMF_ST(1:ND,ML)=ETA_CMF_ST(1:ND,ML)+DUST_CMF_ST(1:ND,ML)*RJ_CMF_ST(1:ND,ML)
+	  END DO
+	END IF
+!
 	DEALLOCATE (RJ_CMF_ST)
 !
 ! 

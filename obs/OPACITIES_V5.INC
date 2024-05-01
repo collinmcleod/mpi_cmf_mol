@@ -54,9 +54,6 @@
 !
 	  CHI_SCAT(1:ND)=ESEC(1:ND)+CHI_RAY(1:ND)+CHI_SCAT_DUST(1:ND)
 	  CHI(1:ND)=CHI_SCAT(1:ND)+CHI_ABS_DUST(1:ND)
-	  IF(.NOT. USE_HEN_GREEN)THEN
-	    CHI_RAY(1:ND)=CHI_RAY(1:ND)+CHI_SCAT_DUST(1:ND)
-	  END IF
 !
 ! Free-free and bound-free opacities.
 !

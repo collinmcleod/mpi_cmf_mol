@@ -1421,20 +1421,6 @@
 ! agreement with observation.
 
 	ELSE IF(X(1:3) .EQ. '2DM')THEN
-	  T1=3.0E+05
-	  DO I=3,ND_ATM-4
-	    T1=MIN(T1,V(I)-V(I+1))
-	  END DO
-	  WRITE(6,'(/,A,F10.2,3X,A,ES14.4,/)')' Minimum step size in V is ',T1,'V(1)=',V(1)
-!
-	  dV=200.0_LDP;             CALL GEN_IN(dV,'Velocity shift in km/s (-ve for scaled shift [e.g., 1.1])')
-	  NB=7;                     CALL GEN_IN(NB,'Number of angles in polar grid')
-	  BETA_LAW='UNIFORM_BETA';  CALL GEN_IN(BETA_LAW,'Beta distribution - UNIFORM_BETA, UNFORM_COSB, POW, BMIN')
-	  TOP_BOT_SYM=.TRUE.;       CALL GEN_IN(TOP_BOT_SYM,'Top-bottom symmetric?')
-	  LAM_ST=4000.0_LDP;        CALL GEN_IN(LAM_ST, 'Minimum wavelength of 2D grid (Ang)')
-	  LAM_END=7000.0_LDP;       CALL GEN_IN(LAM_END,'Maximum wavelength of 2D grid (Ang)')
-	  ES_RES_KMS=200.0;         CALL GEN_IN(ES_RES_KMS,'Resolution (km/s) to sample electron scattered mean intensity')
-	  NPHI=11;                  CALL GEN_IN(NPHI,'Number of azimuthal angles (3,7, 11, 15 etc')
 !
 	  ETA_ID=0; CHI_ID=0; JES_ID=0
 	  DO I=1,NUM_FILES
@@ -1460,9 +1446,7 @@
 	  TA(1:ND_ATM)=6.65E-15_LDP*ED(1:ND_ATM)*CLUMP_FAC(1:ND_ATM)            !ESEC
 	  CALL DO_SN_SHELL_SHIFT(R,T,V,SIGMA,TA,ZM(ETA_ID)%ND,
 	1           ZM(ETA_ID)%RJ, ZM(CHI_ID)%RJ, ZM(ID)%NU, ZM(ETA_ID)%NCF,
-	1           ZM(JES_ID)%RJ, ZM(JES_ID)%NU, ZM(JES_ID)%V, ZM(JES_ID)%ND, ZM(JES_ID)%NCF,
-	1           dV, LAM_ST, LAM_END, ES_RES_KMS, 
-	1           BETA_LAW, TOP_BOT_SYM, NB, NPHI, NC_ATM)
+	1           ZM(JES_ID)%RJ, ZM(JES_ID)%NU, ZM(JES_ID)%V, ZM(JES_ID)%ND, ZM(JES_ID)%NCF, NC_ATM)
 !
 ! 
 ! Plot section:

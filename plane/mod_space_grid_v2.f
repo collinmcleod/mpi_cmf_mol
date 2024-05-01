@@ -44,6 +44,11 @@
 	  REAL(KIND=LDP), ALLOCATABLE :: I_M_PREV(:)
 	  REAL(KIND=LDP), ALLOCATABLE :: I_M_SAVE(:)
 !
+! These are to be used to test inclusion of dust scattring.
+!
+	  REAL(KIND=LDP), ALLOCATABLE :: ETA_P(:)
+	  REAL(KIND=LDP), ALLOCATABLE :: ETA_M(:)
+!
 	  INTEGER, ALLOCATABLE :: LNK(:)		!Indicates link to original grid
 !
 	  REAL(KIND=LDP), ALLOCATABLE :: I_IN_BND_STORE(:)

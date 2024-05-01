@@ -297,6 +297,8 @@
 	  DO WHILE(INACCURATE)
 !
 ! We assume the Rayleigh scattering to be coherent in the CMF.
+! We also assume, unless USE_HEN_GREEN is set, that dus scattering is isotropic.
+! If true, only CMF_FORMAL_REL_V5 should be called.
 !
 	     IF(COHERENT_ES)THEN
 	       TA(1:NDEXT)=ETAEXT(1:NDEXT) +
@@ -304,7 +306,7 @@
 	     ELSE
 	       TA(1:NDEXT)=ETAEXT(1:NDEXT) +
 	1           ESECEXT(1:NDEXT)*RJEXT_ES(1:NDEXT) +
-	1           CHI_RAY_EXT(1:NDEXT)*RJEXT(1:NDEXT)
+	1           (CHI_RAY_EXT(1:NDEXT)+CHI_SCAT_DUST_EXT(1:NDEXT))*RJEXT(1:NDEXT)
 	     END IF
 !
 ! NB Using TA for ETA, TC for JNU_VEC, and TB for HNU_VEC
@@ -328,8 +330,7 @@
                IF(FG_COUNT .EQ. 1)WRITE(LUER,*)'Calling CMF_FORMAL_REL_V5 with accurate grid in COMP_JCONT_V4.INC'
                FLUSH(LUER)
 	       IF(COHERENT_ES)THEN
-	         TA(1:NDEXT)=ETAEXT(1:NDEXT) +
-	1             (ESECEXT(1:NDEXT)+CHI_RAY_EXT(1:NDEXT))*RJEXT(1:NDEXT)
+	         TA(1:NDEXT)=ETAEXT(1:NDEXT)+(ESECEXT(1:NDEXT)+CHI_RAY_EXT(1:NDEXT))*RJEXT(1:NDEXT)
 	       ELSE
 	         TA(1:NDEXT)=ETAEXT(1:NDEXT) +
 	1             ESECEXT(1:NDEXT)*RJEXT_ES(1:NDEXT) +
@@ -377,7 +378,7 @@
 	       TB(1:NDEXT)=CHI_SCAT_EXT(1:NDEXT)
 	     ELSE
 	       TA(1:NDEXT)=ETAEXT(1:NDEXT)+ESECEXT(1:NDEXT)*RJEXT_ES(1:NDEXT)
-	       TB(1:NDEXT)=CHI_RAY_EXT(1:NDEXT)
+	       TB(1:NDEXT)=CHI_RAY_EXT(1:NDEXT)+CHI_SCAT_DUST_EXT(1:NDEXT)
 	     END IF
 	     CALL TUNE(IONE,'MOM_J_CMF_ACC')
              IF(PLANE_PARALLEL_NO_V)THEN
@@ -682,7 +683,7 @@
 	       TA(1:ND)=ETA_CLUMP(1:ND)+CHI_SCAT_CLUMP(1:ND)*RJ(1:ND)
 	     ELSE
 	       TA(1:ND)=ETA_CLUMP(1:ND)+ESEC_CLUMP(1:ND)*RJ_ES(1:ND)+
-	1                                CHI_RAY_CLUMP(1:ND)*RJ(1:ND)
+	1                    (CHI_RAY_CLUMP(1:ND)+CHI_SCAT_DUST_CLUMP(1:ND))*RJ(1:ND)
 	     END IF
 !
 ! NB Using TA for ETA, TC for JNU_VEC, and TB for HNU_VEC
@@ -703,12 +704,12 @@
 	1               METHOD,FG_SOL_OPTIONS,THK_CONT,L_FALSE,
 	1               FIRST_FREQ,NEW_FREQ,N_TYPE,NC,ND)
              ELSE IF(USE_FORMAL_REL .AND. USE_HEN_GREEN)THEN
+               IF(FG_COUNT .EQ. 1)WRITE(LUER,*)'Calling CMF_FORMAL_REL_V5 in COMP_JCONT_V4.INC'
 	       IF(COHERENT_ES)THEN
 	         TA(1:ND)=ETA_CLUMP(1:ND)+(ESEC_CLUMP(1:ND)+CHI_RAY_CLUMP(1:ND))*RJ(1:ND)
 	       ELSE
 	         TA(1:ND)=ETA_CLUMP(1:ND)+ESEC_CLUMP(1:ND)*RJ_ES(1:ND)+ CHI_RAY_CLUMP(1:ND)*RJ(1:ND)
 	       END IF
-               IF(FG_COUNT .EQ. 1)WRITE(LUER,*)'Calling CMF_FORMAL_REL_V5 in COMP_JCONT_V4.INC'
                CALL CMF_FORMAL_REL_V5
 	1                 (TA,CHI_CLUMP,CHI_SCAT_CLUMP,V,SIGMA,R,P,
 	1                  TC,FEDD,HFLUX_AT_IB,HFLUX_AT_OB,IPLUS,
