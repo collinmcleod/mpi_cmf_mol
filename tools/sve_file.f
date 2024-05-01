@@ -900,6 +900,7 @@ c
 c altered  3/17/97  DLM  Use "{}" instead of "[]" to delimit sub-options.
 c                        Use upper_case instead of condit_sting to create
 c                        all capital letter strings.
+c altered 01/05/04  DJH  Added flush to force output to sve file immdiately.
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
@@ -942,6 +943,7 @@ C      elseif(.not.sve_read)then
         fmt_string=wr_fmt_string(o_end)
         write(unit_sve,fmt_string)
      *       option(:o_end)
+        flush(unit=unit_sve)
       endif
       main_option=.FALSE.
 c

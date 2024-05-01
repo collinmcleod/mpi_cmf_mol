@@ -99,8 +99,8 @@
 !
 	  DO I=1,ND-1
 	    IF(R(I) .LE. R(I+1))THEN
-	      WRITE(6,*)'Error fro RD_RV_FILE_V2'
-	      WRITE(6,*)'R grid must decrease monotinically with depth index'
+	      WRITE(6,*)'Error for RD_RV_FILE_V2'
+	      WRITE(6,*)'R grid must decrease monotonically with depth index'
 	      WRITE(6,*)I,R(I),R(I+1)
 	      STOP
 	    END IF

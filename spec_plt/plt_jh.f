@@ -1,5 +1,3 @@
-!
-! General routine for plotting and comparing J (or H) obtained from the
 ! EDDFACTOR (or similar) data file.
 !
 ! Various options are available to redden and normalize the model spectra.
@@ -8,18 +6,13 @@
 	PROGRAM PLT_JH
 	USE SET_KIND_MODULE
 	USE SN_SHIFT_MODULE
-	USE ZM_DATA_MODULE
-	USE MOD_USR_OPTION
-	USE MOD_USR_HIDDEN
-	USE MOD_WR_STRING
-	USE GEN_IN_INTERFACE
-	USE MOD_COLOR_PEN_DEF
-	USE READ_KEYWORD_INTERFACE
-	USE EDDFAC_REC_DEFS_MOD
 !
+! Altered -1-May-2023 : Revised calls and clean SN and SHELL shifting routines. 
+!                         Options are SN_SHIFT and CL_SHIFT.
 ! Altered 17-Apr-2024 : Model data now store in ZM_DATA_MODULE (J, CHI etc).
 !                       ZM data now read in by subroutine.
-!                       Added 2DM option to randomly shift SN shells and to create files to 
+!                       Added 2DM option to randomly shift SN shells and
+!                       to create files to 
 !                          use with MAIN_FORM_LINE_POL
 ! Altered 05-Apr-2020 : Added RTAU option.
 ! Altered 15-Nov-2019 : TAU_ES and TAU_ROSS were not being corrected for clumping.
@@ -33,6 +26,14 @@
 !
 ! Interface routines for IO routines.
 !
+	USE ZM_DATA_MODULE
+	USE MOD_USR_OPTION
+	USE MOD_USR_HIDDEN
+	USE MOD_WR_STRING
+	USE GEN_IN_INTERFACE
+	USE MOD_COLOR_PEN_DEF
+	USE READ_KEYWORD_INTERFACE
+	USE EDDFAC_REC_DEFS_MOD
 !
 	IMPLICIT NONE
 !
@@ -40,8 +41,6 @@
 	INTEGER ND_MAX,NCF_MAX
 	INTEGER ID
 	INTEGER ETA_ID, CHI_ID, JES_ID
-	INTEGER NB
-	INTEGER NPHI
 !
 	INTEGER NCF_B
 	INTEGER ND_B
@@ -125,13 +124,11 @@
 	REAL(KIND=LDP) DTDR
 	REAL(KIND=LDP) RADIUS
 	REAL(KIND=LDP) T1,T2,T3
-	REAL(KIND=LDP) dV
 	REAL(KIND=LDP) RVAL
 	REAL(KIND=LDP) DELR
 	REAL(KIND=LDP) LAMC
 	REAL(KIND=LDP) VMIN
 	REAL(KIND=LDP) dV_DOP
-	REAL(KIND=LDP) ES_RES_KMS
 	REAL(KIND=LDP) LAM_ST,LAM_END
 	REAL(KIND=LDP) FREQ_VAL
 	REAL(KIND=LDP) EDGE_FREQ
@@ -139,8 +136,6 @@
 	REAL(KIND=LDP) SN_AGE
 	REAL(KIND=LDP), ALLOCATABLE :: NEW_R(:)
 !
-	CHARACTER(LEN=20) BETA_LAW
-	LOGICAL TOP_BOT_SYM
 	LOGICAL AIR_LAM
 	LOGICAL USE_V
 	LOGICAL PLOT_RSQJ
@@ -1414,13 +1409,55 @@
 	  YAXIS='c.dNU/NU(km/s)'
 !
 !
+	ELSE IF(X(1:8) .EQ. 'CL_SHIFT')THEN
+!
+	  WRITE(6,'(/,A)')' Option designed to randomize clump locations in WR/O star grid.'
+	  WRITE(6,'(A)')  ' For complete output, RVTJ, ETA_DATA, CHI_DATA, and ES_J_CONV need to be read in.'
+	  WRITE(6,'(A,/)')' Onle RVTJ and one of the other files are needed for testing grid shift.'
+!
+          ETA_ID=0; CHI_ID=0; JES_ID=0
+          DO I=1,NUM_FILES
+            IF(ZM(I)%DATA_TYPE .EQ. 'ETA')ETA_ID=I
+            IF(ZM(I)%DATA_TYPE .EQ. 'CHI')CHI_ID=I
+            IF(ZM(I)%DATA_TYPE .EQ.   'J')JES_ID=I
+          END DO
+          IF(ETA_ID .EQ. 0)THEN
+            WRITE(6,*)'ETA file not found -- you need to read it in using the RD_MOD commans'
+          END IF
+          IF(CHI_ID .EQ. 0)THEN
+            WRITE(6,*)'CHI file not found -- you need to read it in using the RD_MOD commans'
+            IF(ETA_ID .EQ. 0)GOTO 1
+	    CHI_ID=ETA_ID
+          END IF
+	  IF(ETA_ID .EQ. 0)ETA_ID=CHI_ID
+	  IF(JES_ID .EQ. 0)THEN
+	    JES_ID=ETA_ID
+	    WRITE(6,*)'ES_J_CONV data not found'
+            WRITE(6,*)'If you need to output LINE_MOM_DATA-- you need to read J using the RD_MOD command'
+	  END IF
+!
+	  TA(1:ND_ATM)=6.65E-15_LDP*ED(1:ND_ATM)*CLUMP_FAC(1:ND_ATM)            !ESEC
+          CALL DO_CLUMP_SHIFT (R,T,V,SIGMA,TA,MASS_DENSITY,NC_ATM,ND_ATM,
+	1           ZM(ETA_ID)%RJ, ZM(CHI_ID)%RJ, ZM(ETA_ID)%NU, ZM(ETA_ID)%NCF,
+	1           ZM(JES_ID)%RJ, ZM(JES_ID)%R, ZM(JES_ID)%ND)
+
 !
 ! Option designed to write out 3D_DATA and LIME_MOM_DATA that then be used to compute a
 ! spectrum with MAIN_FORM_LONE_POL. A shift (in km/s or Log V) is applied to the grid
 ! so that shells are broken up. This will tend to smooth profiles, producing results in better
 ! agreement with observation.
 
-	ELSE IF(X(1:3) .EQ. '2DM')THEN
+	ELSE IF(X(1:8) .EQ. 'SN_SHIFT')THEN
+!
+	  WRITE(6,'(/,A)')' Option designed to randomize shell ocations on SN grid.'
+	  WRITE(6,'(A)')  ' For complete output, RVTJ, ETA_DATA, CHI_DATA, and ES_J_CONV need to be read in.'
+	  WRITE(6,'(A,/)')' Only RVTJ and one of the other files are needed for testing grid shift.'
+!
+	  T1=3.0E+05
+	  DO I=3,ND_ATM-4
+	    T1=MIN(T1,V(I)-V(I+1))
+	  END DO
+	  WRITE(6,'(/,A,F10.2,3X,A,ES14.4,/)')' Minimum step size in V is ',T1,'V(1)=',V(1)
 !
 	  ETA_ID=0; CHI_ID=0; JES_ID=0
 	  DO I=1,NUM_FILES
@@ -1430,23 +1467,23 @@
 	  END DO
 	  IF(ETA_ID .EQ. 0)THEN
 	    WRITE(6,*)'ETA file not found -- you need to read it in using the RD_MOD commans'
-	    GOTO 1
 	  END IF
-	  IF(CHI_ID .EQ. 0)THEN
-	    WRITE(6,*)'CHI file not found -- you need to read it in using the RD_MOD commans'
-	    GOTO 1
-	  END IF
-!
-          IF(JES_ID .EQ. 0)THEN
-            WRITE(6,*)'J(ES) file not found'
+          IF(CHI_ID .EQ. 0)THEN
+            WRITE(6,*)'CHI file not found -- you need to read it in using the RD_MOD commans'
+            IF(ETA_ID .EQ. 0)GOTO 1
+	    CHI_ID=ETA_ID
+          END IF
+	  IF(ETA_ID .EQ. 0)ETA_ID=CHI_ID
+	  IF(JES_ID .EQ. 0)THEN
+	    JES_ID=ETA_ID
+	    WRITE(6,*)'ES_J_CONV data not found'
             WRITE(6,*)'If you need to output LINE_MOM_DATA-- you need to read J using the RD_MOD command'
-            ES_RES_KMS=-1
 	  END IF
 !
 	  TA(1:ND_ATM)=6.65E-15_LDP*ED(1:ND_ATM)*CLUMP_FAC(1:ND_ATM)            !ESEC
-	  CALL DO_SN_SHELL_SHIFT(R,T,V,SIGMA,TA,ZM(ETA_ID)%ND,
+	  CALL DO_SN_SHELL_SHIFT(R,T,V,SIGMA,TA,ZM(ETA_ID)%ND,ZM(ETA_ID)%NCF,
 	1           ZM(ETA_ID)%RJ, ZM(CHI_ID)%RJ, ZM(ID)%NU, ZM(ETA_ID)%NCF,
-	1           ZM(JES_ID)%RJ, ZM(JES_ID)%NU, ZM(JES_ID)%V, ZM(JES_ID)%ND, ZM(JES_ID)%NCF, NC_ATM)
+	1           ZM(JES_ID)%RJ, ZM(JES_ID)%NU, ZM(JES_ID)%V, ZM(JES_ID)%ND, ZM(JES_ID)%NCF )
 !
 ! 
 ! Plot section:

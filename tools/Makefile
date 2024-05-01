@@ -10,6 +10,7 @@ LIB=$(LIB_DIR)libsubs.a
 # Entries for library
 #
 OBJ = $(LIB)(usr_option.o)\
+      $(LIB)(usr_list_opt.o)\
       $(LIB)(chk_little_endian.o)\
       $(LIB)(chk_string.o)\
       $(LIB)(check_vec_nan.o)\
@@ -58,8 +59,9 @@ $(LIB)(set_kind_module.o) : set_kind_module.f
 	$(F90) -c $(FG)  set_kind_module.f
 	ar $(AR_OPTION) $(LIB) set_kind_module.o
 
-$(LIB)(usr_option.o) : usr_option.f $(LIB)(wr_string.o) 
-$(LIB)(usr_hidden.o) : usr_hidden.f $(LIB)(wr_string.o) $(LIB)(sve_file.o)
+$(LIB)(usr_list_opt.o) : usr_list_opt.f $(LIB)(wr_string.o) prompt.inc
+$(LIB)(usr_option.o)   : usr_option.f $(LIB)(wr_string.o) 
+$(LIB)(usr_hidden.o)   : usr_hidden.f $(LIB)(wr_string.o) $(LIB)(sve_file.o)
 
 #
 #	$(F90) -c $(FG) usr_option.f 
