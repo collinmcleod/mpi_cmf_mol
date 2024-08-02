@@ -2,6 +2,7 @@
 ! Program section to compute the continuum intensity. Opacities must have
 ! previuosly been evaluated.
 !
+! Altered 01-Jul-2024 - Fixed bug related to J computation with dust.
 ! Altered 19-Mar-2024 - Added dust opacity and emissivity.
 ! Altered 30-Apr-2019 - Now call MOM_JREL_V9
 ! Altered 29-Apr-2019 - Now call MOM_J_DDT_V6
@@ -751,7 +752,7 @@
 	       TB(1:ND)=CHI_SCAT_CLUMP(1:ND)
 	     ELSE
 	       TA(1:ND)=ETA_CLUMP(1:ND)+ESEC_CLUMP(1:ND)*RJ_ES(1:ND)
-               TB(1:ND)=CHI_RAY_CLUMP(1:ND)
+               TB(1:ND)=CHI_RAY_CLUMP(1:ND)+CHI_SCAT_DUST_CLUMP(1:ND)
 	     END IF
 	     CALL TUNE(IONE,'MOM_J_CMF')
              IF(PLANE_PARALLEL_NO_V)THEN

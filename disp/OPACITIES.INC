@@ -1,4 +1,5 @@
 !
+! Alteerd 06-May-2024 - Added two photon opacities.
 ! Altered 25-Sep-2011 - Now call GENOPAETA_V10 (changed from V8).
 ! Altered  6-Jan-2011 - CHI_RAY no longer scaled by CLUMP_FAC.
 !                      This scaling is done elsewhere.
@@ -60,6 +61,11 @@ C
 	    IF(CHECK_FOR_NAN)CALL CHECK_VEC_NAN(CHI,ND,'CHI_'//ION_ID(ID),TMP_LOGICAL)
 	    IF(CHECK_FOR_NAN)CALL CHECK_VEC_NAN(ETA,ND,'ETA_'//ION_ID(ID),TMP_LOGICAL)
 	  END IF
+	END DO
+!
+	DO I=1,NUM_IONS
+	  ID=I
+	  CALL TWO_PHOT_OPAC_DISP_V3(ETA,CHI,ATM(ID)%XzV_F,T,FL,'LTE',ID,ND,ATM(ID)%NXzV_F)
 	END DO
 C
 C 

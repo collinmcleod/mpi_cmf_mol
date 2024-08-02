@@ -7,7 +7,8 @@
 	USE SET_KIND_MODULE
 	USE SN_SHIFT_MODULE
 !
-! Altered -1-May-2023 : Revised calls and clean SN and SHELL shifting routines. 
+! Altered 23-May-2024 : CLUMP_FAC added in call to DO_SN_SHELL_SHIFT.
+! Altered 01-May-2024 : Revised calls and clean SN and SHELL shifting routines. 
 !                         Options are SN_SHIFT and CL_SHIFT.
 ! Altered 17-Apr-2024 : Model data now store in ZM_DATA_MODULE (J, CHI etc).
 !                       ZM data now read in by subroutine.
@@ -1481,7 +1482,7 @@
 	  END IF
 !
 	  TA(1:ND_ATM)=6.65E-15_LDP*ED(1:ND_ATM)*CLUMP_FAC(1:ND_ATM)            !ESEC
-	  CALL DO_SN_SHELL_SHIFT(R,T,V,SIGMA,TA,ZM(ETA_ID)%ND,ZM(ETA_ID)%NCF,
+	  CALL DO_SN_SHELL_SHIFT(R,T,V,SIGMA,TA,CLUMP_FAC,ZM(ETA_ID)%ND,ZM(ETA_ID)%NCF,
 	1           ZM(ETA_ID)%RJ, ZM(CHI_ID)%RJ, ZM(ID)%NU, ZM(ETA_ID)%NCF,
 	1           ZM(JES_ID)%RJ, ZM(JES_ID)%NU, ZM(JES_ID)%V, ZM(JES_ID)%ND, ZM(JES_ID)%NCF )
 !

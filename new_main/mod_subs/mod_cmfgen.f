@@ -7,6 +7,7 @@
 	MODULE MOD_CMFGEN
 	USE SET_KIND_MODULE
 !
+! Altered 25-Jul-2024 : Increased number of species from 26 to 28.
 ! Altered 20-Jan-2023 : Added ABS_MEAN opacity.
 ! Altered 17-Aug-2019 : Put on IBIS -- added dWCRXzVd 12-Jul-2019 (cur_cmf_eb)
 ! Altered 19-Aug-2015 : Added HMI, MAX_IONS_PER_SPECIES increased to 21 (cur_hmi,12-Jun-2015)
@@ -20,7 +21,7 @@
 !
 ! Number of atomic species (e.g. H, C, N is 3 species).
 !
-	INTEGER, PARAMETER :: NUM_SPECIES=26
+	INTEGER, PARAMETER :: NUM_SPECIES=28
 !
 ! Maximum number of ionization stages per species. For H, need at this number
 ! has to be 2 or higher (as I and II). A setting of 10 implies that we can treat

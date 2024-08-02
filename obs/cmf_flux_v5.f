@@ -14,6 +14,7 @@
 	USE MOD_USR_OPTION
 	IMPLICIT NONE
 !
+! Altered: 27-Jul-2024 : Added Zn and Mn.
 ! Altered: 30-Dec-2023 : Added dE_OPTION for reading in SL assignments.
 ! Altered: 18-May-2015 : Changed GAM2, GAM4 to C4 and C6 (quadratic and Van der Waals
 !                          interacton constants)(09-Jun-2105).
@@ -230,6 +231,16 @@
 	AT_NO(ID)=28.0_LDP;	    AT_MASS(ID)=58.7_LDP		!Nickel
 	SPECIES(ID)='NICK';	    SPECIES_ABR(ID)='Nk'
 	SOL_ABUND_HSCL(ID)=6.25_LDP
+!
+	ID=ID+1
+	AT_NO(ID)=29.0_LDP;         AT_MASS(ID)=63.6_LDP            !Copper
+	SPECIES(ID)='COP';          SPECIES_ABR(ID)='Cu'
+	SOL_ABUND_HSCL(ID)=4.20_LDP
+!
+	ID=ID+1
+	AT_NO(ID)=30.0_LDP;         AT_MASS(ID)=65.40_LDP           !Zinz
+	SPECIES(ID)='ZINC';         SPECIES_ABR(ID)='Zn'
+	SOL_ABUND_HSCL(ID)=4.60_LDP
 !
 	ID=ID+1
 	AT_NO(ID)=56.0_LDP;           AT_MASS(ID)=137.33_LDP        !Barium

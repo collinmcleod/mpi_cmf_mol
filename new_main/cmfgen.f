@@ -13,6 +13,7 @@
 	USE MOD_USR_OPTION
 	IMPLICIT NONE
 !
+! Altered 25-Jul-2024: Added new species -- Zn and Mn.
 ! Altered 02-Sep-2023: Now zero ABS_MEAN
 ! Altered 24-Sep-2023: Updated phsical and opacity constants.
 ! Altered 20-Jan-2023: ABS_MEAN added. The code now checks that star models go to
@@ -270,6 +271,16 @@
 	AT_NO(ID)=28.0_LDP;	    AT_MASS(ID)=58.7_LDP		!Nickel
 	SPECIES(ID)='NICK';	    SPECIES_ABR(ID)='Nk'
 	SOL_ABUND_HSCL(ID)=6.25_LDP
+!
+	ID=ID+1
+	AT_NO(ID)=29.0_LDP;         AT_MASS(ID)=63.6_LDP                 !Copper
+	SPECIES(ID)='COP';          SPECIES_ABR(ID)='Co'
+	SOL_ABUND_HSCL(ID)=4.20_LDP
+!
+	ID=ID+1
+	AT_NO(ID)=30.0_LDP;         AT_MASS(ID)=65.40_LDP        !Zinz
+	SPECIES(ID)='ZINC';         SPECIES_ABR(ID)='Zn'
+	SOL_ABUND_HSCL(ID)=4.60_LDP
 !
 	ID=ID+1
 	AT_NO(ID)=56.0_LDP;	    AT_MASS(ID)=137.33_LDP	!Barium

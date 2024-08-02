@@ -23,6 +23,8 @@
 	USE MOD_COLOR_PEN_DEF
 	IMPLICIT NONE
 !
+! Altered: 20-Jun-2024: Some cleaning.
+!                       Rates for EXD (for example) can now be output to file.
 ! Altered: 14-Apr-2023: Extensive modifications.
 !                         Collision data now read in.
 !                         LID option added.
@@ -113,6 +115,7 @@
 	INTEGER N_AUTO
 	INTEGER RD_COUNT
 	INTEGER I,J,K,L,ML
+	INTEGER LU_TMP
 	INTEGER N_TRANS_LIM
 	INTEGER SL_INDX
 	INTEGER CNT
@@ -122,6 +125,7 @@
 	INTEGER NLEV		!Number of super levels
 	INTEGER LU
 	LOGICAL FILE_OPEN
+	LOGICAL TERM_OUTPUT
 	LOGICAL DO_COL_RATES
 	LOGICAL DO_NT_RATES
 	LOGICAL DO_AUTO_RATES
@@ -813,7 +817,7 @@
 	    YLABEL='Normalized origin'
 !
 ! Plots actual rates at a specified depth as a function of lambda.
-! One done for line trasitions.
+! Only done for line trasitions.
 !
 	  ELSE IF(UC(PLT_OPT) .EQ. 'AEXD')THEN
 	    IF(SPECIES .EQ. ' ')THEN
@@ -850,7 +854,29 @@
 	    DPTH_INDX=ND/2
 	    CALL GEN_IN(DPTH_INDX,'Depth to be examined')
 	    N_TRANS_LIM=30
-	    CALL GEN_IN(N_TRANS_LIM,'Limits the maximum number of transiton written')
+	    CALL GEN_IN(N_TRANS_LIM,'Limits the maximum number of transition written')
+!
+	    TERM_OUTPUT=.TRUE.
+	    CALL GEN_IN(TERM_OUTPUT,'Terminal output (otherwise file)?')
+	    IF(TERM_OUTPUT)THEN
+	      LU_TMP=6
+	    ELSE
+	      CALL GET_LU(LU_TMP,'EXD option')
+	      IF(ND .GT. 999)THEN 
+	        WRITE(FILENAME,'(I4.4)')DPTH_INDX
+	      ELSE IF(ND .GT. 99)THEN
+	        WRITE(FILENAME,'(I3.3)')DPTH_INDX
+	      ELSE
+	        WRITE(FILENAME,'(I2.2)')DPTH_INDX
+	      END IF
+	      FILENAME='EXD_'//TRIM(SPECIES)//'_'//TRIM(FILENAME)
+	      OPEN(UNIT=LU_TMP,FILE=FILENAME,STATUS='UNKNOWN',ACCESS='APPEND')
+	      WRITE(6,*)'Data output (appended if already exists) to ',TRIM(FILENAME)
+	    END IF
+!
+	    WRITE(LU_TMP,*)' '
+	    WRITE(LU_TMP,*)'Data for '//TRIM(SPECIES)//'('//TRIM(LEVEL),') at depth',DPTH_INDX
+	    WRITE(LU_TMP,*)' '
 !
 ! We first deduce the maximum rate to each level.
 !
@@ -863,13 +889,13 @@
 	           T1=MAX(T1,AUTO_RATE(J,DPTH_INDX))
 	         END IF
 	      END DO
-	      WRITE(6,'(1X,A,T30,ES12.3)')'Maximum auto/anti autoionization rate',T1
+	      WRITE(LU_TMP,'(1X,A,T30,ES12.3)')'Maximum auto/anti autoionization rate',T1
 	      MAX_RATE=T1
 	    END IF
 !
 	    T1=REC_RATE(SL_INDX,DPTH_INDX)
 	    T1=MAX(T1,PHOT_RATE(SL_INDX,DPTH_INDX))
-	    WRITE(6,'(/,1X,A,T30,A,ES12.4)')'Maximum phot/rec. rate ','=',T1
+	    WRITE(LU_TMP,'(/,1X,A,T30,A,ES12.4)')'Maximum phot/rec. rate ','=',T1
 	    MAX_RATE=MAX(MAX_RATE,T1)
 !
 	    I=DPTH_INDX; T1=0D0
@@ -877,13 +903,13 @@
 	       T1=MAX(T1,ABS(NEW_RATES(ML,I)))
 	    END DO
 	    MAX_RATE=MAX(MAX_RATE,T1)
-	    WRITE(6,'(1X,A,T30,A,ES12.4)')'Maximum line rate ','=',T1
+	    WRITE(LU_TMP,'(1X,A,T30,A,ES12.4)')'Maximum line rate ','=',T1
 !
 	    IF(N_NT_TRANS .NE. 0)THEN
 	      DO ML=1,N_NT_TRANS
 	        T1=MAX(T1,ABS(NEW_NT_RATES(ML,I)))
 	      END DO
-	      WRITE(6,'(1X,A,T30,A,ES12.4)')'Maximum NT rate ','=',T1
+	      WRITE(LU_TMP,'(1X,A,T30,A,ES12.4)')'Maximum NT rate ','=',T1
 	      MAX_RATE=MAX(MAX_RATE,T1)
 	    END IF
 !
@@ -892,33 +918,33 @@
 	      DO ML=1,N_COL_TRANS
 	        T1=MAX(T1,ABS(NEW_COL_RATES(ML,I)))
 	      END DO
-	      WRITE(6,'(1X,A,T30,A,ES12.4)')'Maximum collison rate ','=',T1
+	      WRITE(LU_TMP,'(1X,A,T30,A,ES12.4)')'Maximum collison rate ','=',T1
 	      MAX_RATE=MAX(MAX_RATE,T1)
 	    END IF
 	    MAX_RATE=MAX(MAX_RATE,REC_RATE(SL_INDX,I))
 	    MAX_RATE=MAX(MAX_RATE,PHOT_RATE(SL_INDX,I))
 !
-	    WRITE(6,*)' '
-	    WRITE(6,'(2X,A,I5)')         '      Depth index =',DPTH_INDX
-	    WRITE(6,'(2X,A,ES16.8,2X,A)')'     R(DPTH_INDX) =',R(DPTH_INDX),'(10^{10} cm)'
-	    WRITE(6,'(2X,A,ES16.8,2X,A)')'     V(DPTH_INDX) =',V(DPTH_INDX),'(km/s)'
-	    WRITE(6,'(2X,A,ES16.8,2X,A)')'     T(DPTH_INDX) =',T(DPTH_INDX),'(10^4 K)'
-	    WRITE(6,'(2X,A,ES16.8,2X,A)')'    ED(DPTH_INDX) =',ED(DPTH_INDX),'(cm^{-3})'
-	    WRITE(6,'(2X,A,ES16.8,2X,A)')'  Scaling Factor  =',MAX_RATE,'(cm^{-3} s^{-1})'
-	    WRITE(6,*)' '
-	    WRITE(6,*)'For line and non-thermal (NT) transitions, the uUpper level is listed'
-	    WRITE(6,*)'    first in the transition name.'
-	    WRITE(6,*)'A negative rate imples there is a net flow to the upper state'
-	    WRITE(6,*)' '
-	    WRITE(6,*)'Transitions draining ',TRIM(LEVEL)
-	    WRITE(6,*)' '
+	    WRITE(LU_TMP,*)' '
+	    WRITE(LU_TMP,'(2X,A,I5)')         '      Depth index =',DPTH_INDX
+	    WRITE(LU_TMP,'(2X,A,ES16.8,2X,A)')'     R(DPTH_INDX) =',R(DPTH_INDX),'(10^{10} cm)'
+	    WRITE(LU_TMP,'(2X,A,ES16.8,2X,A)')'     V(DPTH_INDX) =',V(DPTH_INDX),'(km/s)'
+	    WRITE(LU_TMP,'(2X,A,ES16.8,2X,A)')'     T(DPTH_INDX) =',T(DPTH_INDX),'(10^4 K)'
+	    WRITE(LU_TMP,'(2X,A,ES16.8,2X,A)')'    ED(DPTH_INDX) =',ED(DPTH_INDX),'(cm^{-3})'
+	    WRITE(LU_TMP,'(2X,A,ES16.8,2X,A)')'  Scaling Factor  =',MAX_RATE,'(cm^{-3} s^{-1})'
+	    WRITE(LU_TMP,*)' '
+	    WRITE(LU_TMP,*)'For line and non-thermal (NT) transitions, the upper level is listed'
+	    WRITE(LU_TMP,*)'    first in the transition name.'
+	    WRITE(LU_TMP,*)'A negative rate imples there is a net flow to the upper state'
+	    WRITE(LU_TMP,*)' '
+	    WRITE(LU_TMP,*)'Transitions draining ',TRIM(LEVEL)
+	    WRITE(LU_TMP,*)' '
 !
 	    ALLOCATE (WRK_VEC(N_TRANS),INDX(N_TRANS))
 	    WRK_VEC(:)=ABS(NEW_RATES(1:N_TRANS,DPTH_INDX))
 	    CALL INDEXX(N_TRANS,WRK_VEC,INDX,L_TRUE)
 !
 	    WRITE(TMP_STR,'(I2.2)')MAX_TRANS_LENGTH+6
-	    TMP_FMT='(1X,A,T'//TMP_STR(1:2)//',26X,F9.5)'
+	    TMP_FMT='(1X,A,T'//TMP_STR(1:2)//',36X,F9.5)'
 	    TMP_STR='(1X,A,T'//TMP_STR(1:2)//',ES15.4E5,3X,ES15.4E5,3X,F9.5)'
 !
 	    T1=0.0_LDP; I=DPTH_INDX; CNT=0
@@ -930,15 +956,15 @@
 	        CNT=CNT+1
 	        T2=NEW_RATES(L,I)/MAX_RATE
 	        IF(CNT .LE. N_TRANS_LIM .AND. ABS(T2) .GT.  0.00001_LDP)THEN
-                  WRITE(6,TMP_STR)TRIM(TRANS_NAME(LINK(L))),T2,LAM(LINK(L)),T1/MAX_RATE
+                  WRITE(LU_TMP,TMP_STR)TRIM(TRANS_NAME(LINK(L))),T2,LAM(LINK(L)),T1/MAX_RATE
 	        END IF
 	      END IF
 	    END DO
-	    WRITE(6,TMP_FMT)'Total',T1/MAX_RATE
+	    WRITE(LU_TMP,TMP_FMT)'Total',T1/MAX_RATE
 !
-	    WRITE(6,*)' '
-	    WRITE(6,*)'Transitions populating ',TRIM(LEVEL)
-	    WRITE(6,*)' '
+	    WRITE(LU_TMP,*)' '
+	    WRITE(LU_TMP,*)'Transitions populating ',TRIM(LEVEL)
+	    WRITE(LU_TMP,*)' '
 	    T1=0.0_LDP; CNT=0.0_LDP
 	    DO ML=N_TRANS,1,-1
 	      L=INDX(ML)
@@ -948,26 +974,26 @@
 	        CNT=CNT+1
 	        T2=NEW_RATES(L,I)/MAX_RATE
 	        IF(CNT .LE. N_TRANS_LIM .AND. ABS(T2) .GT. 0.00001_LDP)THEN
-                  WRITE(6,TMP_STR)TRIM(TRANS_NAME(LINK(L))),T2,LAM(LINK(L)),T1/MAX_RATE
+                  WRITE(LU_TMP,TMP_STR)TRIM(TRANS_NAME(LINK(L))),T2,LAM(LINK(L)),T1/MAX_RATE
 	        END IF
 	      END IF
 	    END DO
-	    WRITE(6,TMP_FMT)'Total',T1/MAX_RATE
+	    WRITE(LU_TMP,TMP_FMT)'Total',T1/MAX_RATE
 !
 	    IF(N_NT_TRANS .NE. 0)THEN
-	      WRITE(6,'(A)')' '
-	      WRITE(6,*)'Non thermal transitions'
+	      WRITE(LU_TMP,'(A)')' '
+	      WRITE(LU_TMP,*)'Non thermal transitions'
 	      DO ML=1,N_NT_TRANS
 	        T1=NEW_NT_RATES(ML,I)/MAX_RATE
 	        IF(ABS(T1) .GT. 0.00001_LDP)THEN
-	          WRITE(6,TMP_STR)TRIM(NT_TRANS_NAME(NT_LINK(ML))),T1
+	          WRITE(LU_TMP,TMP_STR)TRIM(NT_TRANS_NAME(NT_LINK(ML))),T1
 	        END IF
 	      END DO
 	    END IF
 !
 	    IF(N_COL_TRANS .NE. 0)THEN
-	      WRITE(6,'(A)')' '
-	      WRITE(6,*)'Collisional transitions'
+	      WRITE(LU_TMP,'(A)')' '
+	      WRITE(LU_TMP,*)'Collisional transitions'
 	      DEALLOCATE (WRK_VEC,INDX)
 	      ALLOCATE (WRK_VEC(N_COL_TRANS),INDX(N_COL_TRANS))
 	      WRK_VEC(:)=ABS(NEW_COL_RATES(1:N_COL_TRANS,DPTH_INDX))
@@ -982,7 +1008,7 @@
 	          T1=NEW_COL_RATES(ML,I)/MAX_RATE
 	        END IF
 	        IF(ABS(T1) .GT. 0.00001_LDP)THEN
-	          WRITE(6,TMP_STR)TRIM(COL_TRANS_NAME(COL_LINK(ML))),T1
+	          WRITE(LU_TMP,TMP_STR)TRIM(COL_TRANS_NAME(COL_LINK(ML))),T1
 	        END IF
 	      END DO
 	    END IF
@@ -1022,45 +1048,46 @@
 	      END IF
 	    END DO
 !
-	    WRITE(6,'(A)')
-	    WRITE(6,'(A,T42,A,ES14.4,F11.5)')' Net radiative rate from higher levels ','=',SUM_TO,SUM_TO/MAX_RATE
-	    WRITE(6,'(A,T42,A,ES14.4,F11.5)')' Net radiative rate into lower levels ','=',SUM_FROM,SUM_FROM/MAX_RATE
-	    WRITE(6,'(A,T42,A,ES14.4,F11.5)')' Net thermal rate into ',   '=',NT_SUM_TO,NT_SUM_TO/MAX_RATE
-	    WRITE(6,'(A,T42,A,ES14.4,F11.5)')' Net thermal rate out of ', '=',NT_SUM_FROM,NT_SUM_FROM/MAX_RATE
-	    WRITE(6,'(A,T42,A,ES14.4,F11.5)')' Collisional rate into ',   '=',COL_SUM_TO,COL_SUM_TO/MAX_RATE
-	    WRITE(6,'(A,T42,A,ES14.4,F11.5)')' Collsion rate out of ',    '=',COL_SUM_FROM,COL_SUM_FROM/MAX_RATE
+	    WRITE(LU_TMP,'(A)')
+	    WRITE(LU_TMP,'(A,T42,A,ES14.4,F11.5)')' Net radiative rate from higher levels ','=',SUM_TO,SUM_TO/MAX_RATE
+	    WRITE(LU_TMP,'(A,T42,A,ES14.4,F11.5)')' Net radiative rate into lower levels ','=',SUM_FROM,SUM_FROM/MAX_RATE
+	    WRITE(LU_TMP,'(A,T42,A,ES14.4,F11.5)')' Net thermal rate into ',   '=',NT_SUM_TO,NT_SUM_TO/MAX_RATE
+	    WRITE(LU_TMP,'(A,T42,A,ES14.4,F11.5)')' Net thermal rate out of ', '=',NT_SUM_FROM,NT_SUM_FROM/MAX_RATE
+	    WRITE(LU_TMP,'(A,T42,A,ES14.4,F11.5)')' Collisional rate into ',   '=',COL_SUM_TO,COL_SUM_TO/MAX_RATE
+	    WRITE(LU_TMP,'(A,T42,A,ES14.4,F11.5)')' Collsion rate out of ',    '=',COL_SUM_FROM,COL_SUM_FROM/MAX_RATE
 	    IF(PR_SPECIES .EQ. SPECIES)THEN
-	      WRITE(6,'(A,T42,A,ES14.4,F11.5)')' Photoionization rate ','=',
+	      WRITE(LU_TMP,'(A,T42,A,ES14.4,F11.5)')' Photoionization rate ','=',
 	1             PHOT_RATE(SL_INDX,DPTH_INDX),PHOT_RATE(SL_INDX,DPTH_INDX)/MAX_RATE
-	      WRITE(6,'(A,T42,A,ES14.4,F11.5)')' Recombination rate ','=',
+	      WRITE(LU_TMP,'(A,T42,A,ES14.4,F11.5)')' Recombination rate ','=',
 	1             REC_RATE(SL_INDX,DPTH_INDX),REC_RATE(SL_INDX,DPTH_INDX)/MAX_RATE
 	      T2=REC_RATE(SL_INDX,DPTH_INDX)-PHOT_RATE(SL_INDX,DPTH_INDX)
-	      WRITE(6,'(A,T42,A,ES14.4,F11.5)')' Net recombination rate ','=',T2,T2/MAX_RATE
+	      WRITE(LU_TMP,'(A,T42,A,ES14.4,F11.5)')' Net recombination rate ','=',T2,T2/MAX_RATE
 	    END IF
 !
 	    IF(DO_AUTO_RATES)THEN
 	      NET_AUTO=0.0_LDP
 	      DO J=1,N_AUTO
 	        IF(INDEX(AUTO_LEV_NAME(J),TRIM(LEVEL)) .NE. 0)THEN
-	          WRITE(6,'(A)')' '
-	          WRITE(6,'(A,T42,AES14.4,F11.5,5X,A)')' Autoionizaton rate ','=',
+	          WRITE(LU_TMP,'(A)')' '
+	          WRITE(LU_TMP,'(A,T42,AES14.4,F11.5,5X,A)')' Autoionizaton rate ','=',
 	1                AUTO_RATE(J,DPTH_INDX), AUTO_RATE(J,DPTH_INDX)/MAX_RATE, AUTO_LEV_NAME(J)
-	          WRITE(6,'(A,T42,ES14.4,F11.5)')' Rec. autoionization rate ','=',
+	          WRITE(LU_TMP,'(A,T42,ES14.4,F11.5)')' Rec. autoionization rate ','=',
 	1                AUTO_REC_RATE(J,DPTH_INDX), AUTO_REC_RATE(J,DPTH_INDX)/MAX_RATE
 	          NET_AUTO=NET_AUTO+(AUTO_REC_RATE(J,DPTH_INDX)-AUTO_RATE(J,DPTH_INDX))
-	          WRITE(6,'(A,T42,ES14.4,F11.5)')' Net recom. autoionization rate ','=',NET_AUTO,NET_AUTO/MAX_RATE
+	          WRITE(LU_TMP,'(A,T42,ES14.4,F11.5)')' Net recom. autoionization rate ','=',NET_AUTO,NET_AUTO/MAX_RATE
 	        END IF
 	      END DO
 	    END IF
-	    WRITE(6,'(A)')' '
+	    WRITE(LU_TMP,'(A)')' '
 	    T2=(SUM_TO-SUM_FROM)+(NT_SUM_TO-NT_SUM_FROM)+(COL_SUM_TO-COL_SUM_FROM)+
 	1            (REC_RATE(SL_INDX,I)-PHOT_RATE(SL_INDX,I))+NET_AUTO
-	    WRITE(6,'(A,T42,A,ES14.4,F11.5)')' Net Rate (into if +ve)','=',T2,T2/MAX_RATE
+	    WRITE(LU_TMP,'(A,T42,A,ES14.4,F11.5)')' Net Rate (into if +ve)','=',T2,T2/MAX_RATE
 !
-	    WRITE(6,'(/,A)')' The last # is the fractional rate and should be small (i.e, < 0.1)'
-	    WRITE(6,'(A)')  ' If 0.1, for example, 10% of the rate into a level is missing.'
-	    WRITE(6,'(A)')  ' It is important that all processes (including collisons) are included.'
-	    WRITE(6,'(A,/)')' Use COLL option in DISPGEN to generate collisional data'
+	    WRITE(LU_TMP,'(/,A)')' The last # is the fractional rate and should be small (i.e, < 0.1)'
+	    WRITE(LU_TMP,'(A)')  ' If 0.1, for example, 10% of the rate into a level is missing.'
+	    WRITE(LU_TMP,'(A)')  ' It is important that all processes (including collisons) are included.'
+	    WRITE(LU_TMP,'(A,/)')' Use COLL option in DISPGEN to generate collisional data'
+	    IF(LU_TMP .NE. 6)CLOSE(LU_TMP)
 	    DEALLOCATE(INDX,WRK_VEC)
 !
 	  ELSE IF(UC(PLT_OPT(1:1)) .EQ. 'H')THEN
@@ -1074,7 +1101,7 @@
 	    WRITE(6,*)' SPEC:    Set the species and reads in SPCIES//PRRR file'
 	    WRITE(6,*)' LID:     Lists level names'
 	    WRITE(6,*)' LEVEL:   Sets the level to be studied'
-	    WRITE(6,*)' AEXD:    Examine rates at a single depth'
+	    WRITE(6,*)' AEXD:    Plot line rates at a single depth as a function of lambda'
 	    WRITE(6,*)' EXD:     Examine rates at a single depth'
 	    WRITE(6,*)' NORM:    Plot rates as a function of depth'
 	    WRITE(6,*)' E(X):    Exit routine'

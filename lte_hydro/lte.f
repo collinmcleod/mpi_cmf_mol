@@ -13,8 +13,9 @@
 	USE MOD_USR_OPTION
 	IMPLICIT NONE
 !
+! Altered: 26-Nov-2024: Added Copper and Zinc.
 ! Altered:  1-Nov-2010: ND and NP are now computed internally from the data
-!                         in the GRID_PARAMS file. This no longer any need to
+!                         in the GRID_PARAMS file. Thus no longer any need to
 !                         alter MODEL_SPEC.
 ! Altered: 20-Mar-2005: FLUX_MEAN & ROSS_MEAN now zeroed. These vectors now
 !                         used in CMFGEN_SUB.
@@ -227,6 +228,16 @@
 	AT_NO(ID)=28.0_LDP;	    AT_MASS(ID)=58.7_LDP		!Nickel
 	SPECIES(ID)='NICK';	    SPECIES_ABR(ID)='Nk'
 	SOL_ABUND_HSCL(ID)=6.25_LDP
+!
+	ID=ID+1
+	AT_NO(ID)=29.0_LDP;         AT_MASS(ID)=63.6_LDP                 !Copper
+	SPECIES(ID)='COP';          SPECIES_ABR(ID)='Co'
+	SOL_ABUND_HSCL(ID)=4.20_LDP
+!
+	ID=ID+1
+	AT_NO(ID)=30.0_LDP;         AT_MASS(ID)=65.40_LDP             !Zinz
+	SPECIES(ID)='ZINC';         SPECIES_ABR(ID)='Zn'
+	SOL_ABUND_HSCL(ID)=4.60_LDP
 !
 	ID=ID+1
 	AT_NO(ID)=56.0_LDP;           AT_MASS(ID)=137.33_LDP        !Barium

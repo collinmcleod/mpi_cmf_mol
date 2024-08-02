@@ -11,6 +11,7 @@
 	USE MOD_CMFGEN
 	IMPLICIT NONE
 !
+! Aleterd: 28-Jul-2024 - Added data for copper and zinc.
 ! Altered: 01-May-2024 - Line length of sata statements reduced to 132 for compatability with intel compiler.
 ! Created: 28-Jan-2009.
 !
@@ -39,7 +40,9 @@
 ! The following table gives IP in eV. Grabbed off the web.
 ! As its only used to guide the user, the IP's need not be very accurate.
 !
-	REAL(KIND=LDP) IP(20,28)
+	INTEGER, PARAMETER :: NUM_IP_SPECIES=30
+	INTEGER, PARAMETER :: NUM_IP_IONS=20
+	REAL(KIND=LDP) IP(NUM_IP_IONS,NUM_IP_SPECIES)
 	DATA IP(1:1,1)/    13.60_LDP/
 	DATA IP(1:2,2)/    24.59_LDP,  54.42_LDP/
 	DATA IP(1:3,3)/     5.39_LDP,  75.64_LDP, 122.45_LDP/
@@ -98,11 +101,31 @@
 	1                 546.58_LDP,1397.21_LDP,1504.58_LDP,1603.35_LDP/
 	DATA IP(1:20,28)/   7.64_LDP,  18.17_LDP,  35.19_LDP,  54.93_LDP,  76.06_LDP, 107.79_LDP, 132.66_LDP, 161.68_LDP, 
 	1                 192.78_LDP, 224.59_LDP, 320.98_LDP, 352.38_LDP, 384.51_LDP, 430.12_LDP, 464.32_LDP, 498.52_LDP, 
-	1                571.08_LDP, 607.03_LDP,1541.17_LDP,1647.92_LDP/
+	1                 571.08_LDP, 607.03_LDP,1541.17_LDP,1647.92_LDP/
+	DATA IP(1:20,29)/   7.73_LDP,  20.29_LDP,  36.84_LDP,  57.38_LDP,   79.8_LDP,  103.0_LDP,  139.0_LDP,  166.0_LDP,
+	1                 198.0_LDP,  232.2_LDP,  265.33_LDP,  367.0_LDP,  401.0_LDP,  436.0_LDP,   483.1_LDP, 518.7_LDP,
+	1                 552.8_LDP,  632.5_LDP,  670.608_LDP,1690.5_LDP/
+	DATA IP(1:20,30)/  9.39_LDP,   17.96_LDP,  39.72_LDP,   59.57_LDP,  82.6_LDP,  108.0_LDP,   133.9_LDP,  173.9_LDP,
+	1                 203.0_LDP,   238.0_LDP,  274.4_LDP,   310.8_LDP,  417.6_LDP,  453.4_LDP,  490.6_LDP,  540.0_LDP,
+	1                 577.8_LDP,   613.3_LDP,  697.5_LDP,  737.37_LDP/
+
 !
 	MAX_RATIO=1.0_LDP
 	LUER=ERROR_LU()
 	LUWARN=WARNING_LU( )
+!
+! Check data is available for all species.
+!
+	DO ISPEC=1,NUM_SPECIES
+	  K=NINT(AT_NO(ISPEC))
+	  IF(SPECIES_PRES(ISPEC) .AND. K .GT. NUM_IP_SPECIES)THEN
+	    WRITE(LUER,*)'Error in CHECK_IONS_PRESENT'
+	    WRITE(LUER,*)'Data for atomic species with atomic no not availabe'
+	    WRITE(LUER,*)'Requested atomic No is ',K
+	    WRITE(LUER,*)'Maximum atomic No is ',NUM_IP_SPECIES
+	    STOP
+	  END IF
+	END DO
 !
 ! Determine ionzation fractions.
 !
@@ -212,7 +235,7 @@
 	    J=ATM(ID)%ZXzV+2
 	    K=NINT(AT_NO(ISPEC))
 	    ION_FRAC=1.0_LDP
-	    DO ID=J,MIN(K,20)
+	    DO ID=J,MIN(K,NUM_IP_IONS)
 	       ION_FRAC=ION_FRAC*(T_VAL**1.5_LDP)*EXP(-HDKT_EV*IP(ID,K)/T_VAL)/2.07E-22_LDP/ED_VAL
 	       IF(ION_FRAC .GT. HIGH_LIMIT)THEN
 	         IF(FIRST_TIME)THEN

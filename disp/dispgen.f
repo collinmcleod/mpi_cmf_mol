@@ -6,6 +6,7 @@ C
 	USE GEN_IN_INTERFACE
 	IMPLICIT NONE
 !
+! Altered 26-Jul-2024 : Added Copper and Zinc.
 ! Altered 20-Jan-2023 : Added ABS_MEAN
 ! Altered 12-Dec-2021 : Added ROM_ION_ID for plotting (osiris)
 ! Altered 18-May-2021 : If you use EXIT as a POPC filenam with RVTJ(ASK) command, no more
@@ -218,6 +219,16 @@ C
 	AT_NO(ID)=28.0_LDP;	    AT_MASS(ID)=58.7_LDP		!Nickel
 	SPECIES(ID)='NICK';	    SPECIES_ABR(ID)='Nk'
 	SOL_ABUND_HSCL(ID)=6.25_LDP
+!
+	ID=ID+1
+	AT_NO(ID)=29.0_LDP;	    AT_MASS(ID)=63.6_LDP		!Copper
+	SPECIES(ID)='COP';	    SPECIES_ABR(ID)='Co'
+	SOL_ABUND_HSCL(ID)=4.20_LDP
+!
+	ID=ID+1
+	AT_NO(ID)=30.0_LDP;	    AT_MASS(ID)=65.40_LDP		!Zinz
+	SPECIES(ID)='ZINC';	    SPECIES_ABR(ID)='Zn'
+	SOL_ABUND_HSCL(ID)=4.60_LDP
 !
 	ID=ID+1
 	AT_NO(ID)=56.0_LDP;           AT_MASS(ID)=137.33_LDP        !Barium

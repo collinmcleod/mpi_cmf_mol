@@ -116,6 +116,7 @@
 	ELSE
 	  WRITE(LUER,*)'BA matrix **NOT** computed'
 	END IF
+	FLUSH(LUER)
 !
 	NLBEGIN=0	!Initialize for next iteration
 	CONTINUE
@@ -416,6 +417,7 @@
 	    WRITE(LUER,*)'Error flag=',I
 	  END IF
 	END IF
+	FLUSH(LUER)
 !
 ! Here we check whether we keep BA fixed. Previously we always computed the BA
 ! matrix after a LAMBDA iteration. This will allow us to keep it fixed for

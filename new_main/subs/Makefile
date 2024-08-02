@@ -80,7 +80,7 @@ OBJ = $(LIB)(add_par_to_full_v2.o)\
       $(LIB)(steq_co_mov_deriv_v3.o)\
       $(LIB)(store_old_grid.o)\
       $(LIB)(store_ba_data_v3.o)\
-      $(LIB)(sub_guess_dc.o)\
+      $(LIB)(sub_guess_dc_v2.o)\
       $(LIB)(sum_steq_sol.o)\
       $(LIB)(tst_rd_seq.o)\
       $(LIB)(var_op_v10.o)\

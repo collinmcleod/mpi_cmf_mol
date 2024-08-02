@@ -7,12 +7,13 @@
       MODULE STEQ_DATA_MOD
       USE SET_KIND_MODULE
 !
+!Alteerd 26-Jul-2024: Increased the number of species to 28.
 !Altered 12-Jul-2019: Added EHB matrices (added to IBIS 17-Aug-2019).
 !Altered 19-Aug-2015: BA_MAX_IONS_PER_SPECIES increaed to 21 (cur_hmi, 12-Jun-2015)
 !
 ! Number of atomic species (e.g. H, C, N is 3 species).
 !
-	INTEGER, PARAMETER :: BA_NUM_SPECIES=26
+	INTEGER, PARAMETER :: BA_NUM_SPECIES=28
 !
 ! Maximum number of ionization stages per species. For H, need at this number
 ! has to be 2 or higher (as I and II). A setting of 10 implies that we can treat

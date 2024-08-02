@@ -19,11 +19,13 @@ OBJ    = $(LIB)(adjust_jes_v2.o)\
          $(LIB)(compute_tau_radial.o)\
          $(LIB)(comp_ip_ew.o)\
          $(LIB)(create_gauss.o)\
+         $(LIB)(create_r_shift.o)\
          $(LIB)(cnvlv_es_one_par_v2.o)\
          $(LIB)(cnvlv_es_two_par_v2.o)\
          $(LIB)(cnvrt.o)\
          $(LIB)(cnvrt_j.o)\
          $(LIB)(determ_clump_pos_v3_jh.o)\
+         $(LIB)(divide_by_cont.o)\
          $(LIB)(dp_cnvrt.o)\
          $(LIB)(dp_cnvrt_j.o)\
          $(LIB)(dp_cnvrt_j_v2.o)\
@@ -60,7 +62,9 @@ OBJ    = $(LIB)(adjust_jes_v2.o)\
          $(LIB)(recom_opac_v2.o)\
          $(LIB)(rite_2dj_asc_jh.o)\
          $(LIB)(set_ip_xspat_unit.o)\
+         $(LIB)(sm_wind_prof_jh.o)\
          $(LIB)(uvabs_v2.o)\
+         $(LIB)(write_multi_full_chi_jh.o)\
          $(LIB)(write_line_data_v3.o)\
          $(LIB)(zm_data_module.o)
   

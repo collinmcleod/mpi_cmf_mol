@@ -6,6 +6,7 @@
 	USE CMF_FLUX_CNTRL_VAR_MOD
 	IMPLICIT NONE
 !
+! Altered: 04-Jul-2024 - Added consistency check for dust parameters.
 ! Altered: 25-Jul-2013 _ Added DJDT consistency check.
 ! Created: 16-Jun-2009
 !
@@ -104,5 +105,16 @@
 	  IF(STOP_IF_BAD_PARAM)STOP
 	END IF
 !
+	IF(INCL_DUST .AND. USE_HEN_GREEN)THEN
+	  IF(USE_J_REL .OR. .NOT. USE_LAM_ES .OR. .NOT. USE_FORMAL_REL)THEN
+	    WRITE(LUER,*)'Using Henny-Greenstein funtion requires the following options to be set.'
+	    WRITE(LUER,*)'USE_J_REL=.FALSE.'
+	    WRITE(LUER,*)'USE_LAM_ES=.TRUE.'
+	    WRITE(LUER,*)'USE_FORMAL_REL=.TRUE.'
+	    WRITE(LUER,*)'Only the spectrum computed in the COMOVING frame will hae the full allowg of g > 0'
+	    IF(STOP_IF_BAD_PARAM)STOP
+	  END IF
+	END IF
+
 	RETURN
 	END

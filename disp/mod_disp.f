@@ -1,6 +1,7 @@
 	MODULE MOD_DISP
 	USE SET_KIND_MODULE
 !
+! Altered 26-Jul-2024 : Increased number of species to 28.
 ! Altered 20-Jan-2023 : Added ABS_MEAN
 ! Altered 15-Dec-2021 : Added ROM_ION_ID for plotting labels (osiris)
 ! Altered 16-Aug-2019 : Added PLACK_MEAN
@@ -10,7 +11,7 @@
 ! Altered 27-Nov-2000 : MASS changed to AT_MASS
 !                       Extra species installed. More consistent with CMFGEN.
 !
-	INTEGER, PARAMETER :: NSPEC=26
+	INTEGER, PARAMETER :: NSPEC=28
 	INTEGER, PARAMETER :: NION_MAX=21
 	INTEGER, PARAMETER :: NPHOT_MAX=20
 	INTEGER, PARAMETER :: MAX_ION=NSPEC*NION_MAX

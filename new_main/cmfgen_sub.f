@@ -41,6 +41,7 @@
 	USE EDDFAC_REC_DEFS_MOD
 	IMPLICIT NONE
 !
+! Altered 02-Aug-2024 Minor cleaning. Changed minimum valuer for RLUMST & warning output.
 ! Altered 17-Aug-2019 : Default for DO_T_AUTO is now TRUE. Incorporated into IBIS versions.
 ! Altered 16-Aug-2019 : Now output Planck mean to RVTJ.
 ! Altered Jul/Aug 2019: Extensive changes to treat electron energy balance equation (done on OSIRIS),
@@ -3082,11 +3083,15 @@
 	WRITE(STRING,'(I5)')MAIN_COUNTER; STRING=ADJUSTL(STRING)
 	STRING=' Luminosity of star (d=1,ND)(iteration '//TRIM(STRING)//') is:'
 	WRITE(LUER,'(A,2ES18.8,/)')TRIM(STRING),RLUMST(1),RLUMST(ND)
+	FLUSH(LUER)
 	IF(RLUMST(1) .LE. 0.0_LDP)RLUMST(1)=1.0E-20_LDP
+	J=0
 	DO I=1,ND
-	  IF(RLUMST(I) .GE. 0.0_LDP .AND. RLUMST(I) .LT.  1.0E-05_LDP)RLUMST(I)=1.0E-05_LDP
-	  IF(RLUMST(I) .LE. 0.0_LDP .AND. RLUMST(I) .GT. -1.0E-05_LDP)RLUMST(I)=-1.0E-05_LDP
+	  IF( ABS(RLUMST(I)) .LT. 1.0E-10)THEN
+	     RLUMST= SIGN(1.0E-010_LDP,RLUMST); J=J+1
+	  END IF
 	END DO
+	IF(J .NE. 0)WRITE(LUER,*)'|RLUMST| set to 1.0E-10 at some depths'
 	RLUMST_BND=RLUMST(2)		!2 is used to avoid glitch at outer boundary in some models.
 !
 	CALL GEN_ASCI_OPEN(LU_FLUX,'OBSFLUX','UNKNOWN',' ',' ',IZERO,IOS)

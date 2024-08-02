@@ -16,6 +16,8 @@
 	USE MOD_COLOR_PEN_DEF
 	IMPLICIT NONE
 !
+! Altered  29-Jul-2024 : Added TAUN opton (plots tau (Sobolev approximation) as a function of level #.
+! Altered  03-Dec-2023 : GF option added (?)
 ! Altered  16-Jun-2023 : Changed angular quadrature weight routines to V2.
 ! Altered  19-May-2023 : Fixed bug with COLL option -- size of work vectors TA, TB, and TC increased.
 ! Altered  22-Feb-2023 : Minor changes to some plotting option. Variable CURVE_LAB added.
@@ -3638,6 +3640,52 @@
 !
 ! 
 !
+	ELSE IF(XOPT .EQ. 'TAUN')THEN
+!
+	  WRITE(6,'(/,1X,A)')'This option computes the Sobolovev optical depth as a function of level'
+	  WRITE(6,'(A)')'at a given depth. It assumes lambda = 1000Ang, f = 1, and ignores stimulated emission.'
+	  WRITE(6,'(A,/)')'In general, Tau(Sob) scales as f.lam'
+!	  
+	  IF(DPTH_INDX .LE. 0 .OR. DPTH_INDX .GT. ND)DPTH_INDX=ND/2
+	  WRITE(DEFAULT,*)DPTH_INDX; DEFAULT=ADJUSTL(DEFAULT)
+	  CALL USR_OPTION(DPTH_INDX,'DPTH',DEFAULT,'Depth for line plot')
+	  CALL USR_OPTION(XAXIS_OPT,'XAXIS','N','What X axis (Level number (def), of Lam (ion)=L)?')
+!
+! Output summary of model data at depth point
+!
+          WRITE(T_OUT,'(1X,A,1P,E14.6)')'    R(I)/R*=',R(DPTH_INDX)/R(ND)
+          WRITE(T_OUT,'(1X,A,1P,E14.6)')'       V(I)=',V(DPTH_INDX)
+          WRITE(T_OUT,'(1X,A,1P,E14.6)')'       T(I)=',T(DPTH_INDX)
+          WRITE(T_OUT,'(1X,A,1P,E14.6)')'      ED(I)=',ED(DPTH_INDX)
+!
+! Factor of 10^(-10) arises since I am assuming Lambda=1000Ang= 10^(-5) cm, since 
+! OPLIN.R has the right units, and since I pick up a factor of 10^(-5}
+! since V is in km/s.
+!
+	  I=DPTH_INDX
+	  T1=1.00E-10_LDP*OPLIN*R(I)/V(I)
+	  DO ID=1,NUM_IONS
+	    IF(ATM(ID)%XzV_PRES .AND. (XSPEC .EQ. UC(ION_ID(ID)) .OR.
+	1                       XSPEC .EQ. SPECIES(SPECIES_LNK(ID)) .OR.
+	1                       XSPEC .EQ. 'ALL') )THEN
+	        DO NL=1,ATM(ID)%NXzV_F
+	           TA(NL)=NL
+	           IF(XAXIS_OPT .NE.  'N')TA(NL)=ANG_TO_HZ/ATM(ID)%EDGEXzV_F(NL)
+	           TB(NL)=LOG10(ATM(ID)%XzV_F(NL,DPTH_INDX)*T1)
+	        END DO
+	        CALL DP_CURVE(ATM(ID)%NXzV_F,TA,TB)
+	     END IF
+	  END DO
+	  YAXIS='Log \gt\dSob\u.(1000\A/f/lam)'
+	  XAXIS='Level index'
+	  IF(XAXIS_OPT .NE.  'N')XAXIS='Ionization wavelength (Ang)'
+!
+	  IF(I .EQ. 0)THEN
+	    WRITE(T_OUT,*)'Error no matching ionization stage'
+	  END IF
+!
+! Plot gf as a function of wavelength.
+!
 	ELSE IF(XOPT .EQ. 'GF')THEN
 !
 	   I=0
@@ -3665,7 +3713,7 @@
 	   END DO
 !
 	   IF(I .EQ. 0)THEN
-	     WRITE(T_OUT,*)'Error no matching ioization stage'
+	     WRITE(T_OUT,*)'Error no matching ionization stage'
 	   ELSE
              WRITE(T_OUT,*)'Number of transitions found is',I
 	     I=2*I
@@ -4291,12 +4339,15 @@
 	              IF(WR_LINE)THEN
 	                WRITE(40,'(F12.4,ES12.4,2X,A10,2I6)')XV(J),YV(J),ION_ID(ID), NL, NUP
 	              END IF
-	              IF(YV(J) .LE. TAU_MIN)J=J-1
+	              IF(YV(J) .LE. TAU_MIN)THEN
+	                J=J-1
+	              ELSE
+	               FOUND=.TRUE.
+	              END IF
 	            ELSE
 	              J=J-1
 	            END IF
-	            WRITE(25,*)J,XV(J),T2
-	            FOUND=.TRUE.
+	            IF(J .GT. 0)WRITE(25,*)J,XV(J),T2
 	          END IF
 	        END DO
 	      END DO
@@ -5928,6 +5979,7 @@ c
 	  END DO
 	  DEFAULT='LTE'
 	  CALL USR_OPTION(TWO_PHOT_OPTION,'OPT','LTE','Two photon option: LTE, NOSTIM, RAD, and OLD_DEF')
+	  TWO_PHOT_OPTION=UC(TWO_PHOT_OPTION)
 !
 	  XAXSAV=XAXIS
 	  CALL USR_OPTION(ELEC,'OPAC','F','Plot opacity instead of emissivity?')

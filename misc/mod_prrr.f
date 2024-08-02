@@ -11,6 +11,7 @@
 	USE GEN_IN_INTERFACE
 	IMPLICIT NONE
 !
+! ALtered 29-Jun-2024: Code now the ability to print out the recombination coefficient for each level.
 ! Altered 01-Mar-2023: PCUM and RCUM options installed.
 ! Altered 22-Sep-2022: Minor bug fix -- Recom. charge exchange was being output twice.
 ! Altered 10-Dec-2021: Improved output to ?_PRRR_SUM. Now much easier to read.
@@ -70,6 +71,7 @@
 	LOGICAL NET_RECOM_PER_LEVEL
 	LOGICAL DO_INDIV_RATES
 	LOGICAL NORM
+	LOGICAL RECOM_COEF 
 	LOGICAL ABS_VALUE
 	LOGICAL RD_NT_2E
 	LOGICAL RD_XRAY_2E
@@ -149,7 +151,9 @@
 !
 	NET_RECOM_PER_LEVEL=.FALSE.
 	DO_INDIV_RATES=.FALSE.
+	RECOM_COEF=.FALSE.
 	CALL GEN_IN(DO_INDIV_RATES,'Ouput recombination rate and photioization rate for each leve')
+	CALL GEN_IN(RECOM_COEF,'Ouput recombination coef for for each leve')
 	IF(.NOT. DO_INDIV_RATES)THEN
 	   CALL GEN_IN(NET_RECOM_PER_LEVEL,'Ouput net recombination rate to each level?')
 	END IF
@@ -281,6 +285,14 @@
 	       WRITE(TMP_STR,'(I3,A,I3,A)')NPRINT,'-',NLEV,')'
 	       WRITE(21,'(3X,A,A,T24,10ES12.4)')'Phot(',TRIM(TMP_STR),
 	1           ((SUM(RECOM(I,NPRINT+1:NLEV))-SUM(PHOT(I,NPRINT+1:NLEV))),I=IST,IEND)
+	     END IF
+	   ELSE IF(RECOM_COEF)THEN
+	     DO J=1,NPRINT
+	       WRITE(21,'(3X,A,I4,A,T22,10ES12.4)')'REC(',J,')',(RECOM(I,J)/ED(I)/DI(I),I=IST,IEND)
+	     END DO
+	     IF(NPRINT .GT. 0 .AND. NPRINT .LT. NLEV)THEN
+	       WRITE(TMP_STR,'(I3,A,I3,A)')NPRINT,'-',NLEV,')'
+	       WRITE(21,'(3X,A,A,T24,10ES12.4)')'Phot(',TRIM(TMP_STR),(SUM(RECOM(I,NPRINT+1:NLEV)/ED(I)/DI(I)),I=IST,IEND)
 	     END IF
 	   ELSE IF(DO_INDIV_RATES)THEN
 	     DO J=1,NPRINT

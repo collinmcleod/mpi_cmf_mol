@@ -7,6 +7,7 @@
 	MODULE MOD_CMF_OBS
 	USE SET_KIND_MODULE
 !
+! Altered: 26-Jul-2024 : Increased number of species to 28.
 ! Altered: 20-Aug-2019 : Added PLANCK_MEAN
 ! Altered: 17-Jan-2017 : Added CMFGEN_TGREY and dE_RAD_DECAY.
 ! Altered: 19-Aug-2015 : Added MI, Max number of ions increased to 21
@@ -16,7 +17,7 @@
 !
 ! Number of atomic species (e.g. H, C, N is 3 species).
 !
-	INTEGER, PARAMETER :: NUM_SPECIES=26
+	INTEGER, PARAMETER :: NUM_SPECIES=28
 !
 ! Maximum number of ionization stages per species. For H, need at this number
 ! has to be 2 or higher (as I and II). A setting of 10 implies that we can treat

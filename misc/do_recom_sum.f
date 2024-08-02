@@ -4,7 +4,9 @@
 	USE MOD_COLOR_PEN_DEF
 	IMPLICIT NONE
 !
-	INTEGER, PARAMETER :: NSPEC=26
+! Altered: 26-Jul-2024 -- Number of species increased to 28.
+!
+	INTEGER, PARAMETER :: NSPEC=28
 	INTEGER, PARAMETER :: NION_MAX=21
 	INTEGER, PARAMETER :: LUIN=7
 	INTEGER, PARAMETER :: LUOUT=10
@@ -45,7 +47,7 @@
 	DATA SPECIES_ABR/'H','He','C','N','O','F','Ne',
 	1         'Na','Mg','Al','Si','P','S','Cl','Ar',
 	1         'K','Ca','Sc','Tk','V','Cr','Mn','Fe',
-	1          'Co','Nk','Ba'/
+	1          'Co','Nk','Cu','Zn','Ba'/
 !
 
 	WRITE(6,'(A)')BLUE_PEN
