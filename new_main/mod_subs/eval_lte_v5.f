@@ -24,12 +24,15 @@
 !
 	INTEGER I
 	INTEGER ID
+	INCLUDE 'mpif.h'
 !
 ! Revise vector constants for evaluating the level dissolution. These
 ! constants are the same for all species. These are stored in a common block,
 ! and are required by SUP_TO_FULL and LTE_POP_WLD.
 !
 	CALL COMP_LEV_DIS_BLK(ED,POPION,T,DO_LEV_DISSOLUTION,ND)
+	WRITE(180,*)ND,ED(1),ED(ND),POPION(1),POPION(ND),T(1),T(ND)
+	FLUSH(180)
 !
 ! The final statements set the population of the ground state of the next
 ! ionizations stages. These must be set since they are used in determining
@@ -41,14 +44,14 @@
 	1          ATM(ID)%XzVLTE_F,  ATM(ID)%LOG_XzVLTE_F, ATM(ID)%W_XzV_F,
 	1          ATM(ID)%EDGEXzV_F, ATM(ID)%GXzV_F,  ATM(ID)%ZXzV,
 	1          ATM(ID)%GIONXzV_F, ATM(ID)%NXzV_F,
-	1          ATM(ID)%DXzV_F,    ED,T,ND)
+	1          ATM(ID)%DXzV_F,    ED,T,            DST, DEND, ND)
 	    CALL LTE_POP_SL_V2(
 	1          ATM(ID)%XzVLTE,         ATM(ID)%LOG_XzVLTE,    ATM(ID)%dlnXzVLTE_dlnT,
 	1          ATM(ID)%NXzV,           ATM(ID)%XzVLTE_F,      ATM(ID)%LOG_XzVLTE_F,
 	1          ATM(ID)%XzVLTE_F_ON_S,  ATM(ID)%EDGEXzV_F,     ATM(ID)%F_TO_S_XzV,
-	1          ATM(ID)%NXzV_F,         ATM(ID)%XzV_PRES, T,ND)
+	1          ATM(ID)%NXzV_F,         ATM(ID)%XzV_PRES, T,   DST, DEND, ND)
 	    IF(.NOT. ATM(ID+1)%XzV_PRES)THEN
-	      DO I=1,ND
+	      DO I=DST,DEND
 	        ATM(ID+1)%XzV(1,I)=ATM(ID)%DXzV_F(I)			!True if not present.
 	        ATM(ID+1)%XzVLTE(1,I)=ATM(ID)%DXzV_F(I)			!True if not present.
 	        ATM(ID+1)%LOG_XzVLTE(1,I)=LOG(ATM(ID)%DXzV_F(I))	!True if not present.
@@ -56,6 +59,7 @@
 	      END DO
 	    END IF
 	  END IF
+	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	END DO
 !
 	RETURN

@@ -115,10 +115,12 @@
 !
 	FOUR_PI_D_H=1.0_LDP/5.27296E-03_LDP                    !1.8965D+02		!4*PI/H*DEX(-10)*DEX(-15)
 !
+!$OMP PARALLEL WORKSHARE
 	WSE_S(:,:)=0.0_LDP
 	WCR(:,:)=0.0_LDP
 	dWSE_SdT(:,:)=0.0_LDP
 	dWCRdT(:,:)=0.0_LDP
+!$OMP END PARALLEL WORKSHARE
 !
 ! Get edge frequencies.
 !
@@ -172,24 +174,25 @@
 ! Note that WSE_S and WCR have alternate signs.
 !
 	IF(DO_ALL)THEN
-	  DO I_F=1,N_F
-	    I_S=F_TO_S_MAPPING(I_F)
-	    IF(NU_CONT .GE. EDGE(I_F))THEN
-	      T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
-	      DO J=1,ND
+!
+!$OMP PARALLEL DO PRIVATE(J,I_F,I_S,T1,T2,T3)
+!
+	  DO J=1,ND
+	    DO I_F=1,N_F
+	      I_S=F_TO_S_MAPPING(I_F)
+	      IF(NU_CONT .GE. EDGE(I_F))THEN
+	        T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
 	        WSE_S(I_S,J)=WSE_S(I_S,J) + T1*HNST_F_ON_S(I_F,J)
 	        WCR(I_S,J)=WCR(I_S,J) - EDGE(I_F)*T1*HNST_F_ON_S(I_F,J)
 	        T2=T1*HNST_F_ON_S(I_F,J)*(dlnHNST_S_dlnT(I_S,J)+1.5_LDP+HDKT*EDGE_F(I_F)/T(J))/T(J)
 	        dWSE_SdT(I_S,J)=dWSE_SdT(I_S,J) - T2
 	        dWCRdT(I_S,J)=dWCRdT(I_S,J) + EDGE(I_F)*T2
-	      END DO
 !
 ! We only allow for level dissolutions when the ionizations are occurring to
 ! the ground state.
 !
-	    ELSE IF(DIS_CONST(I_F) .GE. 0.0_LDP)THEN
-	      T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
-	      DO J=1,ND
+	      ELSE IF(DIS_CONST(I_F) .GE. 0.0_LDP)THEN
+	        T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
 	        T2=7.782_LDP+XDIS(J)*DIS_CONST(I_F)
 	        T3=T2/(T2+YDIS(J)*DIS_CONST(I_F)*DIS_CONST(I_F))
 	        IF(T3 .GT. PHOT_DIS_PARAMETER)THEN
@@ -200,25 +203,26 @@
 	          dWSE_SdT(I_S,J)=dWSE_SdT(I_S,J) - T2
 	          dWCRdT(I_S,J)=dWCRdT(I_S,J) + EDGE_F(I_F)*T2
 	        END IF
-	      END DO
-	    END IF
+	      END IF
+	    END DO
 	  END DO
 	ELSE
-	  DO I_F=1,N_F
-	    I_S=F_TO_S_MAPPING(I_F)
-	    IF(NU_CONT .GE. EDGE(I_F))THEN
-	      T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
-	      DO J=1,ND
+!
+!$OMP PARALLEL DO PRIVATE(J,I_F,I_S,T1,T2,T3)
+!
+	  DO J=1,ND
+	    DO I_F=1,N_F
+	      I_S=F_TO_S_MAPPING(I_F)
+	      IF(NU_CONT .GE. EDGE(I_F))THEN
+	        T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
 	        WSE_S(I_S,J)=WSE_S(I_S,J) + T1*HNST_F_ON_S(I_F,J)
 	        WCR(I_S,J)=WCR(I_S,J) - EDGE(I_F)*T1*HNST_F_ON_S(I_F,J)
-	      END DO
 !
 ! We only allow for level dissolutions when the ionizations are occurring to
 ! the ground state.
 !
-	    ELSE IF(DIS_CONST(I_F) .GE. 0.0_LDP)THEN
-	      T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
-	      DO J=1,ND
+	      ELSE IF(DIS_CONST(I_F) .GE. 0.0_LDP)THEN
+	        T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
 	        T2=7.782_LDP+XDIS(J)*DIS_CONST(I_F)
 	        T3=T2/(T2+YDIS(J)*DIS_CONST(I_F)*DIS_CONST(I_F))
 	        IF(T3 .GT. PHOT_DIS_PARAMETER)THEN
@@ -226,8 +230,8 @@
 	          WSE_S(I_S,J)=WSE_S(I_S,J) + T3*HNST_F_ON_S(I_F,J)
 	          WCR(I_S,J)=WCR(I_S,J) - EDGE(I_F)*T3*HNST_F_ON_S(I_F,J)
 	        END IF
-	      END DO
-	    END IF
+	      END IF
+	    END DO
 	  END DO
 	END IF
 !

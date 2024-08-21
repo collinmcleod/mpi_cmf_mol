@@ -202,6 +202,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(same_n.o)\
       $(LIB)(scale_grey.o)\
       $(LIB)(scale_pops.o)\
+      $(LIB)(scatter_xzv_f_and_ions.o)\
       $(LIB)(scr_read_v2.o)\
       $(LIB)(set_acc_dmu.o)\
       $(LIB)(set_case.o)\

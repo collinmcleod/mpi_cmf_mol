@@ -6,7 +6,7 @@
 !       DI C2. Level dissolution is taken into account.
 !
 	SUBROUTINE LTEPOP_WLD_V2(C2LTE,LOG_C2LTE,W_C2,EDGEC2,GC2,
-	1             ZC2,GION_C2,NC2,DIC2,ED,T,ND)
+	1             ZC2,GION_C2,NC2,DIC2,ED,T,DST,DEND, ND)
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
@@ -24,12 +24,13 @@
 	INTEGER ND
 	REAL(KIND=LDP) ED(ND)			!Electron density
 	REAL(KIND=LDP) T(ND)			!Temperature 10^4K
-	REAL(KIND=LDP) DIC2(ND)			!Ion density (Full model atom)
 !
+	INTEGER DST,DEND
 	INTEGER NC2
-	REAL(KIND=LDP) C2LTE(NC2,ND)
-	REAL(KIND=LDP) LOG_C2LTE(NC2,ND)
-	REAL(KIND=LDP) W_C2(NC2,ND)
+	REAL(KIND=LDP) C2LTE(NC2,DST:DEND)
+	REAL(KIND=LDP) LOG_C2LTE(NC2,DST:DEND)
+	REAL(KIND=LDP) W_C2(NC2,DST:DEND)
+	REAL(KIND=LDP) DIC2(DST:DEND)			!Ion density (Full model atom)
 	REAL(KIND=LDP) EDGEC2(NC2)
 	REAL(KIND=LDP) GC2(NC2)
 	REAL(KIND=LDP) GION_C2			!Statistical weight of ion groun state.
@@ -56,13 +57,13 @@
 !
 ! Compute the occupation probabilities.
 !
-	CALL OCCUPATION_PROB(W_C2,EDGEC2,ZC2,NC2,ND)
+	CALL OCCUPATION_PROB(W_C2,EDGEC2,ZC2,NC2,DST,DEND)
 !
 ! Compute the LTE populations of the levels in the full atom, taking level
 ! dissolution into account.
 !
 	C2LTE=0.0_LDP
-	DO K=1,ND
+	DO K=DST,DEND
 	 X=HDKT/T(K)
 	 RGU=2.07078E-22_LDP*ED(K)*DIC2(K)*( T(K)**(-1.5_LDP) )/GION_C2
 	 RGU=LOG(RGU)
@@ -71,6 +72,12 @@
 	   IF(LOG_C2LTE(I,K) .LE. MAX_LN_LTE_POP)C2LTE(I,K)=EXP(LOG_C2LTE(I,K))
 	 END DO
 	END DO
+	WRITE(6,*)'HELP',NC2, DST, DEND
+	WRITE(6,*)ED(DST),ED(DEND)
+	WRITE(6,*)DIC2(DST),DIC2(DEND)
+	WRITE(6,*)T(DST),T(DEND)
+	WRITE(6,*)W_C2(1,DST),W_C2(1,DEND)
+	WRITE(6,*)W_C2(NC2,DST),W_C2(NC2,DEND)
 !
 	RETURN
 	END

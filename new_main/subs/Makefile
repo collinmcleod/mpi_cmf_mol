@@ -11,6 +11,9 @@ LIB_MOD=$(LIB_DIR)libmod.a
 
 # Entries for library
 
+#      $(LIB)(ba_ehb_bf_update_v1.o)\
+#      $(LIB)(ba_ehb_ff_update_v1.o)\
+
 OBJ = $(LIB)(add_par_to_full_v2.o)\
       $(LIB)(adjust_cmat_to_lte.o)\
       $(LIB)(adjust_sn_r_grid.o)\
@@ -19,8 +22,6 @@ OBJ = $(LIB)(add_par_to_full_v2.o)\
       $(LIB)(auto_clump_rev.o)\
       $(LIB)(auto_add_ion.o)\
       $(LIB)(ba_update_v7.o)\
-      $(LIB)(ba_ehb_bf_update_v1.o)\
-      $(LIB)(ba_ehb_ff_update_v1.o)\
       $(LIB)(check_hydro_def.o)\
       $(LIB)(check_ions_present.o)\
       $(LIB)(check_tmin.o)\

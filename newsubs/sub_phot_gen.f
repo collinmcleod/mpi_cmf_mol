@@ -278,6 +278,7 @@ C
 	            WRITE(6,*)'Error in SUB_PHOT_GEN -- invalid PHOT_PARAMS for TYPE 2'
 	            WRITE(6,*)'ID=',ID
 	            WRITE(6,*)'N,LST,LEND=',N,LST,LEND
+	            WRITE(6,*)'GS_EDGE,NLEVS,PHOT_ID',GS_EDGE,NLEVS,PHOT_ID
 	            STOP
 	          END IF
 !

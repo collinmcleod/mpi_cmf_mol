@@ -7,18 +7,6 @@
 	MODULE MOD_CMFGEN
 	USE SET_KIND_MODULE
 !
-! Altered 25-Jul-2024 : Increased number of species from 26 to 28.
-! Altered 20-Jan-2023 : Added ABS_MEAN opacity.
-! Altered 17-Aug-2019 : Put on IBIS -- added dWCRXzVd 12-Jul-2019 (cur_cmf_eb)
-! Altered 19-Aug-2015 : Added HMI, MAX_IONS_PER_SPECIES increased to 21 (cur_hmi,12-Jun-2015)
-! Incoprated 02-Jan-2015: VTURB_VEC, ARAD, GAM2, etc added (for depth depndent profiles).
-! Altered 29-Nov-2011 : OLD_LEV_POP_AVAIL added as vector.
-! Altered 25-Sep-2011 : LOG_XzVLTE_F, XzVLTE_F_ON_S, LOG_XzVLTE arrays added (26-Nov-2010/5-Apr-2011).
-!                         Length of level name changed to 40.
-! Altered 19-Jan-2009 : SL_OPTION inserted
-! Altered 06-Aug-2008 : PLANCK_MEAN inserted.
-! Altered 31-Jan-2002 : FIXEDT etc inserted.
-!
 ! Number of atomic species (e.g. H, C, N is 3 species).
 !
 	INTEGER, PARAMETER :: NUM_SPECIES=28
@@ -99,12 +87,6 @@
 !
 	TYPE MODEL_ATOM_DATA
 !
-	  REAL(KIND=LDP), ALLOCATABLE :: XzV_F(:,:)		!Level populations in FULL atom
-	  REAL(KIND=LDP), ALLOCATABLE :: XzVLTE_F(:,:)		!LTE level populations in FULL atom
-          REAL(KIND=LDP), ALLOCATABLE :: LOG_XzVLTE_F(:,:)  	!Log(LTE level populations in FULL atom)
-          REAL(KIND=LDP), ALLOCATABLE :: XzVLTE_F_ON_S(:,:) 	!Log(LTE level populations in FULL atom)
-	  REAL(KIND=LDP), ALLOCATABLE :: W_XzV_F(:,:)		!Level dissolution factors
-	  REAL(KIND=LDP), ALLOCATABLE :: DXzV_F(:)		!Ion population for full atom
 	  REAL(KIND=LDP), ALLOCATABLE :: AXzV_F(:,:)		!Oscillator strength (A(I,j), i<j)
 	  REAL(KIND=LDP), ALLOCATABLE :: EDGEXzV_F(:)		!Ionization energy to g.s. (10^15 Hz)
 	  REAL(KIND=LDP), ALLOCATABLE :: GXzV_F(:)		!Level statistical weights in full atom
@@ -114,6 +96,13 @@
 	  INTEGER, ALLOCATABLE :: F_TO_S_XzV(:)		!Link of full levels to super levels
 	  INTEGER, ALLOCATABLE :: INT_SEQ_XzV(:)
 	  CHARACTER(LEN=40), ALLOCATABLE :: XzVLEVNAME_F(:)	!Level name
+!
+	  REAL(KIND=LDP), ALLOCATABLE :: XzV_F(:,:)		!Level populations in FULL atom
+	  REAL(KIND=LDP), ALLOCATABLE :: XzVLTE_F(:,:)		!LTE level populations in FULL atom
+          REAL(KIND=LDP), ALLOCATABLE :: LOG_XzVLTE_F(:,:)  	!Log(LTE level populations in FULL atom)
+          REAL(KIND=LDP), ALLOCATABLE :: XzVLTE_F_ON_S(:,:) 	!Log(LTE level populations in FULL atom)
+	  REAL(KIND=LDP), ALLOCATABLE :: W_XzV_F(:,:)		!Level dissolution factors
+	  REAL(KIND=LDP), ALLOCATABLE :: DXzV_F(:)		!Ion population for full atom
 !
 	  REAL(KIND=LDP), ALLOCATABLE :: DXzV(:)		!Ion population for super level
 	  REAL(KIND=LDP), ALLOCATABLE :: XzV(:,:)		!Level population in SL atom
@@ -201,6 +190,14 @@
 !
 	END TYPE MODEL_ATOM_DATA
 !
+	INTEGER IERR
+	INTEGER ERRORCODE
+	INTEGER NTHREAD
+	INTEGER NUM_DEPTHS_PER_THREAD
+	INTEGER MYPE
+	INTEGER DST		!Start depth index for a particular process
+	INTEGER DEND		!End index for a particular process
+!
 !
 	INTEGER EQNE		!Electron conservation equation
 !
@@ -249,6 +246,7 @@
 ! to be at the end of the data module in order not to get alignment problems.
 !
 	TYPE (MODEL_ATOM_DATA) ATM(NUM_SPECIES*MAX_IONS_PER_SPECIES)
+	TYPE (MODEL_ATOM_DATA) ROOT(NUM_SPECIES*MAX_IONS_PER_SPECIES)
 !
 ! Indicates generic ionization names.
 !

@@ -75,7 +75,6 @@
 ! 
 !
 	REAL(KIND=LDP) SOL(NT,ND)		!Temp. stor. area for ST. EQ.
-	INTEGER DST,DEND
 !
 ! Constants for opacity etc. These are set in CMFGEN.
 !

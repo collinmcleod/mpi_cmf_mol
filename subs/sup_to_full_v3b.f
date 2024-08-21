@@ -28,7 +28,7 @@
 	1   GC2_F,F_TO_S_MAP_C2,INT_SEQ_C2,NC2_F,DIC2_F,GIONC2_F,
 	1   C2_S,C2LTE_S,LOG_C2LTE_S,NC2_S,DIC2_S,ZC2,C2_PRES,
 	1   EDGECIII_F,GCIII_F,F_TO_S_MAP_CIII,NCIII_F,
-	1   CIII_PRES,T,ED,ND)
+	1   CIII_PRES,T,ED,DST, DEND, ND)
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
@@ -52,16 +52,17 @@
 	INTEGER ND
 	REAL(KIND=LDP) ED(ND)			!Electron density
 	REAL(KIND=LDP) T(ND)			!Temperature 10^4K
-	REAL(KIND=LDP) DIC2_S(ND)		!Ion density (Super levels)
-	REAL(KIND=LDP) DIC2_F(ND)		!Ion density (Full model atom)
+	REAL(KIND=LDP) DIC2_S(DST:DEND)		!Ion density (Super levels)
+	REAL(KIND=LDP) DIC2_F(DST:DEND)		!Ion density (Full model atom)
 	REAL(KIND=LDP) ZC2			!Ion charge
 !
+	INTEGER DST,DEND
 	INTEGER NC2_F
-	REAL(KIND=LDP) C2_F(NC2_F,ND)
-	REAL(KIND=LDP) C2LTE_F(NC2_F,ND)
-	REAL(KIND=LDP) LOG_C2LTE_F(NC2_F,ND)
-	REAL(KIND=LDP) C2LTE_F_ON_S(NC2_F,ND)
-	REAL(KIND=LDP) W_C2_F(NC2_F,ND)
+	REAL(KIND=LDP) C2_F(NC2_F,DST:DEND)
+	REAL(KIND=LDP) C2LTE_F(NC2_F,DST:DEND)
+	REAL(KIND=LDP) LOG_C2LTE_F(NC2_F,DST:DEND)
+	REAL(KIND=LDP) C2LTE_F_ON_S(NC2_F,DST:DEND)
+	REAL(KIND=LDP) W_C2_F(NC2_F,DST:DEND)
 	REAL(KIND=LDP) EDGEC2_F(NC2_F)
 	REAL(KIND=LDP) GC2_F(NC2_F)
 	INTEGER F_TO_S_MAP_C2(NC2_F)
@@ -69,9 +70,9 @@
 	REAL(KIND=LDP) GIONC2_F
 !
 	INTEGER NC2_S
-	REAL(KIND=LDP) C2_S(NC2_S,ND)
-	REAL(KIND=LDP) C2LTE_S(NC2_S,ND)
-	REAL(KIND=LDP) LOG_C2LTE_S(NC2_S,ND)
+	REAL(KIND=LDP) C2_S(NC2_S,DST:DEND)
+	REAL(KIND=LDP) C2LTE_S(NC2_S,DST:DEND)
+	REAL(KIND=LDP) LOG_C2LTE_S(NC2_S,DST:DEND)
 !
 	LOGICAL C2_PRES,CIII_PRES
 !
@@ -108,7 +109,7 @@
 ! the statistical weight of the ion ground state must just be GIONC2_F.
 !
 	IF(CIII_PRES)THEN
-	  DO K=1,ND
+	  DO K=DST,DEND
 	    GION(K)=0.0_LDP
 	    DO I=1,NCIII_F
 	      IF(F_TO_S_MAP_CIII(I) .EQ. 1)THEN
@@ -118,7 +119,7 @@
 	    END DO
 	  END DO
 	ELSE
-	  DO K=1,ND
+	  DO K=DST,DEND
 	    GION(K)=GIONC2_F
 	  END DO
 	END IF
@@ -126,19 +127,19 @@
 ! Compute the ion density used to compute LTE populations in the full atom.
 ! This is essentially the ground-state population.
 !
-	DO K=1,ND
+	DO K=DST,DEND
 	  DIC2_F(K)=DIC2_S(K)*GIONC2_F/GION(K)
 	END DO
 !
 ! Compute the occupation probabilities.
 !
-	CALL OCCUPATION_PROB(W_C2_F,EDGEC2_F,ZC2,NC2_F,ND)
+	CALL OCCUPATION_PROB(W_C2_F,EDGEC2_F,ZC2,NC2_F,DST,DEND)
 !
 ! Since no the effective statistical weight, can now compute the LTE
 ! populations of the levels in the full atom.
 !
 	C2LTE_F=0.0_LDP
-	DO K=1,ND
+	DO K=DST,DEND
 	  X=HDKT/T(K)
 	  RGU=2.07078E-22_LDP*ED(K)*DIC2_S(K)*( T(K)**(-1.5_LDP) )/GION(K)
 	  RGU=LOG(RGU)
@@ -150,7 +151,7 @@
 !
 ! Compute the LTE pops in the atom with super levels, after initializing them.
 !
-	DO K=1,ND
+	DO K=DST,DEND
 	  DO I=1,NC2_S
 	    C2LTE_S(I,K)=0.0_LDP
 	    SCALE_FAC(I)=0.0_LDP
@@ -181,7 +182,7 @@
 !
 ! Can now compute populations in full atom.
 !
-	DO K=1,ND
+	DO K=DST,DEND
 !
 	  DO L=1,NC2_S
 	    CNT(L)=0
@@ -260,11 +261,8 @@
 	    L=F_TO_S_MAP_C2(I)
 	    SUM(L)=SUM(L)+C2_F(I,K)
 	  END DO
-!	 WRITE(6,*)NC2_F, NCIII_F
 	  DO I=1,NC2_F
 	    L=F_TO_S_MAP_C2(I)
-!	    WRITE(6,*)L,SUM(L),EDGEC2_F(1)
-!	    FLUSH(UNIT=6)
 	    C2_F(I,K)=C2_F(I,K)*(C2_S(L,K)/SUM(L))
 	  END DO
 !

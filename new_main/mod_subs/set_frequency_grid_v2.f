@@ -20,6 +20,7 @@
 	USE LINE_VEC_MOD
 	IMPLICIT NONE
 !
+! Altered 20-Aug-2024: CHIL set to zero
 ! Altered 12-Nov-2023: Updated constants to use LDP notation
 ! Created  8-Jun-2004
 !
@@ -176,9 +177,10 @@
 !
 	          T1=VEC_OSCIL(ML)*OPLIN
 	          T2=ATM(ID)%GXzV_F(MNL)/ATM(ID)%GXzV_F(MNUP)
-	          DO I=1,ND
-	            CHIL(I)=ABS(T1*(ATM(ID)%XzV_F(MNL,I)-T2*ATM(ID)%XzV_F(MNUP,I)))
-	          END DO
+!	          DO I=1,ND
+!	            CHIL(I)=ABS(T1*(ATM(ID)%XzV_F(MNL,I)-T2*ATM(ID)%XzV_F(MNUP,I)))
+!	          END DO
+	          CHIL(1:ND)=0.0_LDP
 	          PROF_TYPE(ML)=ATM(ID)%XzV_PROF_TYPE
 	          IF(GLOBAL_LINE_PROF .NE. 'NONE')PROF_TYPE(ML)=GLOBAL_LINE_PROF
 !

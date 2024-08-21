@@ -135,6 +135,8 @@
 	CHARACTER*20 SECTION
 	CHARACTER(LEN=12) SAVED_TWO_PHOTON_METHOD
 !
+	INCLUDE 'mpif.h'
+!
 ! Constants for opacity etc.
 !
 	COMMON/CONSTANTS/ CHIBF,CHIFF,HDKT,TWOHCSQ
@@ -152,45 +154,42 @@
 !
 	WRITE(6,*)'Calling AUTO_ADD_ION';  FLUSH(UNIT=6)
 	CALL AUTO_ADD_ION()
-	IF(GRID) THEN
+!
+	IF(GRID .AND. MYPE .EQ. 0) THEN
 	  WRITE(LUER,'(/,A,/)')' Using direct interpolation option (i.e. GRID) for new model.'
+	  FLUSH(LUER)
 !
 ! Regrid the temperature and the electron density. By using this call the
 ! last species can be taken from a different model to the H, He populations
 ! etc. Normally T_IN can be the same as He2_IN (i.e. any input departure
 ! coefficient file).
 !
-	  CALL REGRID_T_ED_V3(R,ED,T,POP_ATOM,ND,DC_INTERP_METHOD,'T_IN')
-	  DO ID=1,NUM_IONS-1
-	    IF(ATM(ID)%XzV_PRES)THEN
-	      TMP_STRING=TRIM(ION_ID(ID))//'_IN'
-	      ISPEC=SPECIES_LNK(ID)
-	      CALL REGRID_LOG_DC_V1( ATM(ID)%XzV_F,R,ED,T, ATM(ID)%DXzV_F,CLUMP_FAC,
-	1             ATM(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
-	1             POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,DC_INTERP_METHOD,TMP_STRING)
-	    END IF
-	  END DO
-!
-! SPEC_DEN will contain the density of each species, while
-! AT_NO_VEC will contain the the atomic number. These are set at all depths.
-!
-!	  IF(VAR_MDOT)THEN
-!	    DO I=1,ND
-!	      ED(I)=POP_SPECIES(I,1)+2.0D0*POP_SPECIES(I,2)
-!	    END DO
-!	  END IF
-!
-	  IF(VAR_MDOT)THEN
-	    I=0
-	    DO ISPEC=1,NUM_SPECIES
-	      CALL ELEC_PREP(SPEC_DEN,AT_NO_VEC,I,NUM_SPECIES,
-	1                POP_SPECIES(1,ISPEC),AT_NO(ISPEC),SPECIES_PRES(ISPEC),ND)
+	    CALL REGRID_T_ED_V3(R,ED,T,POP_ATOM,ND,DC_INTERP_METHOD,'T_IN')
+	    WRITE(6,*)'Read ED and T'; FLUSH(UNIT=6)
+	    DO ID=1,NUM_IONS-1
+	      WRITE(6,*)ID,ROOT(ID)%NXzV_F; FLUSH(UNIT=6)
+	      IF(ROOT(ID)%XzV_PRES)THEN
+	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
+	        ISPEC=SPECIES_LNK(ID)
+	        CALL REGRID_LOG_DC_V1( ROOT(ID)%XzV_F,R,ED,T, ROOT(ID)%DXzV_F,CLUMP_FAC,
+	1               ROOT(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
+	1               POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,DC_INTERP_METHOD,TMP_STRING)
+	      END IF
 	    END DO
-	    CALL GETELEC_V2(SPEC_DEN,AT_NO_VEC,I,ED,ND,LUIN,'GAMMAS_IN')
-	  END IF
+!
+	    IF(VAR_MDOT)THEN
+	      I=0
+	      DO ISPEC=1,NUM_SPECIES
+	        CALL ELEC_PREP(SPEC_DEN,AT_NO_VEC,I,NUM_SPECIES,
+	1                POP_SPECIES(1,ISPEC),AT_NO(ISPEC),SPECIES_PRES(ISPEC),ND)
+	      END DO
+	      CALL GETELEC_V2(SPEC_DEN,AT_NO_VEC,I,ED,ND,LUIN,'GAMMAS_IN')
+	    END IF
+	    WRITE(6,*)'Read in all the old departure coefficients'
+	    FLUSH(UNIT=6)
 !
 ! 
-	ELSE
+	ELSE IF(MYPE .EQ. 0)THEN
 	  WRITE(LUER,*)'Using NON-GRID option for new model.'
 	  IF(.NOT. DO_POP_SCALE)THEN
 	     DO_POP_SCALE=.TRUE.
@@ -256,28 +255,28 @@
 ! electron density for clumping (i.e. ED(I)*CLUMP_FAC(I)), which we store in TC.
 ! It may be better to regrid on the actual electron densities.
 !
-! NB: ATM(ID)$XzV_F is to LOG(dep. coef.)
+! NB: ROOT(ID)$XzV_F is to LOG(dep. coef.)
 !
 	  IF(DC_INTERP_METHOD .EQ. 'LTE')THEN
 	    WRITE(LUER,*)'LTE assumed for departure coefficients.'
 	    T1=T_EXCITE_MIN
 	    CALL DET_LTE_ED(T1,ND,DO_LEV_DISSOLUTION)
 	    DO ID=1,NUM_IONS-1
-	      IF(ATM(ID)%XzV_PRES)THEN
-	        CALL SET_DC_LTE_V2(ATM(ID)%XzV_F,ATM(ID)%DXzV_F,ATM(ID)%EDGEXzV_F,ATM(ID)%NXzV_F,T,T1,ND)
-	        ATM(ID)%DXzV_F=1.0E-200_LDP
+	      IF(ROOT(ID)%XzV_PRES)THEN
+	        CALL SET_DC_LTE_V2(ROOT(ID)%XzV_F,ROOT(ID)%DXzV_F,ROOT(ID)%EDGEXzV_F,ROOT(ID)%NXzV_F,T,T1,ND)
+	        ROOT(ID)%DXzV_F=1.0E-200_LDP
 	      END IF
 	    END DO
 !
 	  ELSE IF(DC_INTERP_METHOD .EQ. 'SPH_TAU')THEN
 	    WRITE(LUER,*)'Departure coefficients assumed to be function of Tau(spherical).'
 	    DO ID=1,NUM_IONS-1
-	      IF(ATM(ID)%XzV_PRES)THEN
+	      IF(ROOT(ID)%XzV_PRES)THEN
 	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
 	        ISPEC=SPECIES_LNK(ID)
-	        CALL REGRID_LOG_DC_V1( ATM(ID)%XzV_F,R,ED,T, ATM(ID)%DXzV_F,CLUMP_FAC,
-	1             ATM(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
-	1             POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,'SPH_TAU',TMP_STRING)
+	        CALL REGRID_LOG_DC_V1( ROOT(ID)%XzV_F,R,ED,T, ROOT(ID)%DXzV_F,CLUMP_FAC,
+	1             ROOT(ID)%EDGEXzV_F, ROOT(ID)%F_TO_S_XzV, ROOT(ID)%INT_SEQ_XzV,
+	1             POP_SPECIES(1,ISPEC),ROOT(ID)%NXzV_F,ND,LUIN,'SPH_TAU',TMP_STRING)
 	      END IF
 	    END DO
 !
@@ -285,12 +284,12 @@
 	    WRITE(LUER,*)'Departure coefficients assumed to be function of Ne.'
 	    TC(1:ND)=ED(1:ND)*CLUMP_FAC(1:ND)
 	    DO ID=1,NUM_IONS-1
-	      IF(ATM(ID)%XzV_PRES)THEN
+	      IF(ROOT(ID)%XzV_PRES)THEN
 	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
 	        ISPEC=SPECIES_LNK(ID)
-	        CALL REGRID_LOG_DC_V1( ATM(ID)%XzV_F,R,TC,T, ATM(ID)%DXzV_F,CLUMP_FAC,
-	1             ATM(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
-	1             POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,'ED',TMP_STRING)
+	        CALL REGRID_LOG_DC_V1( ROOT(ID)%XzV_F,R,TC,T, ROOT(ID)%DXzV_F,CLUMP_FAC,
+	1             ROOT(ID)%EDGEXzV_F, ROOT(ID)%F_TO_S_XzV, ROOT(ID)%INT_SEQ_XzV,
+	1             POP_SPECIES(1,ISPEC),ROOT(ID)%NXzV_F,ND,LUIN,'ED',TMP_STRING)
 	      END IF
 	    END DO
 !
@@ -303,12 +302,12 @@
 	      WRITE(LUER,*)'Departure coefficients assumed to be function of R and T.'
 	    END IF
 	    DO ID=1,NUM_IONS-1
-	      IF(ATM(ID)%XzV_PRES)THEN
+	      IF(ROOT(ID)%XzV_PRES)THEN
 	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
 	        ISPEC=SPECIES_LNK(ID)
-	        CALL REGRID_LOG_DC_V1( ATM(ID)%XzV_F,R,TC,T, ATM(ID)%DXzV_F,CLUMP_FAC,
-	1             ATM(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
-	1             POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,DC_INTERP_METHOD,TMP_STRING)
+	        CALL REGRID_LOG_DC_V1( ROOT(ID)%XzV_F,R,TC,T, ROOT(ID)%DXzV_F,CLUMP_FAC,
+	1             ROOT(ID)%EDGEXzV_F, ROOT(ID)%F_TO_S_XzV, ROOT(ID)%INT_SEQ_XzV,
+	1             POP_SPECIES(1,ISPEC),ROOT(ID)%NXzV_F,ND,LUIN,DC_INTERP_METHOD,TMP_STRING)
 	      END IF
 	    END DO
 !
@@ -318,12 +317,12 @@
 !
 	    WRITE(LUER,*)'Excitation temperatures assumed to be function of R.'
 	    DO ID=1,NUM_IONS-1
-	      IF(ATM(ID)%XzV_PRES)THEN
+	      IF(ROOT(ID)%XzV_PRES)THEN
 	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
 	        ISPEC=SPECIES_LNK(ID)
-	        CALL REGRID_LOG_DC_V1( ATM(ID)%XzV_F,R,ED,T, ATM(ID)%DXzV_F,CLUMP_FAC,
-	1             ATM(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
-	1             POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,'RTX',TMP_STRING)
+	        CALL REGRID_LOG_DC_V1( ROOT(ID)%XzV_F,R,ED,T, ROOT(ID)%DXzV_F,CLUMP_FAC,
+	1             ROOT(ID)%EDGEXzV_F, ROOT(ID)%F_TO_S_XzV, ROOT(ID)%INT_SEQ_XzV,
+	1             POP_SPECIES(1,ISPEC),ROOT(ID)%NXzV_F,ND,LUIN,'RTX',TMP_STRING)
 	      END IF
 	    END DO
 	  ELSE
@@ -333,6 +332,9 @@
 	  END IF
 !
 	END IF				!if(grid)
+!
+	CALL MPI_BCAST(T, ND,MPI_DOUBLE_PRECISION,IZERO,MPI_COMM_WORLD,IERR)
+	CALL MPI_BCAST(ED,ND,MPI_DOUBLE_PRECISION,IZERO,MPI_COMM_WORLD,IERR)
 !
 ! 
 !
@@ -360,21 +362,26 @@
 ! TB is used as a dummy vector when we are dealing with the lowest ionization
 ! stage. It is returned with the ground state population.
 !
-	DO ISPEC=1,NUM_SPECIES
-	  FIRST=.TRUE.
-	  DO ID=SPECIES_END_ID(ISPEC),SPECIES_BEG_ID(ISPEC),-1
-	    IF(ATM(ID)%XzV_PRES)THEN
-	      CALL LTEPOP_WLD_V2(ATM(ID)%XzVLTE_F, ATM(ID)%LOG_XzVLTE_F, ATM(ID)%W_XzV_F,
-	1              ATM(ID)%EDGEXzV_F, ATM(ID)%GXzV_F,
-	1              ATM(ID)%ZXzV,      ATM(ID)%GIONXzV_F,
-	1              ATM(ID)%NXzV_F,    ATM(ID)%DXzV_F,     ED,T,ND)
-	      CALL CNVT_FR_DC_V2(ATM(ID)%XzV_F, ATM(ID)%LOG_XzVLTE_F,
-	1              ATM(ID)%DXzV_F,    ATM(ID)%NXzV_F,
-	1              TB,                TA,ND,
-	1              FIRST,             ATM(ID+1)%XzV_PRES)
-	      IF(ID .NE. SPECIES_BEG_ID(ISPEC))ATM(ID-1)%DXzV_F(1:ND)=TB(1:ND)
-  	    END IF
-	  END DO
+	IF(MYPE .EQ .0)THEN
+	  DO ISPEC=1,NUM_SPECIES
+	    FIRST=.TRUE.
+	    DO ID=SPECIES_END_ID(ISPEC),SPECIES_BEG_ID(ISPEC),-1
+	      WRITE(6,*)ISPEC,ID,ROOT(ID)%NXzV_F,SUM(ROOT(ID)%XzV_F),SUM(ROOT(ID)%DXzV_F)
+	      IF(ROOT(ID)%XzV_PRES)THEN
+	        CALL LTEPOP_WLD_V2(ROOT(ID)%XzVLTE_F, ROOT(ID)%LOG_XzVLTE_F, ROOT(ID)%W_XzV_F,
+	1                ATM(ID)%EDGEXzV_F, ATM(ID)%GXzV_F,
+	1                ATM(ID)%ZXzV,      ATM(ID)%GIONXzV_F,
+	1                ATM(ID)%NXzV_F,    ROOT(ID)%DXzV_F,     ED,T, IONE, ND, ND)
+	        CALL CNVT_FR_DC_V2(ROOT(ID)%XzV_F, ROOT(ID)%LOG_XzVLTE_F,
+	1                ROOT(ID)%DXzV_F,   ATM(ID)%NXzV_F,
+	1                TB,                TA, IONE, ND,
+	1                FIRST,             ATM(ID+1)%XzV_PRES)
+	        IF(ID .NE. SPECIES_BEG_ID(ISPEC))ROOT(ID-1)%DXzV_F(1:ND)=TB(1:ND)
+	        WRITE(171,'(2I5,4ES14.4)')ID,ATM(ID)%NXzV_F,ROOT(ID)%DXzV_F(1),ROOT(ID)%DXzV_F(ND),TA(1),TA(ND)
+  	      END IF
+	    END DO
+	    FLUSH(UNIT=171)  
+	    WRITE(6,*)'Set root pops';FLUSH(UNIT=6)
 !
 ! Now scale the population for EACH species to ensure that the species
 ! conservation equation is satisfied.
@@ -385,13 +392,23 @@
 ! DISPGEN) in the outer layers to overcome a large jump in optical
 ! depth.
 !
-	  IF(DO_POP_SCALE)THEN
-	    DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
-	      CALL SCALE_POPS(ATM(ID)%XzV_F,ATM(ID)%DXzV_F,
-	1              POP_SPECIES(1,ISPEC),TA,ATM(ID)%NXzV_F,ND)
-	    END DO
-	  END IF
-	END DO			!ISPEC
+	    IF(DO_POP_SCALE)THEN
+	      DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
+	        WRITE(6,*)ID,ROOT(ID)%NXzV_F,SUM(ROOT(ID)%XzV_F),SUM(ROOT(ID)%DXzV_F),SUM(POP_SPECIES(1:ND,ISPEC))
+	        CALL SCALE_POPS(ROOT(ID)%XzV_F,ROOT(ID)%DXzV_F,
+	1              POP_SPECIES(1,ISPEC),TA,ROOT(ID)%NXzV_F,ND)
+	        WRITE(172,'(2I5,2ES14.4)')ID,ATM(ID)%NXzV_F,ROOT(ID)%DXzV_F(1),ROOT(ID)%DXzV_F(ND)
+	      END DO
+	    END IF
+	    FLUSH(UNIT=172)
+	  END DO			!ISPEC
+	END IF
+!
+! Scatter departure coefficients and ions to all processors.
+!
+	CALL SCATTER_XzV_F_AND_IONS(ND)
+	WRITE(6,*)'Scattered pops';FLUSH(UNIT=6)
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! We now need to compute the populations for the model atom with Super-levels.
 ! We do this in reverse order (i.e. highest ionization stage first) in order
@@ -404,22 +421,37 @@
 	   CALL FULL_TO_SUP(
 	1      ATM(ID)%XzV,   ATM(ID)%NXzV,       ATM(ID)%DXzV,   ATM(ID)%XzV_PRES,
 	1      ATM(ID)%XzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%NXzV_F, ATM(ID)%DXzV_F,
-	1      ATM(ID+1)%XzV, ATM(ID+1)%NXzV,     ATM(ID+1)%XzV_PRES,  ND)
+	1      ATM(ID+1)%XzV, ATM(ID+1)%NXzV,     ATM(ID+1)%XzV_PRES, DST, DEND)
 	END DO
+!
+	IF(MYPE .EQ. 0)THEN
+	  DO ID=NUM_IONS-1,1,-1
+	     CALL FULL_TO_SUP(
+	1        ROOT(ID)%XzV,   ATM(ID)%NXzV,      ROOT(ID)%DXzV,   ATM(ID)%XzV_PRES,
+	1        ROOT(ID)%XzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%NXzV_F, ROOT(ID)%DXzV_F,
+	1       ROOT(ID+1)%XzV, ATM(ID+1)%NXzV,     ATM(ID+1)%XzV_PRES, IONE, ND)
+	  END DO
+	END IF
 !
 ! Store all quantities in POPS array. This is done here as it enables POPION
 ! to be readily computed. It also ensures that POS is correct if we don't
 ! iterate on T.
 !
-	DO ID=1,NUM_IONS-1
-	    CALL IONTOPOP(POPS,  ATM(ID)%XzV, ATM(ID)%DXzV, ED,T,
-	1          ATM(ID)%EQXzV, ATM(ID)%NXzV, NT,ND, ATM(ID)%XzV_PRES)
-	END DO
+	IF(MYPE .EQ. 0)THEN
+	  DO ID=1,NUM_IONS-1
+	    CALL IONTOPOP(POPS,  ROOT(ID)%XzV, ROOT(ID)%DXzV, ED,T,
+	1          ATM(ID)%EQXzV, ATM(ID)%NXzV, NT, IONE, ND, ND, ATM(ID)%XzV_PRES)
+ 	  END DO
+	END IF
+	K=NT*ND
+	CALL MPI_BCAST(POPS,K,MPI_DOUBLE_PRECISION,IZERO,MPI_COMM_WORLD,IERR)
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	WRITE(6,*)'Done ION TO POP'
 !
 ! Compute the ion population at each depth.
 ! These are required when evaluation the occupation probabilities.
 !
-	DO J=1,ND
+	DO J=DST,DEND
 	  POPION(J)=0.0_LDP
 	  DO I=1,NT
 	     IF(Z_POP(I) .GT. 0.01_LDP)POPION(J)=POPION(J)+POPS(I,J)
@@ -428,6 +460,7 @@
 !
 ! Evaluates LTE populations for both the FULL atom, and super levels.
 !
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	CALL EVAL_LTE_V5(DO_LEV_DISSOLUTION,ND)
 !
 ! 
@@ -461,7 +494,7 @@
 !
 	    DO ID=1,NUM_IONS-1
 	       ID_SAV=ID
-	       CALL SET_TWO_PHOT_V3(ION_ID(ID), ID_SAV,
+	       CALL SET_TWO_PHOT_ATM_MPI_V1(ION_ID(ID), ID_SAV,
 	1          ATM(ID)%XzVLTE,          ATM(ID)%NXzV,
 	1          ATM(ID)%XzVLTE_F_ON_S,   ATM(ID)%XzVLEVNAME_F,
 	1          ATM(ID)%EDGEXzV_F,       ATM(ID)%GXzV_F,
@@ -647,7 +680,7 @@
 ! GAM_SPECIES is used as a storage location for the population of the
 ! highest ionization stage. Must be done in forward direction.
 !
-! NB: After calling PAR_FUN_V2, ATM(ID)%XzV_F will contain DCs -
+! NB: After calling PAR_FUN_V2, ROOT(ID)%XzV_F will contain DCs -
 !       NOT populations.
 !
 ! TMP_STRING is used to indicate whether we interpolate in depature
@@ -660,11 +693,11 @@
 	      ISPEC=SPECIES_LNK(ID)
 	      CALL PAR_FUN_V4(U_PAR_FN, PHI_PAR_FN, Z_PAR_FN,
 	1          GAM_SPECIES(1,ISPEC),
-	1          ATM(ID)%XzV_F,     ATM(ID)%LOG_XzVLTE_F,  ATM(ID)%W_XzV_F,
-	1          ATM(ID)%DXzV_F,    ATM(ID)%EDGEXzV_F, ATM(ID)%GXzV_F,
-	1          ATM(ID)%GIONXzV_F, ATM(ID)%ZXzV,T, TC, ED,
-	1          ATM(ID)%NXzV_F, ND,J,NUM_IONS,
-	1          ATM(ID)%XzV_PRES,ION_ID(ID),TMP_STRING)
+	1          ROOT(ID)%XzV_F,     ROOT(ID)%LOG_XzVLTE_F,  ROOT(ID)%W_XzV_F,
+	1          ROOT(ID)%DXzV_F,    ROOT(ID)%EDGEXzV_F, ROOT(ID)%GXzV_F,
+	1          ROOT(ID)%GIONXzV_F, ROOT(ID)%ZXzV,T, TC, ED,
+	1          ROOT(ID)%NXzV_F, ND,J,NUM_IONS,
+	1          ROOT(ID)%XzV_PRES,ION_ID(ID),TMP_STRING)
 	   END DO
 !
 ! The non-LTE partition functions are density independent, provided
@@ -727,15 +760,15 @@
 	    DO ISPEC=1,NUM_SPECIES
 	      FIRST=.TRUE.
 	      DO ID=SPECIES_END_ID(ISPEC),SPECIES_BEG_ID(ISPEC),-1
-	        IF(ATM(ID)%XzV_PRES)THEN
-	          CALL LTEPOP_WLD_V2(ATM(ID)%XzVLTE_F, ATM(ID)%LOG_XzVLTE_F,  ATM(ID)%W_XzV_F,
-	1               ATM(ID)%EDGEXzV_F,  ATM(ID)%GXzV_F,  ATM(ID)%ZXzV,
-	1               ATM(ID)%GIONXzV_F,  ATM(ID)%NXzV_F,  ATM(ID)%DXzV_F,
-	1               ED,T,ND)
-	          CALL CNVT_FR_DC_V2(ATM(ID)%XzV_F, ATM(ID)%LOG_XzVLTE_F,
-	1               ATM(ID)%DXzV_F,   ATM(ID)%NXzV_F,
-	1               TB,               TA,ND,FIRST,      ATM(ID+1)%XzV_PRES)
-	          IF(ID .NE. SPECIES_BEG_ID(ISPEC))ATM(ID-1)%DXzV_F(1:ND)=TB(1:ND)
+	        IF(ROOT(ID)%XzV_PRES)THEN
+	          CALL LTEPOP_WLD_V2(ROOT(ID)%XzVLTE_F, ROOT(ID)%LOG_XzVLTE_F,  ROOT(ID)%W_XzV_F,
+	1               ROOT(ID)%EDGEXzV_F,  ROOT(ID)%GXzV_F,  ROOT(ID)%ZXzV,
+	1               ROOT(ID)%GIONXzV_F,  ROOT(ID)%NXzV_F,  ROOT(ID)%DXzV_F,
+	1               ED,T, DST, DEND, ND)
+	          CALL CNVT_FR_DC_V2(ROOT(ID)%XzV_F, ROOT(ID)%LOG_XzVLTE_F,
+	1               ROOT(ID)%DXzV_F,   ROOT(ID)%NXzV_F,
+	1               TB,               TA, IONE, ND,FIRST,      ROOT(ID+1)%XzV_PRES)
+	          IF(ID .NE. SPECIES_BEG_ID(ISPEC))ROOT(ID-1)%DXzV_F(1:ND)=TB(1:ND)
 	        END IF
 	      END DO
 !
@@ -744,8 +777,8 @@
 ! DO_POP_SCALE option has no effect.
 !
 	      DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
-	        CALL SCALE_POPS(ATM(ID)%XzV_F, ATM(ID)%DXzV_F,
-	1           POP_SPECIES(1,SPECIES_LNK(ID)),TA, ATM(ID)%NXzV_F,ND)
+	        CALL SCALE_POPS(ROOT(ID)%XzV_F, ROOT(ID)%DXzV_F,
+	1           POP_SPECIES(1,SPECIES_LNK(ID)),TA, ROOT(ID)%NXzV_F,ND)
 	      END DO
 	    END DO
 !
@@ -760,18 +793,18 @@
 !
 	    DO ID=NUM_IONS-1,1,-1
 	      CALL FULL_TO_SUP(
-	1      ATM(ID)%XzV,   ATM(ID)%NXzV,       ATM(ID)%DXzV,      ATM(ID)%XzV_PRES,
-	1      ATM(ID)%XzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%NXzV_F,    ATM(ID)%DXzV_F,
-	1      ATM(ID+1)%XzV, ATM(ID+1)%NXzV,     ATM(ID+1)%XzV_PRES, ND)
+	1      ROOT(ID)%XzV,   ROOT(ID)%NXzV,       ROOT(ID)%DXzV,      ROOT(ID)%XzV_PRES,
+	1      ROOT(ID)%XzV_F, ROOT(ID)%F_TO_S_XzV, ROOT(ID)%NXzV_F,    ROOT(ID)%DXzV_F,
+	1      ROOT(ID+1)%XzV, ROOT(ID+1)%NXzV,     ROOT(ID+1)%XzV_PRES, ND)
 	    END DO
 !
 ! Store all quantities in POPS array. This is done here (rather than
 ! after final iteration) as it enable POPION to be readily computed.
 !
 	    DO ID=1,NUM_IONS-1
-	      CALL IONTOPOP(POPS, ATM(ID)%XzV, ATM(ID)%DXzV, ED,T,
-	1         ATM(ID)%EQXzV, ATM(ID)%NXzV, NT,ND,
-	1         ATM(ID)%XzV_PRES)
+	      CALL IONTOPOP(POPS, ROOT(ID)%XzV, ROOT(ID)%DXzV, ED,T,
+	1         ROOT(ID)%EQXzV, ROOT(ID)%NXzV, NT, IONE, ND, ND,
+	1         ROOT(ID)%XzV_PRES)
 	    END DO
 !
 ! Compute the ion population at each depth.
@@ -806,6 +839,7 @@
 ! Restore two photon method option.
 !
 	TWO_PHOTON_METHOD=SAVED_TWO_PHOTON_METHOD
+	WRITE(6,*)'Leaving SET_NEW_MODEL'
 !
 	RETURN
 	END

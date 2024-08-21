@@ -11,7 +11,7 @@ C
 C NB: The vectors X_LEV_DIS, A_LEV_DIS and B_LEV_DIS must have been previously
 C        computed.
 C
-	SUBROUTINE OCCUPATION_PROB(W_C2,EDGE_C2,ZC2,NC2,ND)
+	SUBROUTINE OCCUPATION_PROB(W_C2,EDGE_C2,ZC2,NC2,DST, DEND)
 	USE SET_KIND_MODULE
 	USE MOD_LEV_DIS_BLK
 	IMPLICIT NONE
@@ -27,8 +27,8 @@ C                         dissolution can be switched off completely.
 C Altered 27-Aug-1995 - K was declared integer instead of REAL
 C Created 23-May-1995
 C
-	INTEGER NC2,ND
-	REAL(KIND=LDP) W_C2(NC2,ND)		!Occupation probability
+	INTEGER NC2,DST,DEND
+	REAL(KIND=LDP) W_C2(NC2,DST:DEND)	!Occupation probability
 	REAL(KIND=LDP) EDGE_C2(NC2)		!Ionization frequency (10^15 Hz)
 	REAL(KIND=LDP) ZC2			!Charge in ion
 C
@@ -43,14 +43,14 @@ C
 	    NEFF=0.0_LDP
 	    IF(T1 .GT. 0.0_LDP .AND. T1 .LT. 961.0_LDP)NEFF=SQRT(T1)
 	    IF(NEFF .LE. 2.01_LDP*ZC2)THEN			!0.01 allows for atomic mass
-	      DO I=1,ND
+	      DO I=DST,DEND
 	        W_C2(LEV,I)=1.0_LDP
 	      END DO
 	    ELSE
 	      REAL_K=16.0_LDP*NEFF/(1+NEFF)/(1+NEFF)/3 .0_LDP
 	      IF(NEFF .LE. 3.0_LDP)REAL_K=1.0_LDP
 	      REAL_K=( REAL_K/ZC2*(ZC2/NEFF)**4 )**1.5_LDP
-	      DO I=1,ND
+	      DO I=DST,DEND
 	        Y=1.091_LDP*(X_LEV_DIS(I)+4.0_LDP*(ZC2-1.0_LDP)*A_LEV_DIS(I))
 	        BETA=REAL_K*B_LEV_DIS(I)
 	        F=Y*BETA*BETA/(7.782_LDP+X_LEV_DIS(I)*BETA)

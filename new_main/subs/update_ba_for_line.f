@@ -58,7 +58,6 @@
 	INTEGER JJ
 	INTEGER ID
 	INTEGER ID_SAV
-	INTEGER DST,DEND
 !
 ! Constants for opacity etc. These are set in CMFGEN.
 !
@@ -128,9 +127,11 @@
 !	  DO K=1,ND
 !	    DST=K
 !	    DEND=K
-	  DO K=1,1
-	    DST=1
-	    DEND=ND
+!	  DO K=1,1
+!	    DST=1
+!	    DEND=ND
+
+	  DO K=DST,DEND
 !
 ! NB: In this equation the matrices are NOT passed for WS, dWS and NU.
 !
