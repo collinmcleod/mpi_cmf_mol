@@ -20,6 +20,7 @@ OBJ = $(LIB)(steq_ba_two_phot_rate_v3.o)\
       $(LIB)(set_two_phot_root_mpi_v1.o)\
       $(LIB)(two_phot_opac.o)\
       $(LIB)(two_phot_opac_v3.o)\
+      $(LIB)(two_phot_opac_mpi_v1.o)\
       $(LIB)(two_phot_var_opac.o)
 
 all : $(LIB)

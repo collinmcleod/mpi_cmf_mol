@@ -20,6 +20,7 @@ OBJ= $(LIB)(ave_level_energy.o)\
      $(LIB)(ff_res_gaunt.o)\
      $(LIB)(genopaeta_v8.o)\
      $(LIB)(genopaeta_v10.o)\
+     $(LIB)(genopaeta_mpi_v1.o)\
      $(LIB)(genosc_v8.o)\
      $(LIB)(genosc_v9.o)\
      $(LIB)(get_num_phot_routes_v1.o)\
@@ -29,6 +30,7 @@ OBJ= $(LIB)(ave_level_energy.o)\
      $(LIB)(phot_data_mod.o)\
      $(LIB)(quad_multi_v10.o)\
      $(LIB)(rayleigh_scat.o)\
+     $(LIB)(rayleigh_scat_mpi_v1.o)\
      $(LIB)(rdphot_gen_v2.o)\
      $(LIB)(rd_hyd_bf_data.o)\
      $(LIB)(rd_phot_die_v1.o)\

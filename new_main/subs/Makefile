@@ -60,11 +60,12 @@ OBJ = $(LIB)(add_par_to_full_v2.o)\
       $(LIB)(open_rw_eddfactor.o)\
       $(LIB)(out_line_force.o)\
       $(LIB)(prevent_low_t.o)\
-      $(LIB)(read_ba_data_v3.o)\
+      $(LIB)(read_ba_data_mpi_v1.o)\
       $(LIB)(read_bcd_mat.o)\
       $(LIB)(read_time_model_v1.o)\
       $(LIB)(read_seq_time_file_v1.o)\
       $(LIB)(rv_sn_model_sniin.o)\
+      $(LIB)(set_ba_storage_mpi_v1.o)\
       $(LIB)(set_ba_storage.o)\
       $(LIB)(set_depth_consistency.o)\
       $(LIB)(set_rv_hydro_model_v3.o)\
@@ -80,7 +81,7 @@ OBJ = $(LIB)(add_par_to_full_v2.o)\
       $(LIB)(steq_advec_v4.o)\
       $(LIB)(steq_co_mov_deriv_v3.o)\
       $(LIB)(store_old_grid.o)\
-      $(LIB)(store_ba_data_v3.o)\
+      $(LIB)(store_ba_data_mpi_v1.o)\
       $(LIB)(sub_guess_dc_v2.o)\
       $(LIB)(sum_steq_sol.o)\
       $(LIB)(tst_rd_seq.o)\

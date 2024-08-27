@@ -79,6 +79,7 @@
 !
         REAL(KIND=LDP), ALLOCATABLE :: U_PAR_FN(:,:)
         REAL(KIND=LDP), ALLOCATABLE :: PHI_PAR_FN(:,:)
+        REAL(KIND=LDP), ALLOCATABLE :: HIGH_POP(:,:)
         REAL(KIND=LDP), ALLOCATABLE :: Z_PAR_FN(:)
         REAL(KIND=LDP) SPEC_DEN(ND,NUM_SPECIES)         !Used by ELEC_PREP
 	REAL(KIND=LDP) AT_NO_VEC(ND,NUM_SPECIES)
@@ -119,6 +120,7 @@
 	INTEGER GREY_IOS	!Used to return error if GREY_SCL_FAC_IN can't be read.
 !
 	INTEGER I,J,K,L
+	INTEGER ICNT
 	INTEGER ISPEC
 	INTEGER ID
 	INTEGER ID_SAV
@@ -263,7 +265,7 @@
 	    CALL DET_LTE_ED(T1,ND,DO_LEV_DISSOLUTION)
 	    DO ID=1,NUM_IONS-1
 	      IF(ROOT(ID)%XzV_PRES)THEN
-	        CALL SET_DC_LTE_V2(ROOT(ID)%XzV_F,ROOT(ID)%DXzV_F,ROOT(ID)%EDGEXzV_F,ROOT(ID)%NXzV_F,T,T1,ND)
+	        CALL SET_DC_LTE_V2(ROOT(ID)%XzV_F,ROOT(ID)%DXzV_F,ATM(ID)%EDGEXzV_F,ATM(ID)%NXzV_F,T,T1,ND)
 	        ROOT(ID)%DXzV_F=1.0E-200_LDP
 	      END IF
 	    END DO
@@ -275,8 +277,8 @@
 	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
 	        ISPEC=SPECIES_LNK(ID)
 	        CALL REGRID_LOG_DC_V1( ROOT(ID)%XzV_F,R,ED,T, ROOT(ID)%DXzV_F,CLUMP_FAC,
-	1             ROOT(ID)%EDGEXzV_F, ROOT(ID)%F_TO_S_XzV, ROOT(ID)%INT_SEQ_XzV,
-	1             POP_SPECIES(1,ISPEC),ROOT(ID)%NXzV_F,ND,LUIN,'SPH_TAU',TMP_STRING)
+	1             ATM(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
+	1             POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,'SPH_TAU',TMP_STRING)
 	      END IF
 	    END DO
 !
@@ -288,8 +290,8 @@
 	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
 	        ISPEC=SPECIES_LNK(ID)
 	        CALL REGRID_LOG_DC_V1( ROOT(ID)%XzV_F,R,TC,T, ROOT(ID)%DXzV_F,CLUMP_FAC,
-	1             ROOT(ID)%EDGEXzV_F, ROOT(ID)%F_TO_S_XzV, ROOT(ID)%INT_SEQ_XzV,
-	1             POP_SPECIES(1,ISPEC),ROOT(ID)%NXzV_F,ND,LUIN,'ED',TMP_STRING)
+	1             ATM(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
+	1             POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,'ED',TMP_STRING)
 	      END IF
 	    END DO
 !
@@ -306,8 +308,8 @@
 	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
 	        ISPEC=SPECIES_LNK(ID)
 	        CALL REGRID_LOG_DC_V1( ROOT(ID)%XzV_F,R,TC,T, ROOT(ID)%DXzV_F,CLUMP_FAC,
-	1             ROOT(ID)%EDGEXzV_F, ROOT(ID)%F_TO_S_XzV, ROOT(ID)%INT_SEQ_XzV,
-	1             POP_SPECIES(1,ISPEC),ROOT(ID)%NXzV_F,ND,LUIN,DC_INTERP_METHOD,TMP_STRING)
+	1             ATM(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
+	1             POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,DC_INTERP_METHOD,TMP_STRING)
 	      END IF
 	    END DO
 !
@@ -321,8 +323,8 @@
 	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
 	        ISPEC=SPECIES_LNK(ID)
 	        CALL REGRID_LOG_DC_V1( ROOT(ID)%XzV_F,R,ED,T, ROOT(ID)%DXzV_F,CLUMP_FAC,
-	1             ROOT(ID)%EDGEXzV_F, ROOT(ID)%F_TO_S_XzV, ROOT(ID)%INT_SEQ_XzV,
-	1             POP_SPECIES(1,ISPEC),ROOT(ID)%NXzV_F,ND,LUIN,'RTX',TMP_STRING)
+	1             ATM(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
+	1             POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,'RTX',TMP_STRING)
 	      END IF
 	    END DO
 	  ELSE
@@ -366,7 +368,7 @@
 	  DO ISPEC=1,NUM_SPECIES
 	    FIRST=.TRUE.
 	    DO ID=SPECIES_END_ID(ISPEC),SPECIES_BEG_ID(ISPEC),-1
-	      WRITE(6,*)ISPEC,ID,ROOT(ID)%NXzV_F,SUM(ROOT(ID)%XzV_F),SUM(ROOT(ID)%DXzV_F)
+!	      WRITE(6,*)ISPEC,ID,ROOT(ID)%NXzV_F,SUM(ROOT(ID)%XzV_F),SUM(ROOT(ID)%DXzV_F)
 	      IF(ROOT(ID)%XzV_PRES)THEN
 	        CALL LTEPOP_WLD_V2(ROOT(ID)%XzVLTE_F, ROOT(ID)%LOG_XzVLTE_F, ROOT(ID)%W_XzV_F,
 	1                ATM(ID)%EDGEXzV_F, ATM(ID)%GXzV_F,
@@ -374,7 +376,7 @@
 	1                ATM(ID)%NXzV_F,    ROOT(ID)%DXzV_F,     ED,T, IONE, ND, ND)
 	        CALL CNVT_FR_DC_V2(ROOT(ID)%XzV_F, ROOT(ID)%LOG_XzVLTE_F,
 	1                ROOT(ID)%DXzV_F,   ATM(ID)%NXzV_F,
-	1                TB,                TA, IONE, ND,
+	1                TB,                TA, IONE, ND, ND,
 	1                FIRST,             ATM(ID+1)%XzV_PRES)
 	        IF(ID .NE. SPECIES_BEG_ID(ISPEC))ROOT(ID-1)%DXzV_F(1:ND)=TB(1:ND)
 	        WRITE(171,'(2I5,4ES14.4)')ID,ATM(ID)%NXzV_F,ROOT(ID)%DXzV_F(1),ROOT(ID)%DXzV_F(ND),TA(1),TA(ND)
@@ -394,9 +396,8 @@
 !
 	    IF(DO_POP_SCALE)THEN
 	      DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
-	        WRITE(6,*)ID,ROOT(ID)%NXzV_F,SUM(ROOT(ID)%XzV_F),SUM(ROOT(ID)%DXzV_F),SUM(POP_SPECIES(1:ND,ISPEC))
-	        CALL SCALE_POPS(ROOT(ID)%XzV_F,ROOT(ID)%DXzV_F,
-	1              POP_SPECIES(1,ISPEC),TA,ROOT(ID)%NXzV_F,ND)
+	        CALL SCALE_POPS_MPI_V1(ROOT(ID)%XzV_F,ROOT(ID)%DXzV_F,
+	1              POP_SPECIES(1,ISPEC),TA,ROOT(ID)%NXzV_F,DST,DEND,ND)
 	        WRITE(172,'(2I5,2ES14.4)')ID,ATM(ID)%NXzV_F,ROOT(ID)%DXzV_F(1),ROOT(ID)%DXzV_F(ND)
 	      END DO
 	    END IF
@@ -474,14 +475,18 @@
 ! distribution and the population levels. TA is a working vector. The
 ! Rosseland opacity is given in ROSSMEAN.
 !
+	WRITE(6,*)'Stooping befor T iterate)'
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	CALL TUNE(1,'T_ITERATE')
 	MAIN_COUNTER=1
 	DO WHILE (ITERATE_INIT_T .AND. .NOT. GRID .AND.
 	1                                 MAIN_COUNTER .LE.  MAX_NO_GREY_ITERATIONS)
 !
+!	    WRITE(6,*)'Begining T iteration -- NEED TO FIX CODE for GRID option'; FLUSH(UNIT=6)
 	    IF(.NOT. ALLOCATED(U_PAR_FN))THEN
-	      ALLOCATE (U_PAR_FN(ND,NUM_IONS),STAT=IOS)
-	      IF(IOS .EQ. 0)ALLOCATE (PHI_PAR_FN(ND,NUM_IONS),STAT=IOS)
+	      ALLOCATE (U_PAR_FN(DST:DEND,NUM_IONS),STAT=IOS)
+	      IF(IOS .EQ. 0)ALLOCATE (PHI_PAR_FN(DST:DEND,NUM_IONS),STAT=IOS)
+	      IF(IOS .EQ. 0)ALLOCATE (HIGH_POP(DST:DEND,NUM_SPECIES),STAT=IOS)
 	      IF(IOS .EQ. 0)ALLOCATE (Z_PAR_FN(NUM_IONS),STAT=IOS)
 	      IF(IOS .NE. 0)THEN
 	        WRITE(LUER,*)'Unable to allocate PHI_PAR_FN in SET_NEW_MODEL_ESTIMATES'
@@ -498,7 +503,7 @@
 	1          ATM(ID)%XzVLTE,          ATM(ID)%NXzV,
 	1          ATM(ID)%XzVLTE_F_ON_S,   ATM(ID)%XzVLEVNAME_F,
 	1          ATM(ID)%EDGEXzV_F,       ATM(ID)%GXzV_F,
-	1          ATM(ID)%F_TO_S_XzV,      ATM(ID)%NXzV_F, ND,
+	1          ATM(ID)%F_TO_S_XzV,      ATM(ID)%NXzV_F, DST, DEND,
 	1          ATM(ID)%ZXzV,            ATM(ID)%EQXzV,  ATM(ID)%XzV_PRES)
 	    END DO
 !
@@ -547,20 +552,29 @@
 !
 	      DO SIM_INDX=1,MAX_SIM
 	        IF(RESONANCE_ZONE(SIM_INDX))THEN
-	          DO I=1,ND
-	            CHI(I)=CHI(I) +
-	1             CHIL_MAT(I,SIM_INDX)*LINE_PROF_SIM(I,SIM_INDX)
-	            ETA(I)=ETA(I) +
-	1             ETAL_MAT(I,SIM_INDX)*LINE_PROF_SIM(I,SIM_INDX)
+	          DO I=DST,DEND
+	            CHI(I)=CHI(I) + CHIL_MAT(I,SIM_INDX)*LINE_PROF_SIM(I,SIM_INDX)
+	            ETA(I)=ETA(I) + ETAL_MAT(I,SIM_INDX)*LINE_PROF_SIM(I,SIM_INDX)
 	          END DO
 	        END IF
 	      END DO
 !
+!	      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	      WRITE(6,*)'Calling MPI_REDUCE ---- KKKK'
+	      WRITE(190+MYPE,'(I5,8ES14.4)')ML,CHI(DST),CHI(DEND-1),CHI(DEND)
+	      CALL MPI_ALLREDUCE(CHI,TA,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR);      CHI(1:ND)=TA(1:ND)
+	      CALL MPI_ALLREDUCE(ETA,TA,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR);      ETA(1:ND)=TA(1:ND)
+	      WRITE(190+MYPE,'(I5,8ES14.4)')ML,CHI(DST),CHI(DEND-1),CHI(DEND),TA(DST),TA(DEND)
+!	      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	      WRITE(6,*)'Called MPI_REDUCE ---- KKKK'
+!
 ! CHECK for negative line opacities.
+!	        CHI_NOSCAT(I)=MAX(0.0_LDP,CHI(I)-ESEC(I))
+!	        IF(CHI(I) .LT. 0.1_LDP*ESEC(I))CHI(I)=0.1_LDP*ESEC(I)
 !
 	      DO I=1,ND
-	        CHI_NOSCAT(I)=MAX(0.0_LDP,CHI(I)-ESEC(I))
-	        IF(CHI(I) .LT. 0.1_LDP*ESEC(I))CHI(I)=0.1_LDP*ESEC(I)
+	        CHI_NOSCAT(I)=MAX(0.0_LDP,CHI(I)-CHI_SCAT(I))
+	        IF(CHI(I) .LT. 0.1_LDP*CHI_SCAT(I))CHI(I)=0.1_LDP*CHI_SCAT(I)
 	      END DO
 !
 ! Note division by T**2 is included with Stefan-Boltzman constant.
@@ -573,6 +587,7 @@
 	        ROSSMEAN(I)=ROSSMEAN(I) + T3*EMHNUKT(I)/CHI(I)/(1.0_LDP-EMHNUKT(I))**2
 	      END DO
 	    END DO
+	    FLUSH(UNIT=190+MYPE)
 !
 ! Compute CHI, and then optical depth scale.
 ! Stefan-Boltzman constant *1D-15*1D+16/PI (T**4/PI). NB --- T1 is a factor
@@ -589,18 +604,23 @@
 	      PLANCKMEAN(I)=CLUMP_FAC(I)*PLANCKMEAN(I)/T1/(T(I)**4)
 	    END DO
 !
-	    CALL WRITV(ROSSMEAN,ND,'Rosseland Mean Opacity',88)
-	    CALL WRITV(PLANCKMEAN,ND,'Planck Mean Opacity',88)
-	    TA(1:ND)=1.0E-10_LDP*ROSSMEAN(1:ND)/DENSITY(1:ND)
-	    TB(1:ND)=1.0E-10_LDP*PLANCKMEAN(1:ND)/DENSITY(1:ND)
-	    CALL WRITV(TA,ND,'Rosseland mean mass absorption coefficient',88)
-	    CALL WRITV(TB,ND,'Planck mean mass absorption coefficient',88)
+	    IF(DST .EQ. 1)THEN
+	      CALL WRITV(ROSSMEAN,ND,'Rosseland Mean Opacity',88)
+	      CALL WRITV(PLANCKMEAN,ND,'Planck Mean Opacity',88)
+	      TA(1:ND)=1.0E-10_LDP*ROSSMEAN(1:ND)/DENSITY(1:ND)
+	      TB(1:ND)=1.0E-10_LDP*PLANCKMEAN(1:ND)/DENSITY(1:ND)
+	      CALL WRITV(TA,ND,'Rosseland mean mass absorption coefficient',88)
+	      CALL WRITV(TB,ND,'Planck mean mass absorption coefficient',88)
+	      FLUSH(UNIT=88)
+	    END IF
+!
+	     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 ! 
 !
 ! Check that inner boundary is deep enough so that LTE can be fully recovered. SOURCE and
 ! TC are used as temporary vectors.
 !
-	    IF(MAIN_COUNTER .EQ. 1)THEN
+	    IF(DST .EQ. 1 .AND. MAIN_COUNTER .EQ. 1)THEN
 	      CALL TORSCL(TA,ROSSMEAN,R,TB,TC,ND,METHOD,' ')
 	      CALL ESOPAC(ESEC,ED,ND)
 	      CALL TORSCL(TB,ESEC,R,SOURCE,TC,ND,METHOD,' ')
@@ -658,7 +678,7 @@
 	      END DO                    !correcting T towards TGREY.
 	    END IF
  	    T2=0.0_LDP
-	    DO I=1,ND
+	    DO I=DST,DEND
 	      IF(GREY_PAR .LE. 0)then
 	        T1=1.0_LDP
 	      ELSE
@@ -670,8 +690,8 @@
 	      T(I)=MAX(T(I),0.95_LDP*T_MIN)
 	      T2=MAX(T3/T(I),T2)
 	    END DO
-	    WRITE(LUER,'('' Largest correction to T in GREY initialization loop '//
-	1              'is '',1P,E9.2,'' %'')')100.0*T2
+	    WRITE(LUER,'('' Largest correction to T in GREY initialization loop is '',ES9.2,'' %'')')100.0*T2
+	    CALL GATHER_VEC_MPI_V1(T,ND)
 !
 ! Now compute non-LTE partition functions. These assume that the
 ! departure coefficients are independent of Temperature. This
@@ -689,16 +709,20 @@
 	    TMP_STRING='DC'
 	    IF(DC_INTERP_METHOD .EQ. 'RTX')TMP_STRING='TX'
 	    DO ID=1,NUM_IONS
-	      J=ID-1			!1 is added in PAR_FUN_V2
+	      J=ID
 	      ISPEC=SPECIES_LNK(ID)
-	      CALL PAR_FUN_V4(U_PAR_FN, PHI_PAR_FN, Z_PAR_FN,
-	1          GAM_SPECIES(1,ISPEC),
-	1          ROOT(ID)%XzV_F,     ROOT(ID)%LOG_XzVLTE_F,  ROOT(ID)%W_XzV_F,
-	1          ROOT(ID)%DXzV_F,    ROOT(ID)%EDGEXzV_F, ROOT(ID)%GXzV_F,
-	1          ROOT(ID)%GIONXzV_F, ROOT(ID)%ZXzV,T, TC, ED,
-	1          ROOT(ID)%NXzV_F, ND,J,NUM_IONS,
-	1          ROOT(ID)%XzV_PRES,ION_ID(ID),TMP_STRING)
+	      CALL PAR_FUN_MPI_V1(U_PAR_FN, PHI_PAR_FN, Z_PAR_FN, HIGH_POP,
+	1          ATM(ID)%XzV_F,     ATM(ID)%LOG_XzVLTE_F,  ATM(ID)%W_XzV_F,
+	1          ATM(ID)%DXzV_F,    ATM(ID)%EDGEXzV_F, ATM(ID)%GXzV_F,
+	1          ATM(ID)%GIONXzV_F, ATM(ID)%ZXzV,T, TC, ED,
+	1          ATM(ID)%NXzV_F, DST, DEND, ND, 
+	1          ISPEC, NUM_SPECIES, J, NUM_IONS,
+	1          ATM(ID)%XzV_PRES,ION_ID(ID),TMP_STRING)
 	   END DO
+	   J=DEND-DST+1
+	   CALL WR2D(U_PAR_FN,J,NUM_IONS,'U_PAR_FUN',240+MYPE); FLUSH(UNIT=240+MYPE)
+	   CALL WR2D(PHI_PAR_FN,J,NUM_IONS,'PHI_PAR_FUN',245+MYPE); FLUSH(UNIT=240+MYPE)
+	   CALL WR2D(HIGH_POP,J,NUM_IONS,'PHI_PAR_FUN',250+MYPE); FLUSH(UNIT=240+MYPE)
 !
 ! The non-LTE partition functions are density independent, provided
 ! we assume the departure coefficients remain fixed.
@@ -710,38 +734,47 @@
 ! We use QH for dED(est)/dT.
 !
 	    T1=1.0_LDP
-	    J=0
+	    ICNT=0
 	    DO WHILE (T1 .GT. 1.0E-04_LDP)
 	      FIRST=.TRUE.
 !
 ! Recall GAM_SPECIES is set to be the population of the highest ionization
 ! stage.
 !
+	    WRITE(6,*)'Bef EVAL_ED',MYPE,DST,DEND
 	      DO ISPEC=1,NUM_SPECIES
 	        ID=SPECIES_BEG_ID(ISPEC)
-	        J=SPECIES_END_ID(ISPEC)-SPECIES_BEG_ID(ISPEC)+1
+	        J=SPECIES_END_ID(ISPEC)
 	        IF(SPECIES_PRES(ISPEC))THEN
-	          CALL EVAL_ED(H,QH,U_PAR_FN(1,ID),PHI_PAR_FN(1,ID),
-	1                  Z_PAR_FN(ID),ED,POP_SPECIES(1,ISPEC),
-	1                  GAM_SPECIES(1,ISPEC),XM,TB,TC,J,ND,FIRST)
+	          CALL EVAL_ED_MPI_V1(H,QH,U_PAR_FN,PHI_PAR_FN,HIGH_POP,
+	1                  Z_PAR_FN,ED,POP_SPECIES(1,ISPEC),
+	1                  XM,TB,TC,ISPEC,NUM_SPECIES,
+	1                  ID,J,NUM_IONS,DST,DEND,ND,FIRST)
 	        END IF
 	      END DO
+	    WRITE(MYPE+230,*)'Aft EVAL_ED',MYPE,DST,DEND
+	    CALL WRITE_VEC(ED(DST),DEND-DST+1,'ED',230+MYPE); FLUSH(UNIT=230+MYPE)
+	    CALL WRITE_VEC(H(DST),DEND-DST+1,'H',230+MYPE); FLUSH(UNIT=230+MYPE)
 !
 	      T1=0.0
-	      DO I=1,ND
+	      DO I=DST,DEND
 	        TA(I)=-(H(I)-ED(I))/(QH(I)-1.0_LDP)/ED(I)
 	        T1=MAX(T1,ABS(TA(I)))
 	        IF(TA(I) .LT. -0.9_LDP)TA(I)=-0.9_LDP
 	        IF(TA(I) .GT. 9.0_LDP)TA(I)=9.0_LDP
 	        ED(I)=ED(I)*(1.0_LDP+TA(I))
 	      END DO
-	      J=J+1
-	      IF(J .GT. 20)THEN
+	      ICNT=ICNT+1
+	      IF(ICNT .GT. 20)THEN
 	        WRITE(LUER,*)'Error --- Computation of ED in EVAL_ED section'//
 	1                 ' has taken more than 20 iterations'
+	        WRITE(LUER,*)'Current error T1 is',T1
 	        STOP
 	      END IF
 	    END DO
+	    CALL GATHER_VEC_MPI_V1(ED,ND)
+	    WRITE(6,*)MYPE,DST,DEND; FLUSH(UNIT=6)
+!	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 ! 
 !
 ! Now need to compute LTE populations, and populations.
@@ -760,25 +793,26 @@
 	    DO ISPEC=1,NUM_SPECIES
 	      FIRST=.TRUE.
 	      DO ID=SPECIES_END_ID(ISPEC),SPECIES_BEG_ID(ISPEC),-1
-	        IF(ROOT(ID)%XzV_PRES)THEN
-	          CALL LTEPOP_WLD_V2(ROOT(ID)%XzVLTE_F, ROOT(ID)%LOG_XzVLTE_F,  ROOT(ID)%W_XzV_F,
-	1               ROOT(ID)%EDGEXzV_F,  ROOT(ID)%GXzV_F,  ROOT(ID)%ZXzV,
-	1               ROOT(ID)%GIONXzV_F,  ROOT(ID)%NXzV_F,  ROOT(ID)%DXzV_F,
+	        IF(ATM(ID)%XzV_PRES)THEN
+	          CALL LTEPOP_WLD_V2(ATM(ID)%XzVLTE_F, ATM(ID)%LOG_XzVLTE_F,  ATM(ID)%W_XzV_F,
+	1               ATM(ID)%EDGEXzV_F,  ATM(ID)%GXzV_F,  ATM(ID)%ZXzV,
+	1               ATM(ID)%GIONXzV_F,  ATM(ID)%NXzV_F,  ATM(ID)%DXzV_F,
 	1               ED,T, DST, DEND, ND)
-	          CALL CNVT_FR_DC_V2(ROOT(ID)%XzV_F, ROOT(ID)%LOG_XzVLTE_F,
-	1               ROOT(ID)%DXzV_F,   ROOT(ID)%NXzV_F,
-	1               TB,               TA, IONE, ND,FIRST,      ROOT(ID+1)%XzV_PRES)
-	          IF(ID .NE. SPECIES_BEG_ID(ISPEC))ROOT(ID-1)%DXzV_F(1:ND)=TB(1:ND)
+	          CALL CNVT_FR_DC_V2(ATM(ID)%XzV_F, ATM(ID)%LOG_XzVLTE_F,
+	1               ATM(ID)%DXzV_F,   ATM(ID)%NXzV_F,
+	1               TB,               TA, DST, DEND, ND, FIRST,      ATM(ID+1)%XzV_PRES)
+	          IF(ID .NE. SPECIES_BEG_ID(ISPEC))ATM(ID-1)%DXzV_F(DST:DEND)=TB(DST:DEND)
 	        END IF
 	      END DO
+	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! We need to scale the populations to ensure that the change in temperature
 !   has not causes some population to blow up. We always do this --- the
 ! DO_POP_SCALE option has no effect.
 !
 	      DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
-	        CALL SCALE_POPS(ROOT(ID)%XzV_F, ROOT(ID)%DXzV_F,
-	1           POP_SPECIES(1,SPECIES_LNK(ID)),TA, ROOT(ID)%NXzV_F,ND)
+	        CALL SCALE_POPS_MPI_V1(ATM(ID)%XzV_F, ATM(ID)%DXzV_F,
+	1           POP_SPECIES(1,SPECIES_LNK(ID)),TA, ATM(ID)%NXzV_F, DST, DEND, ND)
 	      END DO
 	    END DO
 !
@@ -791,26 +825,46 @@
 !
 ! For 1st call to FULL_TO_SUP, Last line contains FeX etc as FeXI not installed.
 !
+	    WRITE(6,*)MYPE,'Calling FULL_TO_SUP'
 	    DO ID=NUM_IONS-1,1,-1
 	      CALL FULL_TO_SUP(
-	1      ROOT(ID)%XzV,   ROOT(ID)%NXzV,       ROOT(ID)%DXzV,      ROOT(ID)%XzV_PRES,
-	1      ROOT(ID)%XzV_F, ROOT(ID)%F_TO_S_XzV, ROOT(ID)%NXzV_F,    ROOT(ID)%DXzV_F,
-	1      ROOT(ID+1)%XzV, ROOT(ID+1)%NXzV,     ROOT(ID+1)%XzV_PRES, ND)
+	1      ATM(ID)%XzV,   ATM(ID)%NXzV,       ATM(ID)%DXzV,      ATM(ID)%XzV_PRES,
+	1      ATM(ID)%XzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%NXzV_F,    ATM(ID)%DXzV_F,
+	1      ATM(ID+1)%XzV, ATM(ID+1)%NXzV,     ATM(ID+1)%XzV_PRES, DST, DEND)
 	    END DO
+	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!
+!	  IF(MYPE .EQ. 0)THEN
+!	    WRITE(6,*)MYPE,'B-Calling FULL_TO_SUP'
+!	    DO ID=NUM_IONS-1,1,-1
+!	       CALL FULL_TO_SUP(
+!	1          ROOT(ID)%XzV,   ATM(ID)%NXzV,      ROOT(ID)%DXzV,   ATM(ID)%XzV_PRES,
+!	1          ROOT(ID)%XzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%NXzV_F, ROOT(ID)%DXzV_F,
+!	1          ROOT(ID+1)%XzV, ATM(ID+1)%NXzV,     ATM(ID+1)%XzV_PRES, DST, DEND)
+!	    END DO
+!	  END IF
 !
 ! Store all quantities in POPS array. This is done here (rather than
 ! after final iteration) as it enable POPION to be readily computed.
 !
+	    WRITE(6,*)MYPE,'Calling ION_TO_POP'
+	    POPS=0.0_LDP
 	    DO ID=1,NUM_IONS-1
-	      CALL IONTOPOP(POPS, ROOT(ID)%XzV, ROOT(ID)%DXzV, ED,T,
-	1         ROOT(ID)%EQXzV, ROOT(ID)%NXzV, NT, IONE, ND, ND,
-	1         ROOT(ID)%XzV_PRES)
+	      CALL IONTOPOP(POPS, ATM(ID)%XzV, ATM(ID)%DXzV, ED,T,
+	1         ATM(ID)%EQXzV, ATM(ID)%NXzV, NT, DST, DEND,  ND,
+	1         ATM(ID)%XzV_PRES)
 	    END DO
+	    WRITE(6,*)MYPE,'Called ION_TO_POP'
+	    J=ND*NT
+	    CALL WR2D(POPS,NT,ND,'POPS',320+MYPE); FLUSH(UNIT=320+MYPE)
+	    CALL MPI_ALLREDUCE(MPI_IN_PLACE,POPS,J,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	   CALL WR2D(POPS,NT,ND,'POPS',300+MYPE); FLUSH(UNIT=300+MYPE)
+	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Compute the ion population at each depth.
 ! These are required when evaluation the occupation probabilities.
 !
-	    DO J=1,ND
+	    DO J=DST,DEND
 	      POPION(J)=0.0_LDP
 	      DO I=1,NT
 	        IF(Z_POP(I) .GT. 0.01_LDP)POPION(J)=POPION(J)+POPS(I,J)
@@ -821,11 +875,20 @@
 ! that, for H, He etc that the upper levels with interpolating sequences may not be fully
 ! consistent (due to rounding errors, from another model, etc).
 !
+	    WRITE(6,*)MYPE,'Calling SUP_TO_FULL_V4'
 	    CALL SUP_TO_FULL_V4(POPS,Z_POP,DO_LEV_DISSOLUTION,ND,NT)
+!	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	    CALL MPI_FINALIZE (ierr)
+!	    STOP
 !
 ! Revise ALL LTE populations.
 !
+	    WRITE(6,*)MYPE,'Eval LTE_V5'
 	    CALL EVAL_LTE_V5(DO_LEV_DISSOLUTION,ND)
+!	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	    CALL MPI_FINALIZE (ierr)
+!	    STOP
 !
 	END DO		!ITERATE_INIT_T
 	CALL TUNE(2,'T_ITERATE')
@@ -833,7 +896,9 @@
 	IF(ALLOCATED(U_PAR_FN))THEN
 	  DEALLOCATE (U_PAR_FN,STAT=IOS)
 	  DEALLOCATE (PHI_PAR_FN,STAT=IOS)
+	  DEALLOCATE (HIGH_POP,STAT=IOS)
 	  DEALLOCATE (Z_PAR_FN,STAT=IOS)
+	  CALL GATHER_ATM_MPI_V1(ND)
 	END IF
 !
 ! Restore two photon method option.

@@ -69,8 +69,8 @@
 ! HSNT_F/HNST_S should always be well defined, since the F levels are always
 ! relatively close in energy to the supler level S.
 !
-	WRITE(6,*)LOG_HNST_F(1,DST:DEND)
-	WRITE(6,*)LOG_HNST_F(N_F,DST:DEND)
+!	WRITE(6,*)LOG_HNST_F(1,DST:DEND)
+!	WRITE(6,*)LOG_HNST_F(N_F,DST:DEND)
 !
 	DO K=DST,DEND
 !

@@ -59,6 +59,10 @@
 	INTEGER PHOT_ID
 	INTEGER LUER,ERROR_LU
 	EXTERNAL ERROR_LU
+	include 'mpif.h'
+!
+	CHI(1:ND)=0.0_LDP
+	ETA(1:ND)=0.0_LDP
 !
 ! Compute opacity and emissivity. This is a general include file
 ! provided program uses exactly the same variables. Can be achieved
@@ -72,9 +76,9 @@
 	  T1=-HDKT*CONT_FREQ
 	  DO I=1,ND
 	    EMHNUKT_CONT(I)=EXP(T1/T(I))
-	    CHI(I)=0.0_LDP
+	    CHI_RAY(I)=0.0_LDP
+	    CHI_SCAT(I)=0.0_LDP
 	    ESEC(I)=0.0_LDP
-	    ETA(I)=0.0_LDP
 	  END DO
 !
 ! Compute continuum intensity incident from the core assuming a TSTAR
@@ -90,19 +94,19 @@
 	    IF(ATM(ID)%XzV_PRES)THEN
 	      DO J=1,ATM(ID)%N_XzV_PHOT
 	        PHOT_ID=J
-	        CALL GENOPAETA_V10(ID,CHI,ETA,CONT_FREQ,
+	        CALL GENOPAETA_MPI_V1(ID,CHI,ETA,CONT_FREQ,
 	1           ATM(ID)%XzV_F,      ATM(ID)%XzVLTE_F,     ATM(ID)%LOG_XzVLTE_F,  ATM(ID)%EDGEXzV_F,
 	1           ATM(ID)%GIONXzV_F,  ATM(ID)%ZXzV,         ATM(ID)%NXzV_F,
 	1           ATM(ID+1)%XzV,      ATM(ID+1)%LOG_XzVLTE, ATM(ID+1)%NXzV,
 	1           PHOT_ID,            ATM(ID)%XzV_ION_LEV_ID(J),
-	1           ED,T,EMHNUKT_CONT,L_TRUE,ND,LST_DEPTH_ONLY)
+	1           ED,T,EMHNUKT_CONT,L_TRUE,DST, DEND, ND,LST_DEPTH_ONLY)
 	      END DO
 	    END IF
 	  END DO
 !$OMP END PARALLEL DO
 !
 	  IF(ADD_ADDITIONAL_OPACITY)THEN
-	     DO I=1,ND
+	     DO I=DST,DEND
 	       T1=ADD_OPAC_SCL_FAC*6.65E-15_LDP*POP_ATOM(I)
 	       CHI(I)=CHI(I)+T1
 	       ETA(I)=ETA(I)+T1*TWOHCSQ*(CONT_FREQ**3)*EMHNUKT_CONT(I)/(1.0_LDP-EMHNUKT_CONT(I))
@@ -119,11 +123,11 @@
 ! Add in 2-photon emissivity and opacity.
 !
 	  IF(LST_DEPTH_ONLY)THEN
-	    CALL TWO_PHOT_OPAC_V3(ETA,CHI,POPS,T,CONT_FREQ,'LTE',ND,NT)
+	    CALL TWO_PHOT_OPAC_MPI_V1(ETA,CHI,POPS,T,CONT_FREQ,'LTE',DST,DEND,ND,NT)
 	  ELSE IF(COMPUTE_EDDFAC .AND. TWO_PHOTON_METHOD .EQ. 'USE_RAD')THEN
-	    CALL TWO_PHOT_OPAC_V3(ETA,CHI,POPS,T,CONT_FREQ,'OLD_DEFAULT',ND,NT)
+	    CALL TWO_PHOT_OPAC_MPI_V1(ETA,CHI,POPS,T,CONT_FREQ,'OLD_DEFAULT',DST,DEND,ND,NT)
 	  ELSE
-	    CALL TWO_PHOT_OPAC_V3(ETA,CHI,POPS,T,CONT_FREQ,TWO_PHOTON_METHOD,ND,NT)
+	    CALL TWO_PHOT_OPAC_MPI_V1(ETA,CHI,POPS,T,CONT_FREQ,TWO_PHOTON_METHOD,DST,DEND,ND,NT)
 	  END IF
 !
 ! Compute X-ray opacities and emissivities due to K (& L) shell ionization. In all cases
@@ -145,8 +149,8 @@
 	        T1=XCROSS_V2(CONT_FREQ,AT_NO(SPECIES_LNK(ID)),T2,IZERO,IZERO,L_FALSE,L_FALSE)
 	        IF(T1 .NE. 0.0_LDP)THEN
 	          J=1
-	          IF(LST_DEPTH_ONLY)J=ND
-	          DO I=J,ND
+!	          IF(LST_DEPTH_ONLY)J=ND
+	          DO I=DST,DEND
 	            T2=0.0_LDP			!Temporary CHI
 	            T3=0.0_LDP			!Temporary ETA
 	            T4=(ATM(ID+1)%XzVLTE_F(1,I)*EMHNUKT_CONT(I))/ATM(ID+1)%XzV_F(1,I)
@@ -163,29 +167,32 @@
 !!$OMP END PARALLEL DO
 	  END IF
 !
-	  CHI_NOSCAT(1:ND)=CHI(1:ND)
-	  ETA_NOSCAT(1:ND)=ETA(1:ND)
-!
 ! Compute scattering opacity. ESEC is zeroed in ESOPAC.
 !
 	  CALL ESOPAC(ESEC,ED,ND)		!Electron scattering emission factor.
 !
 ! Add in Rayleigh scattering contribution.
 !
-	  CHI_RAY(1:ND)=0.0_LDP
+	  CHI_RAY(DST:DEND)=0.0_LDP
 	  ID=1; IF(ION_ID(1) .EQ. 'HMI')ID=2
 	  IF(SPECIES_PRES(1) .AND. INCL_RAY_SCAT)THEN
-	    CALL RAYLEIGH_SCAT(CHI_RAY,ATM(ID)%XzV_F,ATM(ID)%AXzV_F,ATM(ID)%EDGEXZV_F,
-	1             ATM(1)%NXzV_F,CONT_FREQ,ND)
+	    CALL RAYLEIGH_SCAT_MPI_V1(CHI_RAY,ATM(ID)%XzV_F,ATM(ID)%AXzV_F,ATM(ID)%EDGEXZV_F,
+	1             ATM(1)%NXzV_F,CONT_FREQ,DST,DEND,ND)
 	  END IF
-	  CHI_SCAT(1:ND)=ESEC(1:ND)+CHI_RAY(1:ND)
+!
+	  CHI_NOSCAT(DST:DEND)=CHI(DST:DEND)
+	  ETA_NOSCAT(DST:DEND)=ETA(DST:DEND)
+	  CHI_SCAT(DST:DEND)=ESEC(DST:DEND)+CHI_RAY(DST:DEND)
 !
 ! Now compute total opacity --- scattering + non scattering.
 !
-	  CHI(1:ND)=CHI(1:ND)+CHI_SCAT(1:ND)
+	  CHI(DST:DEND)=CHI(DST:DEND)+CHI_SCAT(DST:DEND)
 !
-	  CHI_C_EVAL(:)=CHI(:)
-	  ETA_C_EVAL(:)=ETA(:)
+	  CALL MPI_ALLREDUCE(CHI,CHI_C_EVAL,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	  CALL MPI_ALLREDUCE(ETA,ETA_C_EVAL,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	  CALL MPI_ALLREDUCE(MPI_IN_PLACE,CHI_RAY,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	  CALL MPI_ALLREDUCE(MPI_IN_PLACE,CHI_SCAT,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+!	  
 	  CHI_NOSCAT_EVAL(:)=CHI_NOSCAT(:)
 	  ETA_NOSCAT_EVAL(:)=ETA_NOSCAT(:)
 !
@@ -223,7 +230,7 @@
 	  T1=(FL/CONT_FREQ)**3
 	  T2=TWOHCSQ*(CONT_FREQ**3)
 	  T3=TWOHCSQ*(FL**3)
-	  DO J=1,ND
+	  DO J=DST,DEND
 	    T4=ETA_C_EVAL(J)*T1*EXP(-HDKT*(FL-CONT_FREQ)/T(J))
 	    CHI(J)=CHI_C_EVAL(J)+(ETA_C_EVAL(J)/T2-T4/T3)
 	    ETA(J)=T4
@@ -236,10 +243,10 @@
 ! We reset CHI and ETA in case shock X-ray emission has been added to ETA,
 ! or CONT_FREQ was not the first frequency.
 !
-	  CHI(1:ND)=CHI_C_EVAL(1:ND)
-	  ETA(1:ND)=ETA_C_EVAL(1:ND)
-	  CHI_NOSCAT(1:ND)=CHI_NOSCAT_EVAL(1:ND)
-	  ETA_NOSCAT(1:ND)=ETA_NOSCAT_EVAL(1:ND)
+	  CHI(DST:DEND)=CHI_C_EVAL(DST:DEND)
+	  ETA(DST:DEND)=ETA_C_EVAL(DST:DEND)
+	  CHI_NOSCAT(DST:DEND)=CHI_NOSCAT_EVAL(DST:DEND)
+	  ETA_NOSCAT(DST:DEND)=ETA_NOSCAT_EVAL(DST:DEND)
 	END IF
 !
 ! 
@@ -249,6 +256,7 @@
 !
 	IF(XRAYS)THEN
 !
+	  ZETA=0.0_LDP
 	  IF(FF_XRAYS)THEN
 !
 ! Since T_SHOCK is depth indpendent, Z^2 * (the free-free Gaunt factors)
@@ -263,7 +271,7 @@
 	      T2=1.0_LDP ; TA(1)=GFF(CONT_FREQ,T_SHOCK_1,T2)
 	      T2=2.0_LDP ; TA(2)=4.0_LDP*GFF(CONT_FREQ,T_SHOCK_1,T2)
 	      T2=6.0_LDP ; TA(3)=36.0_LDP*GFF(CONT_FREQ,T_SHOCK_1,T2)
-	      DO I=1,ND
+	      DO I=DST,DEND
 	        T2=TA(1)*POP_SPECIES(I,1)+TA(2)*POP_SPECIES(I,2) +
 	1         TA(3)*(POP_ATOM(I)-POP_SPECIES(I,1)-POP_SPECIES(I,2))
 	        T3=POP_SPECIES(I,1)+POP_SPECIES(I,2) +
@@ -277,7 +285,7 @@
 	      T2=1.0_LDP ; TA(1)=GFF(CONT_FREQ,T_SHOCK_2,T2)
 	      T2=2.0_LDP ; TA(2)=4.0_LDP*GFF(CONT_FREQ,T_SHOCK_2,T2)
 	      T2=6.0_LDP ; TA(3)=36.0_LDP*GFF(CONT_FREQ,T_SHOCK_2,T2)
-	      DO I=1,ND
+	      DO I=DST,DEND
 	        T2=TA(1)*POP_SPECIES(I,1)+TA(2)*POP_SPECIES(I,2) +
 	1       TA(3)*(POP_ATOM(I)-POP_SPECIES(I,1)-POP_SPECIES(I,2))
 	        T3=POP_SPECIES(I,1)+POP_SPECIES(I,2) +
@@ -298,7 +306,7 @@
 ! We use T3 for the Electron density. We asume H, He, and C are fully ionized
 ! in the X-ray emitting plasma. All other species are assumed have Z=6.0
 !
-	    DO I=1,ND
+	    DO I=DST,DEND
 	      T1=EXP(-V_SHOCK_1/V(I))*(FILL_FAC_XRAYS_1)**2
 	      T2=EXP(-V_SHOCK_2/V(I))*(FILL_FAC_XRAYS_2)**2
 	      T3=POP_SPECIES(I,1)+2.0_LDP*POP_SPECIES(I,2)+
@@ -306,25 +314,29 @@
 	      ZETA(I)=(T1*XRAY_EMISS_1+T2*XRAY_EMISS_2)*T3*POP_ATOM(I)
 	    END DO
 	  END IF
+	  IF(XRAY_SMOOTH_WIND)ZETA(DST:DEND)=ZETA(DST:DEND)*CLUMP_FAC(DST:DEND)		!Should be divided?
 !
-	  IF(XRAY_SMOOTH_WIND)ZETA(1:ND)=ZETA(1:ND)*CLUMP_FAC(1:ND)
-          ETA(1:ND)=ETA(1:ND)+ZETA(1:ND)
-	  ETA_MECH(1:ND)=ZETA(1:ND)
+          ETA(DST:DEND)=ETA(DST)+ZETA(DST:DEND)
+	  ETA_MECH(DST:DEND)=TA(DST:DEND)
 !
 ! Changed 06-Aug-2003: Clumping was not beeing allowed for when computing
 ! the shock luminosity.
 !
-	  T1=0.241838_LDP		!eV to 10^15Hz
-	  IF(SECTION .EQ. 'CONTINUUM')THEN
-	    IF(FREQ_INDX .EQ. 1)THEN
-	       XRAY_LUM_TOT(1:ND)=0.0_LDP
-	       XRAY_LUM_0P1(1:ND)=0.0_LDP
-	       XRAY_LUM_1KEV(1:ND)=0.0_LDP
+	  CALL MPI_ALLREDUCE(ZETA,TA,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
+	  ZETA(1:ND)=TA(1:ND)
+	  IF(DST .EQ. 1)THEN
+	    T1=0.241838_LDP		!eV to 10^15Hz
+	    IF(SECTION .EQ. 'CONTINUUM')THEN
+	      IF(FREQ_INDX .EQ. 1)THEN
+	         XRAY_LUM_TOT(1:ND)=0.0_LDP
+	         XRAY_LUM_0P1(1:ND)=0.0_LDP
+	         XRAY_LUM_1KEV(1:ND)=0.0_LDP
+	      END IF
+	      TA(1:ND)=ZETA(1:ND)*CLUMP_FAC(1:ND)*FQW(FREQ_INDX)
+	      XRAY_LUM_TOT(1:ND)=XRAY_LUM_TOT(1:ND)+TA(1:ND)
+	      IF(FL .GE. 100.0_LDP*T1)XRAY_LUM_0P1(1:ND)=XRAY_LUM_0P1(1:ND)+TA(1:ND)
+	      IF(FL .GE. 1000.0_LDP*T1)XRAY_LUM_1KEV(1:ND)=XRAY_LUM_1KEV(1:ND)+TA(1:ND)
 	    END IF
-	    TA(1:ND)=ZETA(1:ND)*CLUMP_FAC(1:ND)*FQW(FREQ_INDX)
-	    XRAY_LUM_TOT(1:ND)=XRAY_LUM_TOT(1:ND)+TA(1:ND)
-	    IF(FL .GE. 100.0_LDP*T1)XRAY_LUM_0P1(1:ND)=XRAY_LUM_0P1(1:ND)+TA(1:ND)
-	    IF(FL .GE. 1000.0_LDP*T1)XRAY_LUM_1KEV(1:ND)=XRAY_LUM_1KEV(1:ND)+TA(1:ND)
 	  END IF
 	ELSE
 	  ETA_MECH(1:ND)=0.0_LDP
@@ -332,7 +344,7 @@
 !
 ! Set a minimum emissivity. Mainly important when X-rays are not present.
 !
-	DO I=1,ND
+	DO I=DST,DEND
 	  IF(ETA(I) .LT. 1.0E-280_LDP)THEN
 	    ETA(I)=1.0E-280_LDP
 	    ETA_NOSCAT(I)=1.0E-280_LDP
@@ -341,15 +353,19 @@
 !
 ! The continuum source function is defined by:
 !                                              S= ZETA + THETA.J
-	DO I=1,ND
+	DO I=DST,DEND
 	  ZETA(I)=ETA(I)/CHI(I)
 	  THETA(I)=CHI_SCAT(I)/CHI(I)
 	END DO
+	CALL MPI_ALLREDUCE(ZETA,TA,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
+	ZETA(1:ND)=TA(1:ND)
+	CALL MPI_ALLREDUCE(THETA,TA,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
+	THETA(1:ND)=TA(1:ND)
 !
 ! Store TOTAL continuum line emissivity and opacity.
 !
-	ETA_CONT(:)=ETA(:)
-	CHI_CONT(:)=CHI(:)
+	CALL MPI_ALLREDUCE(ETA,ETA_CONT,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
+	CALL MPI_ALLREDUCE(CHI,CHI_CONT,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
 !
 	RETURN
 	END

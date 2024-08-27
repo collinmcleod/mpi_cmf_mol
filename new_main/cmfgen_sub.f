@@ -658,7 +658,7 @@
 	END IF
 !
 	CALL SET_RADIATION_MOD(ND,NDMAX,NPMAX)
-	CALL SET_LINE_MOD(ND,NT,MAX_SIM,NM)
+	CALL SET_LINE_MOD(DST,DEND,ND,NT,MAX_SIM,NM)
         CALL SET_VAR_RAD_MOD_V2(ND,NDEXT,
 	1        NT,NUM_BNDS,NM,MAX_SIM,NM_KI,ACCURATE,L_TRUE)
 	CALL SET_CMF_SOB_MOD(ND,NUM_BNDS,NT,NM_KI,NLF,LUER)
@@ -804,6 +804,14 @@
 	END IF
 !
 	CALL ALLOCATE_WSE_ARRAYS(ND)
+!
+	IF(MYPE .EQ. 0)THEN
+	  DO ID=1,NUM_IONS
+	    ROOT(ID)%F_TO_S_XzV=ATM(ID)%F_TO_S_XzV
+	    ROOT(ID)%INT_SEQ_XzV=ATM(ID)%INT_SEQ_XzV
+	  END DO
+	END IF
+
 !
 ! 
 !
@@ -1218,9 +1226,13 @@
 	  CALL TUNE(ITWO,'GIT')
 	  CALL TUNE(ITHREE,' ')
 !
-	  IF(MYPE .EQ. 0)THEN
-	    CALL CHECK_IONS_PRESENT(ND,NUM_IONS)
-	  END IF
+!	  IF(MYPE .EQ. 0)THEN
+!	    CALL CHECK_IONS_PRESENT(ND,NUM_IONS)
+!	  END IF
+!
+! Make sure root has all the needed information.
+!
+!	  CALL SCATTER_XZV_F_AND_IONS(ROOT)
 !
 ! This file is a direct access file and contains the models
 ! output (i.e. T,density,population levels etc). No longer
@@ -1385,7 +1397,9 @@
 !      1 refers to format for output.
 !      1,NHY - For use with HeI.
 !
-	CALL EVAL_LTE_V5(DO_LEV_DISSOLUTION,ND)
+	IF(MYPE .EQ. 0)THEN
+	  CALL EVAL_ROOT_LTE_MPI_V1(DO_LEV_DISSOLUTION,ND)
+	END IF
 !
 ! GAM_SPECIES refers to the number of electrons arising from each species (eg
 ! carbon).

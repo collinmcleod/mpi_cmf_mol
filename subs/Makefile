@@ -44,6 +44,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(estau_v2.o)\
       $(LIB)(eval_adiabatic.o)\
       $(LIB)(eval_ed.o)\
+      $(LIB)(eval_ed_mpi_v1.o)\
       $(LIB)(ew_format.o)\
       $(LIB)(ew_format_v2.o)\
       $(LIB)(ew_format_v3.o)\
@@ -65,6 +66,8 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(fqnew.o)\
       $(LIB)(full_to_sup.o)\
       $(LIB)(gamma.o)\
+      $(LIB)(gather_vec_mpi_v1.o)\
+      $(LIB)(gather_atm_mpi_v1.o)\
       $(LIB)(gausel.o)\
       $(LIB)(gbf.o)\
       $(LIB)(gen_omega_rd_v2.o)\
@@ -161,6 +164,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(occupation_prob.o)\
       $(LIB)(omega_gen_v2.o)\
       $(LIB)(open_dir_acc_v1.o)\
+      $(LIB)(par_fun_mpi_v1.o)\
       $(LIB)(par_fun_v4.o)\
       $(LIB)(pertjfeau_ibc.o)\
       $(LIB)(phys_con.o)\
@@ -202,6 +206,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(same_n.o)\
       $(LIB)(scale_grey.o)\
       $(LIB)(scale_pops.o)\
+      $(LIB)(scale_pops_mpi_v1.o)\
       $(LIB)(scatter_xzv_f_and_ions.o)\
       $(LIB)(scr_read_v2.o)\
       $(LIB)(set_acc_dmu.o)\
