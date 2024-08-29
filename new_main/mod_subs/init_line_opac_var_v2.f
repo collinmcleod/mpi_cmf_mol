@@ -49,11 +49,9 @@
 ! Zero arrays which is used to store the net rate (ZNET_SIM) and mean intensity
 ! for each line (JBAR_SIM).
 !
-	    DO I=1,ND
-	      ZNET_SIM(I,SIM_INDX)=0.0_LDP
-	      JBAR_SIM(I,SIM_INDX)=0.0_LDP
-	    END DO
-	    LINE_QW_SUM(1:ND,SIM_INDX)=0.0_LDP
+	    ZNET_SIM(:,SIM_INDX)=0.0_LDP
+	    JBAR_SIM(:,SIM_INDX)=0.0_LDP
+	    LINE_QW_SUM(:,SIM_INDX)=0.0_LDP
 !
 ! Decide if line is weak, and hence whether we can iterate on the net rates
 ! rather than use a full linearization.
@@ -65,7 +63,7 @@
 !
 	        WEAK_LINE(SIM_INDX)=.TRUE.
 	        T1=2.998E-10_LDP/FL_SIM(SIM_INDX)
-	        DO I=1,ND
+	        DO I=DST,DEND
 	          T2=ABS(CHIL_MAT(I,SIM_INDX))*T1*R(I)/V(I)
 	          IF(T2 .GT. WEAK_TAU_LINE_LIMIT)WEAK_LINE(SIM_INDX)=.FALSE.
 	        END DO
@@ -78,7 +76,7 @@
 	1                        (VTURB/12.85_LDP)**2 )/2.998E+05_LDP
 	        T2=T1/NU_DOP
 	        WEAK_LINE(SIM_INDX)=.TRUE.
-	        DO I=1,ND
+	        DO I=DST,DEND
 	          IF( ABS(CHIL_MAT(I,SIM_INDX))*T2/ESEC(I) .GT. WEAK_LINE_LIMIT)
 	1                              WEAK_LINE(SIM_INDX)=.FALSE.
 	        END DO
@@ -176,26 +174,26 @@
 !
 	      J=LOW_POINTER(SIM_INDX)
 	      IF(VAR_IN_USE_CNT(J) .EQ. 1)THEN	  !Just this line using store.
-!	        TX(:,:,J)=0.0D0
-!	        TVX(:,:,J)=0.0D0
-	        CALL ZERO_2D_MAT(TX(1,1,J),ND,ND)
-	        CALL ZERO_2D_MAT(TVX(1,1,J),ND-1,ND)
-	        IF(ACCURATE)CALL ZERO_2D_MAT(TX_EXT(1,1,J),NDEXT,NDEXT)
-	        IF(ACCURATE)CALL ZERO_2D_MAT(TVX_EXT(1,1,J),NDEXT-1,NDEXT)
-!	        IF(ACCURATE)TX_EXT(:,:,J)=0.0D0
-!	        IF(ACCURATE)TVX_EXT(:,:,J)=0.0D0
+	        TX(:,:,J)=0.0D0
+	        TVX(:,:,J)=0.0D0
+!	        CALL ZERO_2D_MAT(TX(1,1,J),ND,ND)
+!	        CALL ZERO_2D_MAT(TVX(1,1,J),ND-1,ND)
+!	        IF(ACCURATE)CALL ZERO_2D_MAT(TX_EXT(1,1,J),NDEXT,NDEXT)
+!	        IF(ACCURATE)CALL ZERO_2D_MAT(TVX_EXT(1,1,J),NDEXT-1,NDEXT)
+	        IF(ACCURATE)TX_EXT(:,:,J)=0.0D0
+	        IF(ACCURATE)TVX_EXT(:,:,J)=0.0D0
 	      END IF
 !
 	      J=UP_POINTER(SIM_INDX)
 	      IF(VAR_IN_USE_CNT(J) .EQ. 1)THEN	  !Just this line using store.
-!	        TX(:,:,J)=0.0D0
-!	        TVX(:,:,J)=0.0D0
-	        CALL ZERO_2D_MAT(TX(1,1,J),ND,ND)
-	        CALL ZERO_2D_MAT(TVX(1,1,J),ND-1,ND)
-	        IF(ACCURATE)CALL ZERO_2D_MAT(TX_EXT(1,1,J),NDEXT,NDEXT)
-	        IF(ACCURATE)CALL ZERO_2D_MAT(TVX_EXT(1,1,J),NDEXT-1,NDEXT)
-!	        IF(ACCURATE)TX_EXT(:,:,J)=0.0D0
-!	        IF(ACCURATE)TVX_EXT(:,:,J)=0.0D0
+	        TX(:,:,J)=0.0D0
+	        TVX(:,:,J)=0.0D0
+!	        CALL ZERO_2D_MAT(TX(1,1,J),ND,ND)
+!	        CALL ZERO_2D_MAT(TVX(1,1,J),ND-1,ND)
+!	        IF(ACCURATE)CALL ZERO_2D_MAT(TX_EXT(1,1,J),NDEXT,NDEXT)
+!	        IF(ACCURATE)CALL ZERO_2D_MAT(TVX_EXT(1,1,J),NDEXT-1,NDEXT)
+	        IF(ACCURATE)TX_EXT(:,:,J)=0.0D0
+	        IF(ACCURATE)TVX_EXT(:,:,J)=0.0D0
 	      END IF
 !
 ! Zero the appropriate dCHIL and dETAL matrices in dZ, since we will no
@@ -203,19 +201,19 @@
 !
 	      J=LOW_POINTER(SIM_INDX)
 	      IF(VAR_IN_USE_CNT(J) .EQ. 1)THEN	  !Just this line using store.
-	        CALL ZERO_dZ(dZ,J,NM,NUM_BNDS*ND,MAX_SIM)
-!	        dZ(J,:,:,:)=0.0D0		!NM,NUM_BNDS,ND,MAX_SIM
+!	        CALL ZERO_dZ(dZ,J,NM,NUM_BNDS*ND,MAX_SIM)
+	        dZ(J,:,:,:)=0.0D0		!NM,NUM_BNDS,ND,MAX_SIM
 	      END IF
 	      J=UP_POINTER(SIM_INDX)
 	      IF(VAR_IN_USE_CNT(J) .EQ. 1)THEN	  !Just this line using store.
-	        CALL ZERO_dZ(dZ,J,NM,NUM_BNDS*ND,MAX_SIM)
-!	        dZ(J,:,:,:)=0.0D0		!NM,NUM_BNDS,ND,MAX_SIM
+!	        CALL ZERO_dZ(dZ,J,NM,NUM_BNDS*ND,MAX_SIM)
+	        dZ(J,:,:,:)=0.0D0		!NM,NUM_BNDS,ND,MAX_SIM
 	      END IF
 !
 ! Ensure dZ for this line is zeroed.
 !
-	      CALL ZERO_2D_MAT(dZ(1,1,1,SIM_INDX),NM,NUM_BNDS*ND)
-!	      dZ(:,:,:,SIM_INDX)=0.0D0	!NM,NUM_BNDS,ND,MAX_SIM	
+!	      CALL ZERO_2D_MAT(dZ(1,1,1,SIM_INDX),NM,NUM_BNDS*ND)
+	      dZ(:,:,:,SIM_INDX)=0.0D0	!NM,NUM_BNDS,ND,MAX_SIM	
 !
 	    END IF			!BA computed and weak line check
 	    CALL TUNE(ITWO,'VLSETUP')

@@ -12,7 +12,7 @@ LIB_MOD=$(LIB_DIR)libmod.a
 #
 OBJ = $(LIB)(rd_auto_v1.o)\
       $(LIB)(add_auto_rates.o)\
-      $(LIB)(steq_auto_v2.o)
+      $(LIB)(steq_auto_mpi_v1.o)
 
 all : $(LIB)
 	rm -f *.o

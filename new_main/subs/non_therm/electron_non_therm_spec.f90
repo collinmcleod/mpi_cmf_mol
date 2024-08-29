@@ -291,7 +291,7 @@
 !
 !	open(unit=lu_bethe,file='bethe_cross_chk',status='unknown')
 	do_and_1st_time(:)=l_false
-	DO DPTH_INDX=1,ND
+	DO DPTH_INDX=DST,DEND
 !
 	  WRITE(LU_TH,'(/,X,A,I3)')'Starting depth index: ',DPTH_INDX
 !
@@ -371,7 +371,6 @@
 	           IST=GET_INDX_DP(XION_POT,XKT,NKT)
 	        END IF
 !
-!$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(IKT,IKTP,EKT,EKTP,EMIN,EMAX,XCROSS,NA_dX_CROSS)
 	        DO IKTP=IST,NKT
                   XCROSS = THD(IT)%CROSS_SEC(IKTP)
 	          IF(XCROSS .GT. 0.0_LDP)THEN
@@ -556,42 +555,39 @@
 	      WRITE(LU_TH,*)'Checking ionization energy'
 	      WRITE(LU_TH,'(4X,A,2X,A,4X,A,2X,A,3X,A)')'IT','IST','SIG(IST)','SIG(IST+1)','dE(ION)/E'
 	      DO IT=1,NUM_THD
-	        IF(THD(IT)%PRES .AND. THD(IT)%DO_THIS_ION_ROUTE)THEN
-	          NATOM=THD(IT)%N_ATOM
-                  XION_POT = THD(IT)%ION_POT
+	      IF(THD(IT)%PRES .AND. THD(IT)%DO_THIS_ION_ROUTE)THEN
+	        NATOM=THD(IT)%N_ATOM
+                XION_POT = THD(IT)%ION_POT
 !
-	          IF(XION_POT .LT. XKT(1))THEN
-	             IST=1
-	             SIG1=THD(IT)%CROSS_SEC(1); SIG2=0.0_LDP
-	          ELSE IF(XION_POT .GT. XKT(NKT))THEN
-	             IST=NKT+1
-	             SIG1=0.0_LDP; SIG2=0.0_LDP
-	          ELSE
-	             IST=GET_INDX_DP(XION_POT,XKT,NKT)
-	             SIG1=THD(IT)%CROSS_SEC(IST); SIG2=THD(IT)%CROSS_SEC(IST+1)
-	          END IF
-	          T1 = 0.0_LDP
-	          DO IKTP=IST,NKT
-	            XCROSS = THD(IT)%CROSS_SEC(IKTP)
-	            DETAI_DE(IKTP) = DETAI_DE(IKTP) + &
-	                NATOM * XION_POT / E_INIT * YE(IKTP,DPTH_INDX)*XCROSS
-	            T1 = T1 + YE(IKTP,DPTH_INDX)*dXKT(IKTP)*XCROSS
-	          END DO
-	          WRITE(LU_TH,'(X,2I5,3ES12.2)')IT,IST,SIG1,SIG2,NATOM * XION_POT * T1 / E_INIT
-	          FRAC_ION_HEATING(DPTH_INDX) = FRAC_ION_HEATING(DPTH_INDX) + NATOM * XION_POT * T1 / E_INIT
-	        END IF
-	      END DO		!Ionization route
-	    CALL TUNE(2,'CHK_ION')
-	   END IF
+	        IF(XION_POT .LT. XKT(1))THEN
+	           IST=1
+	           SIG1=THD(IT)%CROSS_SEC(1); SIG2=0.0_LDP
+	        ELSE IF(XION_POT .GT. XKT(NKT))THEN
+	           IST=NKT+1
+	           SIG1=0.0_LDP; SIG2=0.0_LDP
+	        ELSE
+	           IST=GET_INDX_DP(XION_POT,XKT,NKT)
+	           SIG1=THD(IT)%CROSS_SEC(IST); SIG2=THD(IT)%CROSS_SEC(IST+1)
+	         END IF
+	         T1 = 0.0_LDP
+	         DO IKTP=IST,NKT
+	           XCROSS = THD(IT)%CROSS_SEC(IKTP)
+	           DETAI_DE(IKTP) = DETAI_DE(IKTP) + &
+	               NATOM * XION_POT / E_INIT * YE(IKTP,DPTH_INDX)*XCROSS
+	           T1 = T1 + YE(IKTP,DPTH_INDX)*dXKT(IKTP)*XCROSS
+	         END DO
+	         WRITE(LU_TH,'(X,2I5,3ES12.2)')IT,IST,SIG1,SIG2,NATOM * XION_POT * T1 / E_INIT
+	         FRAC_ION_HEATING(DPTH_INDX) = FRAC_ION_HEATING(DPTH_INDX) + NATOM * XION_POT * T1 / E_INIT
+	       END IF
+	     END DO		!Ionization route
+	   CALL TUNE(2,'CHK_ION')
+	  END IF
 	END DO		!Depth indx
 !
 	IF(INCLUDE_EXCITATION .AND. DO_LOC_CHK)THEN
 	  CALL TUNE(1,'CHK_EXCITE')
 !
-!$OMP PARALLEL PRIVATE( RATE,dE,T1,SCALER_SPEC_SUM,SCALER_ION_SUM,ISPEC,ID,I,J,NL,NUP,IKT,DPTH_INDX,MAX_LOW_LEV )
-!$OMP DO SCHEDULE(DYNAMIC)
-!
-	  DO DPTH_INDX=1,ND
+	  DO DPTH_INDX=DST,DEND
 	    DO ISPEC=1,NUM_SPECIES
 	      SCALER_SPEC_SUM=0.0_LDP
 	      DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
@@ -622,8 +618,6 @@
 	    END DO              !Loop over species
 	    FRAC_EXCITE_HEATING(DPTH_INDX)=FRAC_EXCITE_HEATING(DPTH_INDX)/E_INIT
 	  END DO		!Loop over depth
-!$OMP END DO
-!$OMP END PARALLEL
 	    CALL TUNE(2,'CHK_EXCITE')
 	END IF		!Include excitation and DO_LOC_CHK?
 !

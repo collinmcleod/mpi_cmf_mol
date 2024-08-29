@@ -13,6 +13,7 @@ LIB_MOD=$(LIB_DIR)libmod.a
 OBJ= $(LIB)(ave_level_energy.o)\
      $(LIB)(colcool_sl_v4.o)\
      $(LIB)(colcool_sl_v5.o)\
+     $(LIB)(colcool_sl_mpi_v1.o)\
      $(LIB)(comp_free_free_v1.o)\
      $(LIB)(comp_free_free_v2.o)\
      $(LIB)(cut_points_v3.o)\
@@ -28,7 +29,7 @@ OBJ= $(LIB)(ave_level_energy.o)\
      $(LIB)(newpertjd.o)\
      $(LIB)(omega_gen_v3.o)\
      $(LIB)(phot_data_mod.o)\
-     $(LIB)(quad_multi_v10.o)\
+     $(LIB)(quad_multi_mpi_v1.o)\
      $(LIB)(rayleigh_scat.o)\
      $(LIB)(rayleigh_scat_mpi_v1.o)\
      $(LIB)(rdphot_gen_v2.o)\

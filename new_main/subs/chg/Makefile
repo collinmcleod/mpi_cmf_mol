@@ -12,12 +12,12 @@ LIB_MOD=$(LIB_DIR)libmod.a
 # Entries in a library
 #
 OBJ = $(LIB)(rd_chg_exch_v3.o)\
-      $(LIB)(do_penning_ion.o)\
+      $(LIB)(do_penning_ion_mpi_v1.o)\
       $(LIB)(eval_chg_rates_v3.o)\
       $(LIB)(set_chg_exch_v4.o)\
       $(LIB)(set_chg_lev_id_v4.o)\
       $(LIB)(verify_chg_exch_v3.o)\
-      $(LIB)(steq_ba_chg_exch_v3.o)\
+      $(LIB)(steq_ba_chg_exch_mpi_v1.o)\
       $(LIB)(wr_chg_cool_v3.o)
 
 all : $(LIB)

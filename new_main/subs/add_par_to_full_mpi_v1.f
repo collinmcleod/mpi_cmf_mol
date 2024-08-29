@@ -14,7 +14,7 @@
 ! hence similar in size. While some minor cancellation, should be much less
 ! then adding to full BA matrix in which terms have arbitrary size.
 !
-	SUBROUTINE ADD_PAR_TO_FULL_V2(NION,DIAG_INDX)
+	SUBROUTINE ADD_PAR_TO_FULL_MPI_V1(NION,DST,DEND,DIAG_INDX)
 	USE SET_KIND_MODULE
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
@@ -23,6 +23,7 @@
 ! Created: 28-Feb-1995
 !
 	INTEGER NION
+	INTEGER DST,DEND
 	INTEGER DIAG_INDX
 !
 	INTEGER IV,IS
@@ -37,27 +38,23 @@
 	ND=NX(4)
 !
 	DO ID=1,NION
-!$OMP PARALLEL DO
-	  DO K=1,ND
+	  DO K=DST,DEND
 	    DO IV=1,SE(ID)%N_IV
 	      DO IS=1,SE(ID)%N_SE
 	         SE(ID)%BA(IS,IV,DIAG_INDX,K)=SE(ID)%BA(IS,IV,DIAG_INDX,K) + SE(ID)%BA_PAR(IS,IV,K)
 	      END DO
 	    END DO
 	  END DO
-!$OMP END PARALLEL DO
 	END DO
 !
 	DO ID=1,NION
-!$OMP PARALLEL DO
-	  DO K=1,ND
+	  DO K=DST,DEND
 	    DO IV=1,SE(ID)%N_IV
 	      DO IS=1,SE(ID)%N_SE
 	         SE(ID)%BA_PAR(IS,IV,K)=0.0_LDP
 	      END DO
 	    END DO
 	  END DO
-!$OMP END PARALLEL DO
 	END DO
 !
 	BA_T(:,DIAG_INDX,:)=BA_T(:,DIAG_INDX,:)+BA_T_PAR

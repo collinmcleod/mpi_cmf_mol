@@ -169,11 +169,11 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(pertjfeau_ibc.o)\
       $(LIB)(phys_con.o)\
       $(LIB)(poptoion.o)\
-      $(LIB)(prrr_sl_v6.o)\
-      $(LIB)(prrr_lowt_v2.o)\
+      $(LIB)(prrr_sl_mpi_v1.o)\
+      $(LIB)(prrr_lowt_mpi_v1.o)\
       $(LIB)(qfromf.o)\
       $(LIB)(qkim.o)\
-      $(LIB)(quad_x_gen_v5.o)\
+      $(LIB)(quad_x_gen_mpi_v1.o)\
       $(LIB)(quad_x_lit_v3.o)\
       $(LIB)(rd_f_to_s_ids.o)\
       $(LIB)(rd_f_to_s_ids_v2.o)\
@@ -291,7 +291,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(writv_v2.o)\
       $(LIB)(wrrecomchk_v5.o)\
       $(LIB)(x02ajf.o)\
-      $(LIB)(x_rrr_cool_v6.o)\
+      $(LIB)(x_rrr_cool_mpi_v1.o)\
       $(LIB)(xcross.o)\
       $(LIB)(xvecd.o)\
       $(LIB)(zalongp.o)\

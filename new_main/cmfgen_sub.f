@@ -246,8 +246,8 @@
 ! consideration. 0.5 is presently the prefered value.
 !
 !	REAL(KIND=LDP) AVE_ENERGY(NT)		!Average energy of each super level
-	REAL(KIND=LDP) STEQ_T_SCL(ND)
-	REAL(KIND=LDP) STEQ_T_NO_SCL(ND)
+	REAL(KIND=LDP) STEQ_T_SCL(DST:DEND)
+	REAL(KIND=LDP) STEQ_T_NO_SCL(DST:DEND)
 ! 
 !
 ! Dielectronic recombination variables and arrays.
@@ -277,9 +277,7 @@
 	REAL(KIND=LDP) GLOW,GION
 	REAL(KIND=LDP) NUST(ND)			!LTE autoionizing population.
 	REAL(KIND=LDP) DION(ND)			!Ion population
-	REAL(KIND=LDP), ALLOCATABLE :: DIERECOM(:,:)   !Chk for all species.
 	REAL(KIND=LDP), ALLOCATABLE :: DIECOOL(:,:)    !Dielec. cooling check for all spec.
-	REAL(KIND=LDP), ALLOCATABLE :: ADDRECOM(:,:)
 ! 
 !
 ! Opacity/emissivity
@@ -372,13 +370,13 @@
 ! Variables to limit the computation of the continuum opacities and
 ! emissivities.
 !
-	REAL(KIND=LDP) JREC(ND)
-	REAL(KIND=LDP) dJRECdT(ND)
-	REAL(KIND=LDP) JPHOT(ND)
-	REAL(KIND=LDP) JREC_CR(ND)
-	REAL(KIND=LDP) dJREC_CRdT(ND)
-	REAL(KIND=LDP) JPHOT_CR(ND)
-	REAL(KIND=LDP) BPHOT_CR(ND)
+	REAL(KIND=LDP) JREC(DST:DEND)
+	REAL(KIND=LDP) dJRECdT(DST:DEND)
+	REAL(KIND=LDP) JPHOT(DST:DEND)
+	REAL(KIND=LDP) JREC_CR(DST:DEND)
+	REAL(KIND=LDP) dJREC_CRdT(DST:DEND)
+	REAL(KIND=LDP) JPHOT_CR(DST:DEND)
+	REAL(KIND=LDP) BPHOT_CR(DST:DEND)
 !
 	REAL(KIND=LDP) CONT_FREQ
 	LOGICAL FINAL_CONSTANT_CROSS
@@ -403,8 +401,6 @@
 ! We dimension from 0 so that we can access a Null vector for the 1st included
 ! ioinization stage of each species.
 !
-	REAL(KIND=LDP) X_RECOM(ND,0:NION)			!Next X-ray recombination rate
-	REAL(KIND=LDP) X_COOL(ND,0:NION)			!Next X-ray cooling
 	REAL(KIND=LDP) XRAY_HEATING(ND)
 !
 	REAL(KIND=LDP) OBS_XRAY_LUM_0P1

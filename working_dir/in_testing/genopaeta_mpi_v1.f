@@ -7,14 +7,13 @@
 	SUBROUTINE GENOPAETA_MPI_V1(ID,CHI,ETA,NU,
 	1              HN,HNST,LOG_HNST,EDGE,GION,ZION,N,
 	1              DI,LOG_DIST,N_DI,PHOT_ID,ION_LEV,
-	1              ED,T,EMHNUKT,IONFF,DST,DEND,ND,LST_DEPTH_ONLY)
+	1              ED,T,EMHNUKT,
+	1              IONFF,ND,LST_DEPTH_ONLY)
 	USE SET_KIND_MODULE
 	USE MOD_LEV_DIS_BLK
 	IMPLICIT NONE
 !
 	INTEGER ID,N,N_DI,ND
-	INTEGER DST,DEND
-	INTEGER DPTH_INDX
 	LOGICAL IONFF,LST_DEPTH_ONLY
 	LOGICAL KEEP_PHOT
 !
@@ -28,16 +27,16 @@
 !
 ! Large Model Atom Populations.
 !
-	REAL(KIND=LDP) HN(N,DST:DEND)
-	REAL(KIND=LDP) HNST(N,DST:DEND)
-	REAL(KIND=LDP) LOG_HNST(N,DST:DEND)
+	REAL(KIND=LDP) HN(N,ND)
+	REAL(KIND=LDP) HNST(N,ND)
+	REAL(KIND=LDP) LOG_HNST(N,ND)
 	REAL(KIND=LDP) EDGE(N)
 !
 ! Ion populations. These populations should refer to the small model atoms.
 ! (i.e. the model atom with super levels_
 !
-	REAL(KIND=LDP) DI(N_DI,DST:DEND)
-	REAL(KIND=LDP) LOG_DIST(N_DI,DST:DEND)
+	REAL(KIND=LDP) DI(N_DI,ND)
+	REAL(KIND=LDP) LOG_DIST(N_DI,ND)
 !
 	REAL(KIND=LDP) T(ND)			!Temperature (K)
 	REAL(KIND=LDP) ED(ND)			!Electron density
@@ -51,8 +50,8 @@
 !
 ! Vectors to save computational effort.
 !
-	REAL(KIND=LDP) YDIS(DST:DEND)			!Constant for computing level dissolution/
-	REAL(KIND=LDP) XDIS(DST:DEND)			!Constant for computing level dissolution/
+	REAL(KIND=LDP) YDIS(ND)			!Constant for computing level dissolution/
+	REAL(KIND=LDP) XDIS(ND)			!Constant for computing level dissolution/
 	REAL(KIND=LDP) DIS_CONST(N)		!Constant appearing in dissolution formula.
 	REAL(KIND=LDP) ALPHA_VEC(N)		!Photionization cross-section
 	REAL(KIND=LDP) TMP_CHI(N)		!Photionization cross-section
@@ -67,21 +66,36 @@
 !
 ! Local constants.
 !
-	INTEGER LOC_DST,LOC_DEND
 	INTEGER I,K,K_ST,ND_LOC,NO_NON_ZERO_PHOT
 	REAL(KIND=LDP) ALPHA,TCHI1,TETA1,TETA2
 	REAL(KIND=LDP) T1,T2,ZION_CUBED,NEFF
-	REAL(KIND=LDP) GFF
-	EXTERNAL GFF
-	INTEGER, PARAMETER :: IONE=1
 !
+	INTEGER IPROC
+        INTEGER, SAVE :: FIRST=.TRUE.
+        INTEGER, SAVE :: MYPE
+        INTEGER, SAVE :: NTHREAD
+        INTEGER, SAVE :: NUM_DEPTHS_PER_THREAD
+        INCLUDE 'mpif.h'
+! 
 !^L
+        IF(FIRST)THEN
+          FIRST=.FALSE.
+          CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYPE,IERR)
+          CALL MPI_COMM_SIZE(MPI_COMM_WORLD,NTHREAD,IERR)
+          NUM_DEPTHS_PER_THREAD=(ND-1)/NTHREAD+1
+        END IF
 !
-	DO DPTH_INDX=DST,DEND
+	DO IPROC=1,NUM_DEPTHS_PER_THREAD
+	  DPTH_INDX=1+MYPE+(IPROC-1)*NUM_DEPTHS_PER_THREAD
+	  IF(LST_DPTH_ONLY .AND. MYPE .EQ. 0)THEN
+	    DPTH_INDX=ND
+	  ELSE IF(LST_DEPTH_ONLY)THEN
+	    EXIT
+	  END IF
 !
 ! Compute the photo-ionization cross-sections for all levels.
 !
-	  IF(DPTH_INDX .EQ. DST)THEN
+	  IF(IPROC .EQ. 1)THEN
 	    IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
 	      CALL SUB_PHOT_GEN(ID,ALPHA_VEC,NU,EDGE,N,PHOT_ID,L_TRUE)
 	    ELSE
@@ -114,21 +128,19 @@
 ! one, we only include the FREE-FREE contribution for the ion when PHOT_ID is one.
 !
 	  IF(ZION .EQ. 0.0_LDP)THEN
-	    I=7				!Used for IO
+	    I=7
 	    K=DPTH_INDX
-	    COR_FAC=DI(1,K)
-	    CALL DO_H0_FF(ETA(K),CHI(K),COR_FAC,ED(K),T(K),EMHNUKT(K),NU,I,IONE)
+	    COR_FAC(K)=DI(1,K)
+	    CALL DO_H0_FF(ETA(K),CHI(K),COR_FAC(K),ED(K),T(K),EMHNUKT(K),NU,I,K)
 	  ELSE IF(IONFF .AND. PHOT_ID .EQ. 1)THEN
 !
 ! Compute free-free gaunt factors. Replaces call to GFF in following DO loop.
 !
-	    K=DPTH_INDX
 	    GFF_VAL=GFF(NU,T(K),ZION)
 	    IF(ION_LEV .EQ. 1)THEN
-	      CALL FF_RES_GAUNT(GFF_VAL,NU,T(K),ID,GION,ZION,IONE)
+	      CALL FF_RES_GAUNT(GFF_VAL,NU,T(DPTH_INDX),ID,GION,ZION)
 	    END IF
 	  END IF
-!
 ! We use COR_FAC as a temporary vector containing the sum of all level populations in
 ! the ion at each depth.
 !
@@ -194,7 +206,7 @@
 	      EXIT   
 	    ELSE IF(NU .GE. EDGE(I) .AND. ALPHA_VEC(I) .GT. 0.0_LDP)THEN
 	      TETA2=TETA1*ALPHA_VEC(I)
-	      T1=EXP(LOG_COR_FAC+LOG_HNST(I,K))
+	      T1=EXP(LOG_COR_FAC(K)+LOG_HNST(I,K))
 	      CHI(K)=CHI(K)+ALPHA_VEC(I)*(HN(I,K)-T1)
 	      ETA(K)=ETA(K)+TETA2*T1
 	    ELSE IF(DIS_CONST(I) .GE. 0.0_LDP)THEN
@@ -211,7 +223,7 @@
 	      END IF		!
 	    END IF		!NU > EDGE
 	  END DO		!Variable
-	END DO			!Depth
+	END DO
 !
 	RETURN
 	END
