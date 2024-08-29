@@ -1212,7 +1212,9 @@
 	  CALL TUNE(IONE,'GIT')
 	  GOTO 9999			!End (write out POPS.)
 	END IF
-! s
+!
+	INCLUDE 'main_it_secton.f'
+! 
 9999	CONTINUE
 !
 ! NB - Need GE because of NG acceleration.
