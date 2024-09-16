@@ -11,7 +11,6 @@ LIB_MOD=$(LIB_DIR)libmod.a
 
 # Entries for library
 
-#      $(LIB)(ba_ehb_bf_update_v1.o)\
 #      $(LIB)(ba_ehb_ff_update_v1.o)\
 
 OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
@@ -26,7 +25,8 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(check_ions_present.o)\
       $(LIB)(check_tmin.o)\
       $(LIB)(chk_cool_rates_consist.o)\
-      $(LIB)(cmf_blkband_v3.o)\
+      $(LIB)(cmf_blkband_mpi_v1.o)\
+      $(LIB)(create_correction_sum_mpi_v1.o)\
       $(LIB)(create_iv_links_v2.o)\
       $(LIB)(def_new_rg_v1.o)\
       $(LIB)(determine_nse.o)\
@@ -40,13 +40,15 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(do_gam_abs_approx_v2.o)\
       $(LIB)(do_ng_accel_band_v4.o)\
       $(LIB)(do_wind_vel_v1.o)\
-      $(LIB)(eval_adiabatic_v3.o)\
+      $(LIB)(ba_ehb_bf_update_mpi_v1.o)\
+      $(LIB)(ba_ehb_ff_update_mpi_v1.o)\
+      $(LIB)(eval_adiabatic_mpi_v1.o)\
       $(LIB)(evalse_qwvj_mpi_v1.o)\
       $(LIB)(evalse_lowt_mpi_v1.o)\
       $(LIB)(evalse_x_qwvj_mpi_v1.o)\
       $(LIB)(eval_temp_ddt_v2.o)\
       $(LIB)(eval_shock_power.o)\
-      $(LIB)(fiddle_pop_corrections_v2.o)\
+      $(LIB)(fiddle_pop_corrections_mpi_v1.o)\
       $(LIB)(fixpop_in_ba_v2.o)\
       $(LIB)(fixpop_t.o)\
       $(LIB)(fixpop_in_ba_v3.o)\
@@ -59,12 +61,13 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(old_grid_module.o)\
       $(LIB)(open_rw_eddfactor.o)\
       $(LIB)(out_line_force.o)\
-      $(LIB)(prevent_low_t.o)\
+      $(LIB)(prevent_low_t_mpi_v1.o)\
       $(LIB)(read_ba_data_mpi_v1.o)\
       $(LIB)(read_bcd_mat.o)\
       $(LIB)(read_time_model_v1.o)\
       $(LIB)(read_seq_time_file_v1.o)\
       $(LIB)(rv_sn_model_sniin.o)\
+      $(LIB)(set_ang_qw_mpi.o)\
       $(LIB)(set_ba_storage_mpi_v1.o)\
       $(LIB)(set_ba_storage.o)\
       $(LIB)(set_depth_consistency.o)\
@@ -74,11 +77,11 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(set_sn_r_grid.o)\
       $(LIB)(set_new_grid_v2.o)\
       $(LIB)(smooth_pops_as_we_iterate.o)\
-      $(LIB)(solveba_v13.o)\
+      $(LIB)(solveba_mpi_v1.o)\
       $(LIB)(spl_clump.o)\
       $(LIB)(steq_multi_mpi_v1.o)\
       $(LIB)(steqne_v4.o)\
-      $(LIB)(steq_advec_v4.o)\
+      $(LIB)(steq_advec_mpi_v1.o)\
       $(LIB)(steq_co_mov_deriv_mpi_v1.o)\
       $(LIB)(store_old_grid.o)\
       $(LIB)(store_ba_data_mpi_v1.o)\
@@ -93,7 +96,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(write_cmat.o)\
       $(LIB)(write_seq_time_file_v1.o)\
       $(LIB)(update_ba_for_line_mpi_v1.o)\
-      $(LIB)(wr_asci_steq.o)\
+      $(LIB)(wr_asci_steq_mpi_v1.o)\
       $(LIB)(wr_level_links.o)
 
 #cmf_sub_sonic_hydro.o

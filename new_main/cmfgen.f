@@ -140,22 +140,23 @@
 	OPLIN=1.0E+10_LDP*FUN_PI()*(ELECTRON_CHARGE())**2/ELECTRON_MASS()/SPEED_OF_LIGHT()        !Old value  OPLIN=2.6540081D+08
 	EMLIN=1.0E+25_LDP*PLANCKS_CONSTANT()/4.0_LDP/FUN_PI()                                       !Old value: EMLIN=5.27296D-03
 !
-	WRITE(LUER,*)' '
-	WRITE(LUER,'(1X,A)')'Opacity/excitaion parameters adopted in CMFGEN are:'
-	WRITE(LUER,'(30X,A,ES16.8)')'     CHIBF=',CHIBF
-	WRITE(LUER,'(30X,A,ES16.8)')'     CHIFF=',CHIFF
-	WRITE(LUER,'(30X,A,ES16.8)')'      HDKT=',HDKT
-	WRITE(LUER,'(30X,A,ES16.8)')' TWOHONCSQ=',TWOHCSQ
-	WRITE(LUER,'(30X,A,ES16.8)')'     OPLIN=',OPLIN
-	WRITE(LUER,'(30X,A,ES16.8)')'     EMLIN=',EMLIN
-	WRITE(LUER,*)' '
-	WRITE(LUER,'(A70,I5)')'The KIND of the selected floating'//
-	1    ' point format is:',KIND(HDKT)
-	WRITE(LUER,'(A70,I5)')'The number of storage bits in the selected floating'//
-	1    ' point format is:',STORAGE_SIZE(HDKT)
-	WRITE(LUER,'(A70,I5)')'The number of significant digits (precision) is:',PRECISION(HDKT)
-	WRITE(LUER,'(A70,I5)')'The maximum exponent range is:',RANGE(HDKT)
-	WRITE(LUER,*)' '
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LUER,*)' '
+	  WRITE(LUER,'(1X,A)')'Opacity/excitaion parameters adopted in CMFGEN are:'
+	  WRITE(LUER,'(30X,A,ES16.8)')'     CHIBF=',CHIBF
+	  WRITE(LUER,'(30X,A,ES16.8)')'     CHIFF=',CHIFF
+	  WRITE(LUER,'(30X,A,ES16.8)')'      HDKT=',HDKT
+	  WRITE(LUER,'(30X,A,ES16.8)')' TWOHONCSQ=',TWOHCSQ
+	  WRITE(LUER,'(30X,A,ES16.8)')'     OPLIN=',OPLIN
+	  WRITE(LUER,'(30X,A,ES16.8)')'     EMLIN=',EMLIN
+	  WRITE(LUER,*)' '
+	  WRITE(LUER,'(A70,I5)')'The KIND of the selected floating point format is:',KIND(HDKT)
+	  WRITE(LUER,'(A70,I5)')'The number of storage bits in the selected floating  point format is:',
+	1                          STORAGE_SIZE(HDKT)
+  	  WRITE(LUER,'(A70,I5)')'The number of significant digits (precision) is:',PRECISION(HDKT)
+	  WRITE(LUER,'(A70,I5)')'The maximum exponent range is:',RANGE(HDKT)
+	  WRITE(LUER,*)' '
+	END IF
 !
 !
 ! Set all atomic data. New species can be simple added by insertion.
@@ -351,7 +352,7 @@
 ! Get data describing number of depth points, number of atomic levels
 ! etc.
 !
-	WRITE(LUER,*)'Opening MODEL_SPEC'
+	IF(MYPE .EQ. 0)WRITE(LUER,*)'Opening MODEL_SPEC'
 	OPEN(UNIT=LU_IN,FILE='MODEL_SPEC',STATUS='OLD',ACTION='READ',IOSTAT=IOS)
 	IF(IOS .NE. 0)THEN
 	  WRITE(6,*)'Unable to open MODEL_SPEC in cmfgen.f'
@@ -497,7 +498,10 @@
 !
 	CALL CLEAN_RD_STORE()
 	CLOSE(LU_IN)
-	WRITE(6,*)'Read in MODEL_SPEC'
+	IF(MYPE .EQ. 0)THEN
+	   WRITE(6,*)'Read in MODEL_SPEC'
+	   FLUSH(UNIT=6)
+	END IF
 !
 !
 	IF(NP .NE. ND+NC .AND. NP .NE. ND+NC-2)THEN
@@ -539,7 +543,7 @@
 	END IF
 !
 !
-	WRITE(6,*)'About to allocate atmospheric vectors'
+	IF(MYPE .EQ. 0)WRITE(6,*)'About to allocate atmospheric vectors'
 	ALLOCATE (R(ND),STAT=IOS)
 	IF(IOS .EQ. 0)ALLOCATE (V(ND),STAT=IOS)
 	IF(IOS .EQ. 0)ALLOCATE (SIGMA(ND),STAT=IOS)
@@ -582,7 +586,7 @@
 	  STOP
 	END IF
 	POP_SPECIES=0.0_LDP; GAM_SPECIES=0.0_LDP
-	WRITE(6,*)'Allocated atmospheric vectors'
+	IF(MYPE .EQ. 0)WRITE(6,*)'Allocated atmospheric vectors'
 !
 	NUM_DEPTHS_PER_THREAD=(ND-1)/NTHREAD+1
 	DST=MYPE*NUM_DEPTHS_PER_THREAD+1
@@ -654,7 +658,6 @@
 	    STOP
 	  END IF
 	END DO
-	WRITE(6,*)'Allocated ATM data',MYPE,DST,DEND
 	FLUSH(UNIT=6)
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
@@ -699,6 +702,13 @@
             IF(IOS .EQ. 0)ALLOCATE (ROOT(ID)%NTIXzV(ND),STAT=IOS)       ; ROOT(ID)%NTIXzV(:)=0.0_LDP
             IF(IOS .EQ. 0)ALLOCATE (ROOT(ID)%NTIXzV_2E(ND),STAT=IOS)    ; ROOT(ID)%NTIXzV_2E(:)=0.0_LDP
             IF(IOS .EQ. 0)ALLOCATE (ROOT(ID)%NT_ION_CXzV(ND),STAT=IOS)
+!
+	    IF(IOS .EQ. 0)ALLOCATE (ROOT(ID)%DIERECOM(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (ROOT(ID)%ADDRECOM(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (ROOT(ID)%X_RECOM(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (ROOT(ID)%DIECOOL(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (ROOT(ID)%X_COOL(ND),STAT=IOS)
+!
 	    IF(IOS .NE. 0)THEN
 	      WRITE(LUER,*)'Error in CMF_FLUX'
 	      WRITE(LUER,*)'Unable to allocate arrays for species XzV'
@@ -774,7 +784,6 @@
 !
 	ND_MAX=MAX(NT,2*ND)
 	NP_MAX=ND_MAX+2*NC
-	IF(MYPE .EQ. 0)WRITE(6,*)'Ready to call CMFGEN_SUB'
 !
 !       CALL INIT_PROF_MODULE(ND,NLINES_PROF_STORE,NFREQ_PROF_STORE)
 !

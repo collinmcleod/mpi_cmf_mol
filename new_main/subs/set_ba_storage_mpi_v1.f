@@ -134,11 +134,13 @@
         WRITE(LU_ER,*)'STAT=',IOS,'ID=',ID
       END IF
 !
-      MEMORY=MEMORY+2*NT*ND*NUM_BNDS+NT*ND
-      WRITE(LU_ER,*)' '
-      WRITE(LU_ER,'(A,ES17.10,A)')' Amount of memory allocated for BA is:  ',MEMORY,' words'
-      MEMORY=DFLOAT(NT)*NT*(NUM_BNDS+1)*ND
-      WRITE(LU_ER,'(A,ES17.10,A)')' Memory needed with full dependence is: ',MEMORY,' words'
+      IF(MYPE .EQ. 0)THEN
+        MEMORY=MEMORY+2*NT*ND*NUM_BNDS+NT*ND
+        WRITE(LU_ER,*)' '
+        WRITE(LU_ER,'(A,ES17.10,A)')' Amount of memory allocated for BA is:  ',MEMORY,' words'
+        MEMORY=DFLOAT(NT)*NT*(NUM_BNDS+1)*ND
+        WRITE(LU_ER,'(A,ES17.10,A)')' Memory needed with full dependence is: ',MEMORY,' words'
+      END IF
 !
       RETURN
       END

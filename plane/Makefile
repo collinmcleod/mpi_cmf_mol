@@ -39,9 +39,11 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(edd_j_hub_var_v3.o)\
       $(LIB)(edd_jrel_var_v3.o)\
       $(LIB)(fcomp_pp_v2.o)\
+      $(LIB)(fcomp_pp_mpi_v1.o)\
       $(LIB)(fgrey_norel_v1.o)\
       $(LIB)(fg_j_cmf_v12.o)\
       $(LIB)(fg_j_cmf_v13.o)\
+      $(LIB)(fg_j_cmf_mpi_v1.o)\
       $(LIB)(gauleg.o)\
       $(LIB)(get_hg_fun.o)\
       $(LIB)(get_ibound.o)\
@@ -60,6 +62,7 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(mom_j_cmf_v11.o)\
       $(LIB)(mom_j_ddt_v6.o)\
       $(LIB)(mom_j_pp_v1.o)\
+      $(LIB)(mom_j_pp_mpi_v1.o)\
       $(LIB)(mom_jrel_v8.o)\
       $(LIB)(mom_jrel_v9.o)\
       $(LIB)(mom_jrel_grey_v1.o)\
@@ -79,6 +82,7 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(var_jrel_v5.o)\
       $(LIB)(var_mom_j_ddt_v6.o)\
       $(LIB)(var_mom_pp_v1.o)\
+      $(LIB)(var_mom_pp_mpi_v1.o)\
       $(LIB)(var_mom_j_cmf_v9.o)\
       $(LIB)(var_mom_j_cmf_v12.o)\
       $(LIB)(var_mom_jext_cmf_v3.o)\

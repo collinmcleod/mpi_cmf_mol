@@ -36,6 +36,7 @@ C
 	    END DO
 	    MS=MS+10
 	  END DO
+	  FLUSH(LU)
 	  RETURN
 	END IF
 !
@@ -89,6 +90,7 @@ C
 	  END DO
 	  MS=MS+10
 	END DO
+	FLUSH(LU)
 !
 	RETURN
 	END

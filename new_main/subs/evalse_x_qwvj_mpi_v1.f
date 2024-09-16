@@ -49,8 +49,8 @@
 ! ionization state i [final product is (i+1)].
 !
 	REAL(KIND=LDP) WSE_X(N_A,DST:DEND)
-	REAL(KIND=LDP) JREC(ND)			! Int (2h/c2v^3+J)*EXP(-hv/kT)/v dv
-	REAL(KIND=LDP) JPHOT(ND)		! Int J/v dv
+	REAL(KIND=LDP) JREC(DST:DEND)			! Int (2h/c2v^3+J)*EXP(-hv/kT)/v dv
+	REAL(KIND=LDP) JPHOT(DST:DEND)			! Int J/v dv
 !
 ! Local variables.
 !

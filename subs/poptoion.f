@@ -25,10 +25,10 @@ C
 	      HYD(J,K)=POPS(I,K)
 	    END DO
 	    DHYD(K)=POPS(EQHYD+NLEV,K)
-	    ED(K)=POPS(NT-1,K)
-	    T(K)=POPS(NT,K)
 	  END DO
 	END IF
+	ED(1:ND)=POPS(NT-1,1:ND)
+	T(1:ND)=POPS(NT,1:ND)
 C
 	RETURN
 	END

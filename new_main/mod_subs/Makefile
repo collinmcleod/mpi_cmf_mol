@@ -35,7 +35,7 @@ MOD = $(LIB_MOD)(mod_cmfgen.o)\
 OBJ = $(LIB)(adjust_r_grid_v4.o)\
       $(LIB)(adjust_den_vecs.o)\
       $(LIB)(check_param_consistency.o)\
-      $(LIB)(comp_j_blank.o)\
+      $(LIB)(comp_j_blank_mpi_v1.o)\
       $(LIB)(comp_grey_v2.o)\
       $(LIB)(comp_grey_v4.o)\
       $(LIB)(comp_opac.o)\
@@ -54,7 +54,7 @@ OBJ = $(LIB)(adjust_r_grid_v4.o)\
       $(LIB)(set_frequency_grid_v2.o)\
       $(LIB)(set_new_model_estimates.o)\
       $(LIB)(set_abund_clump.o)\
-      $(LIB)(solve_for_pops.o)\
+      $(LIB)(solve_for_pops_mpi_v1.o)\
       $(LIB)(sub_cmf_line.o)\
       $(LIB)(sub_sob_line_v3.o)\
       $(LIB)(wind_scale_pops_v1.o)\
@@ -168,10 +168,10 @@ $(LIB)(set_new_model_estimates.o) : set_new_model_estimates.f $(LIB)(opac_mod.o)
 	$(F90) -c $(OPTION) set_new_model_estimates.f
 	ar $(AR_OPTION) $(LIB) set_new_model_estimates.o
                                                                                                                       
-$(LIB)(solve_for_pops.o) : solve_for_pops.f $(LIB_MOD)(control_variable_mod.o) $(LIB_MOD)(mod_cmfgen.o)\
+$(LIB)(solve_for_pops_mpi_v1.o) : solve_for_pops_mpi_v1.f $(LIB_MOD)(control_variable_mod.o) $(LIB_MOD)(mod_cmfgen.o)\
                                   $(LIB_MOD)(ang_qw_mod.o)
-	$(F90) -c $(OPTION) solve_for_pops.f
-	ar $(AR_OPTION) $(LIB) solve_for_pops.o
+	$(F90) -c $(OPTION) solve_for_pops_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) solve_for_pops_mpi_v1.o
 
 $(LIB)(sub_cmf_line.o) : sub_cmf_line.f LINEGEN.INC $(LIB)(opac_mod.o) $(LIB_MOD)(control_variable_mod.o)\
               $(LIB_MOD)(line_mod.o) $(LIB_MOD)(var_rad_mod.o) $(LIB_MOD)(radiation_mod.o) $(LIB_MOD)(mod_cmfgen.o)\

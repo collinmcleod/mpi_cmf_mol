@@ -50,7 +50,7 @@ MODS= $(LIB_DIR)libmod.a(mod_cmfgen.o)\
 cmfgen.o : cmfgen.f $(MODS) $(USR)
 	$(F90) -c $(OPTIONS) cmfgen.f 
 
-cmfgen_sub.o : cmfgen_sub.f $(MODS) $(UPDATE) GET_J_CHI.INC  
+cmfgen_sub.o : cmfgen_sub.f $(MODS) $(UPDATE) main_it_section.f GET_J_CHI.INC  
 	$(F90) -c $(OPTIONS) cmfgen_sub.f 
 
 $(USR):

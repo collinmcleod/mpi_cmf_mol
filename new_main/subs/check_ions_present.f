@@ -127,8 +127,9 @@
 	  END IF
 	END DO
 !
-! Determine ionzation fractions.
+! Determine ionization fractions.
 !
+	
 	DO ISPEC=1,NUM_SPECIES
 	  IF(SPECIES_PRES(ISPEC))THEN
 	    DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1

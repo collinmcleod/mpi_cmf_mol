@@ -16,7 +16,7 @@ C	  We use _S to denote populations and variables for the SMALL model
 C            atom, with many terms and levels treated as one (i.e using
 C            SUPER levels).
 C
-	SUBROUTINE FULL_TO_SUP(
+	SUBROUTINE FULL_TO_SUP_MPI_V1(
 	1   C2_S,NC2_S,DC2_S,C2_PRES,
 	1   C2_F,F_TO_S_MAP_C2,NC2_F,DC2_F,
 	1   CIII_S,NCIII_S,CIII_PRES,DST,DEND)

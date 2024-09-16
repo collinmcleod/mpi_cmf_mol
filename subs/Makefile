@@ -27,7 +27,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(colcool_sl_v3.o)\
       $(LIB)(comp_j_conv_v2.o)\
       $(LIB)(comp_obs_v2.o)\
-      $(LIB)(comp_var_jrec_v2.o)\
+      $(LIB)(comp_var_jrec_mpi_v1.o)\
       $(LIB)(det_main_cont_freq.o)\
       $(LIB)(dop_pro.o)\
       $(LIB)(do_de_split.o)\
@@ -64,10 +64,13 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(fqcomp_ibc.o)\
       $(LIB)(fqcomp_ibc_v2.o)\
       $(LIB)(fqnew.o)\
-      $(LIB)(full_to_sup.o)\
+      $(LIB)(full_to_sup_mpi_v1.o)\
       $(LIB)(gamma.o)\
-      $(LIB)(gather_vec_mpi_v1.o)\
+      $(LIB)(gather_vec_to_root_mpi_v1.o)\
+      $(LIB)(root_gatherv_vec_mpi_v1.o)\
+      $(LIB)(all_gatherv_vec_mpi_v1.o)\
       $(LIB)(gather_atm_mpi_v1.o)\
+      $(LIB)(gather_pops_mpi_v1.o)\
       $(LIB)(gausel.o)\
       $(LIB)(gbf.o)\
       $(LIB)(gen_omega_rd_v2.o)\
@@ -97,7 +100,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(ins_line_obs_v2.o)\
       $(LIB)(ins_line_obs_v3.o)\
       $(LIB)(ins_line_obs_v5.o)\
-      $(LIB)(ins_line_v6.o)\
+      $(LIB)(ins_line_mpi_v1.o)\
       $(LIB)(integrate.o)\
       $(LIB)(interp_knowncoeef.o)\
       $(LIB)(jfeau_ibc.o)\
@@ -140,6 +143,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(mon_interp.o)\
       $(LIB)(mon_interp_fast.o)\
       $(LIB)(mon_interp_fast_v2.o)\
+      $(LIB)(mon_interp_mpi_v1.o)\
       $(LIB)(mon_interp_nonmon.o)\
       $(LIB)(monotonic_integrate.o)\
       $(LIB)(mult2d.o)\
@@ -157,6 +161,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(nordangqw_v2.o)\
       $(LIB)(nordflux.o)\
       $(LIB)(nordtau.o)\
+      $(LIB)(nordtau_mpi_v1.o)\
       $(LIB)(ntrpwgt.o)\
       $(LIB)(ntrpwgt_v2.o)\
       $(LIB)(nweight.o)\

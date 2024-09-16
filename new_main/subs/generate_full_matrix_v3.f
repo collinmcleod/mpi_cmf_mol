@@ -217,7 +217,7 @@
 ! Allow for advection terms in the ionization equations. Since we are using linear derivatives,
 ! the terms, at each depth, are identical. We only need to worry about the sign of the terms.
 !
-	IF(BA_ADV_TERM(DIAG_INDX,1) .NE. 0)THEN
+	IF(BA_ADV_TERM(DIAG_INDX,DEPTH_INDX) .NE. 0)THEN
 	  DO ISPEC=1,NUM_SPECIES
 	    DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
 	      IF(SE(ID)%STRT_ADV_ID(K) .EQ. SPECIES_BEG_ID(ISPEC))THEN
@@ -338,6 +338,16 @@
 	  END DO
 	END IF
 !
+	LUOUT=487
+	IF(K .EQ. 43 .AND. DIAG_BAND)THEN
+	  OPEN(UNIT=LUOUT,FILE='BA_ASCI_N_D43_NOREP',STATUS='UNKNOWN')
+	    CALL WR2D_MA(POPS(1,K),NT,1,'POPS_D1',LUOUT)
+	    CALL WR2D_MA(STEQ_VEC,NT,1,'STEQ_VEC_D1',LUOUT)
+	    CALL WR2D_MA(C_MAT,NT,NT,'C_MAT_D1',LUOUT)
+	  CLOSE(UNIT=LUOUT)
+	END IF
+!
+!
 ! In all cases, we replace the ground state equation.
 ! We need the check on XzV_PRES since we initially set
 ! all the REPLACE to true.
@@ -346,6 +356,7 @@
           IF(REPLACE(ID) .AND. ATM(ID)%XzV_PRES)THEN
 	    C_MAT(ATM(ID)%EQXzV,:)=C_ION(ID,:)
 	    IF(DIAG_BAND)STEQ_VEC(ATM(ID)%EQXzV)=STEQ_ION(ID)
+	    IF(K .EQ. 43)CALL WR2D_MA(C_ION(ID,:),NT,1,'C_MAT_D1',LUOUT)
 	  END IF
 	END DO
 !
@@ -375,6 +386,15 @@
 !
 	IF(LTE_MODEL)THEN
 	  CALL ADJUST_CMAT_TO_LTE(C_MAT,STEQ_VEC,DIAG_BAND,DEPTH_INDX,NT)
+	END IF
+!
+	LUOUT=487
+	IF(K .EQ. 43 .AND. DIAG_BAND)THEN
+	  OPEN(UNIT=LUOUT,FILE='BA_ASCI_N_D43',STATUS='UNKNOWN')
+	    CALL WR2D_MA(POPS(1,K),NT,1,'POPS_D1',LUOUT)
+	    CALL WR2D_MA(STEQ_VEC,NT,1,'STEQ_VEC_D1',LUOUT)
+	    CALL WR2D_MA(C_MAT,NT,NT,'C_MAT_D1',LUOUT)
+	  CLOSE(UNIT=LUOUT)
 	END IF
 !
 ! Scale the BA matrix so that we solve for the fractional corrections to

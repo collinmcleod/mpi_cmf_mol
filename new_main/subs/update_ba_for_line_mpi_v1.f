@@ -37,9 +37,9 @@
 	REAL(KIND=LDP) NU
 	REAL(KIND=LDP) FQW
 	REAL(KIND=LDP) POPS(NT,ND)
-	REAL(KIND=LDP) JREC(ND)
-	REAL(KIND=LDP) dJRECdT(ND)
-	REAL(KIND=LDP) JPHOT(ND)
+	REAL(KIND=LDP) JREC(DST:DEND)
+	REAL(KIND=LDP) dJRECdT(DST:DEND)
+	REAL(KIND=LDP) JPHOT(DST:DEND)
 !
         INTEGER NL,NUP
         INTEGER MNL,MNUP
@@ -48,7 +48,7 @@
         INTEGER VAR_INDX
         INTEGER INDX_BA_METH
 !
-	REAL(KIND=LDP) VB(ND),VC(ND)
+	REAL(KIND=LDP) VB(DST:DEND),VC(DST:DEND)
         REAL(KIND=LDP) T1,T2,T3,T4
 	REAL(KIND=LDP) SCL_FAC
 	REAL(KIND=LDP), SAVE :: SUM_BA
@@ -124,7 +124,6 @@
 	IF(COMPUTE_BA)THEN
 	  CALL TUNE(IONE,'COMPUTE_BA')
 !
-	  DO K=DST,DEND
 !
 ! NB: In this equation the matrices are NOT passed for WS, dWS and NU.
 !
@@ -133,19 +132,26 @@
 	      DO ID=1,NUM_IONS-1
 	        ID_SAV=ID
 	        IF(ATM(ID)%XzV_PRES)THEN
-	          DO J=1,ATM(ID)%N_XzV_PHOT
-	            CALL VSEBYJ_MULTI_MPI_V1(ID_SAV,
-	1             ATM(ID)%WSXzV(1,1,J), ATM(ID)%dWSXzVdT(1,1,J),
+	          CALL VSEBYJ_MULTI_MPI_V1(ID_SAV,
+	1             ATM(ID)%WSXzV, ATM(ID)%dWSXzVdT,
 	1             ATM(ID)%XzV, ATM(ID)%XzVLTE, ATM(ID)%dlnXzVLTE_dlnT,
 	1             ATM(ID)%NXzV,
 	1             ATM(ID+1)%XzV, ATM(ID+1)%LOG_XzVLTE,
 	1             ATM(ID+1)%dlnXzVLTE_dlnT, ATM(ID+1)%NXzV,
-	1             ATM(ID)%XzV_ION_LEV_ID(J),ED,T,
+	1             ATM(ID)%N_XzV_PHOT,ATM(ID)%XzV_ION_LEV_ID,ED,T,
 	1             JREC,dJRECdt,JPHOT,FIXED_T,NUM_BNDS,DST,DEND,ND)
-	          END DO
 	        END IF
 	      END DO
 	      CALL TUNE(2,'BA_CONT_UP')
+	      IF(MYPE .LT. 2)THEN
+	         WRITE(530+MYPE,*)SE(1)%BA_PAR(1,1,DST),
+	1         SE(1)%BA_PAR(ATM(1)%NXzV:SE(1)%N_SE,1,DST)
+	         FLUSH(UNIT=530+MYPE)
+	       END IF
+	    END IF
+	    IF(MOD(FREQ_INDX,1000) .EQ. 0 .AND. DST .GT. 1)THEN
+	      WRITE(6,*)FREQ_INDX,DST,DEND,FINAL_CONSTANT_CROSS
+	      FLUSH(UNIT=6)
 	    END IF
 !
 ! 
@@ -156,12 +162,12 @@
 	      CALL TUNE(1,'BA_XRAY_UP')
 	      DO ID=1,NUM_IONS-1
 	        IF(ATM(ID)%XzV_PRES .AND. ATM(ID+1)%XzV_PRES)THEN
-	          CALL VSEBYJ_X_V7(ID,ATM(ID)%WSE_X_XzV,
+	          CALL VSEBYJ_X_MPI_V1(ID,ATM(ID)%WSE_X_XzV,
 	1             ATM(ID)%XzV, ATM(ID)%XzVLTE, ATM(ID)%dlnXzVLTE_dlnT, ATM(ID)%NXzV,
 	1             ATM(ID+1)%XzV_F, ATM(ID+1)%XzVLTE_F, ATM(ID+1)%EDGEXzV_F,
 	1             ATM(ID+1)%NXzV_F,ATM(ID+1)%DXzV,    ATM(ID+2)%EQXzV,
 	1             ED,T,JREC,dJRECdT,JPHOT,FIXED_T,
-	1             ND,NION,DST,DEND)
+	1             NION,DST,DEND,ND)
 	        END IF
 	      END DO
 	      CALL TUNE(2,'BA_XRAY_UP')
@@ -214,12 +220,11 @@
 	1                                     VCHI_ALL(VAR_INDX,DPTH_INDX)*T(DPTH_INDX)/CHI_CONT(DPTH_INDX)
 	    END IF
 !
-	  END DO		!DST,DEND
 	  CALL TUNE(ITWO,'COMPUTE_BA')
 !
 	  CALL TUNE(IONE,'ADD_PAR')
 	  IF( MOD(FREQ_INDX,N_PAR) .EQ. 0 .OR. FREQ_INDX .EQ. NCF )THEN
-            CALL ADD_PAR_TO_FULL_V2(NION,DST,DEND,DIAG_INDX)
+            CALL ADD_PAR_TO_FULL_MPI_V1(NION,DST,DEND,DIAG_INDX)
   	  END IF
 	  CALL TUNE(ITWO,'ADD_PAR')
 !
@@ -272,7 +277,7 @@
 	        SCL_FAC=(AVE_ENERGY(NL)-AVE_ENERGY(NUP))/FL_SIM(SIM_INDX)
 	        IF(ABS(SCL_FAC-1.0_LDP) .GT. SCL_LINE_HT_FAC)SCL_FAC=1.0_LDP
 	      END IF
-	      DO K=1,ND
+	      DO K=DST,DEND
 	        L=GET_DIAG(K)
 	        dRATE_dUP=EINA(SIM_INDX)*U_STAR_RATIO(K,SIM_INDX)*
 	1                   (ZNET_SIM(K,SIM_INDX)+VC(K)+STIM_FAC*VB(K))
@@ -317,7 +322,7 @@
 !     expression for ZNET.
 !
 	  IF(UPDATE_dZ)THEN
-	    DO L=1,ND
+	    DO L=DST,DEND
 	      TA(L)=CHI_NOSCAT_PREV(L)/CHI_NOSCAT(L)
 	      IF(ETA_CONT(L) .EQ. 0)THEN
 	        TB(L)=1.0_LDP

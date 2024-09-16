@@ -10,7 +10,7 @@ LIB_MOD=$(LIB_DIR)libmod.a
 #
 # Entries for library
 #
-OBJ = $(LIB)(steq_ba_two_phot_rate_v3.o)\
+OBJ = $(LIB)(steq_ba_two_phot_rate_mpi_v1.o)\
       $(LIB)(get_j_for_two_phot.o)\
       $(LIB)(two_phot_rate.o)\
       $(LIB)(two_phot_rate_mpi_v1.o)\

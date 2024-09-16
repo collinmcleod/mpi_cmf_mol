@@ -4,7 +4,7 @@ C and the net cooling rate.
 C
 C NB: IN outer regions, X-ray ionizationshould provide a net heating.
 C
-	SUBROUTINE X_RRR_COOL_V1(NET_X_RR,X_BFCR,WSE_X_A,WCR_X_A,
+	SUBROUTINE X_RRR_COOL_MPI_V1(NET_X_RR,X_BFCR,WSE_X_A,WCR_X_A,
 	1                     HN_A,LOG_HNST_A,N_A,HN_B,LOG_HNST_B,N_B,
 	1                     JREC,JPHOT,JREC_CR,JPHOT_CR,INIT_ARRAYS,
 	1                     DST,DEND,ND,FLAG)
@@ -66,7 +66,7 @@ C false for incrementing rates due to ionizations/recombinations to
 C the 2p level.
 C
 	IF(INIT_ARRAYS .AND. FLAG)THEN
-	  DO J=1,ND
+	  DO J=DST,DEND
 	    NET_X_RR(J)=0.0_LDP
 	    X_BFCR(J)=0.0_LDP
 	  END DO
@@ -78,7 +78,7 @@ C
 ! The check on A1 prevents overflow.
 !
 	DO I=1,N_A
-	  IF(WSE_X_A(I,1) .NE. 0)THEN
+	  IF(WSE_X_A(I,DST) .NE. 0)THEN
 	    DO J=DST,DEND
 	      A1=LOG_HNST_A(I,J)+LOG_HNST_B(1,J)-LOG(HN_B(1,J))
 	      IF(JREC(J) .GT. 0 .AND. A1 .LE. 280.0_LDP)THEN

@@ -5,9 +5,10 @@
 !
 ! Routine also increments the ionization equilibrium equations.
 !
-	SUBROUTINE VSEBYJ_MULTI_V8(ID,WSE,dWSEdT,
+	SUBROUTINE VSEBYJ_MULTI_MPI_V1(ID,WSE,dWSEdT,
 	1             HN,HNST,dlnHNST_dlnT,NLEV,
-	1             DI,LOG_DIST,dlnDIST_dlnT,N_DI,ION_LEV,
+	1             DI,LOG_DIST,dlnDIST_dlnT,
+	1             N_DI,NPHOT,ION_LEVELS,
 	1             ED,T,JREC,dJRECdT,JPHOT,FIXED_T,
 	1             NUM_BNDS,DST,DEND,ND)
 	USE SET_KIND_MODULE
@@ -32,7 +33,6 @@
 	INTEGER ID		!Number of ionization stage
 	INTEGER NLEV		!Numer of levls in HN
         INTEGER N_DI		!Number of levels in target ion
-	INTEGER ION_LEV	!Super level target in ION
 	INTEGER ND		!Number of depth points
         INTEGER NION		!Numer of Eqns. in ionization matrix.
 !
@@ -41,11 +41,14 @@
 !
 	INTEGER NUM_BNDS,DST,DEND
 !
-	REAL(KIND=LDP) WSE(NLEV,DST:DEND),dWSEdT(NLEV,ND)
+	REAL(KIND=LDP) WSE(NLEV,DST:DEND,NPHOT),dWSEdT(NLEV,DST:DEND,NPHOT)
 !
 ! Populations of species undergoing photoionization.
 !
-	REAL(KIND=LDP) HN(NLEV,DST:DEND),HNST(NLEV,ND),dlnHNST_dlnT(NLEV,ND)
+	REAL(KIND=LDP) HN(NLEV,DST:DEND),HNST(NLEV,DST:DEND),dlnHNST_dlnT(NLEV,DST:DEND)
+!
+	INTEGER NPHOT
+	INTEGER ION_LEVELS(NPHOT)	!Super level target in ION
 !
 ! Ion populations.
 !
@@ -54,9 +57,9 @@
 	REAL(KIND=LDP) dlnDIST_dlnT(N_DI,DST:DEND)
 !
 	REAL(KIND=LDP) ED(ND),T(ND)
-	REAL(KIND=LDP) JREC(ND)
-	REAL(KIND=LDP) dJRECdT(ND)
-	REAL(KIND=LDP) JPHOT(ND)
+	REAL(KIND=LDP) JREC(DST:DEND)
+	REAL(KIND=LDP) dJRECdT(DST:DEND)
+	REAL(KIND=LDP) JPHOT(DST:DEND)
 	LOGICAL FIXED_T
 !
 ! Constants for opacity etc.
@@ -67,7 +70,9 @@
 ! Local variables
 !
 	INTEGER J,K,L
+	INTEGER IP
 	INTEGER NT
+	INTEGER ION_LEV
 	INTEGER ION_V
 	INTEGER ION_EQ
 	REAL(KIND=LDP) T3
@@ -82,52 +87,55 @@
 !
 !
 !
-	IF(ION_LEV .EQ. 0)RETURN
+	DO IP=1,NPHOT
+	  IF(ION_LEVELS(IP) .EQ. 0)EXIT
+	  ION_LEV=ION_LEVELS(IP)
 !
-	NT=SE(ID)%N_IV
-        ION_EQ=SE(ID)%ION_LEV_TO_EQ_PNT(ION_LEV)
-	ION_V=ION_EQ
-	L=(NUM_BNDS/2)+1
+	  NT=SE(ID)%N_IV
+          ION_EQ=SE(ID)%ION_LEV_TO_EQ_PNT(ION_LEV)
+	  ION_V=ION_EQ
+	  L=(NUM_BNDS/2)+1
 !
-	DO K=DST,DEND			!Which depth point.
-	  IF(ION_LEV .NE. 1)THEN
-	    LOG_B_RAT=LOG(DI(ION_LEV,K)/DI(1,K))+LOG_DIST(1,K)-LOG_DIST(ION_LEV,K)
-	    B_RAT=0.0_LDP
-	    IF(LOG_B_RAT .LT. 780.0_LDP)B_RAT=EXP(LOG_B_RAT)
-	  ELSE
-	    B_RAT=1.0_LDP
-	    LOG_B_RAT=0.0_LDP
-	  END IF
+	  DO K=DST,DEND			!Which depth point.
+	    IF(ION_LEV .NE. 1)THEN
+	      LOG_B_RAT=LOG(DI(ION_LEV,K)/DI(1,K))+LOG_DIST(1,K)-LOG_DIST(ION_LEV,K)
+	      B_RAT=0.0_LDP
+	      IF(LOG_B_RAT .LT. 780.0_LDP)B_RAT=EXP(LOG_B_RAT)
+	    ELSE
+	      B_RAT=1.0_LDP
+	      LOG_B_RAT=0.0_LDP
+	    END IF
 
-	  DO J=1,NLEV			!Which equation (for S.E. only)
-	    IF(WSE(J,K) .NE. 0)THEN
-	      WSE_BY_RJ=WSE(J,K)*JPHOT(K)
-	      SE(ID)%BA_PAR(J,J,K)=SE(ID)%BA_PAR(J,J,K)-WSE_BY_RJ
+	    DO J=1,NLEV			!Which equation (for S.E. only)
+	      IF(WSE(J,K,IP) .NE. 0)THEN
+	        WSE_BY_RJ=WSE(J,K,IP)*JPHOT(K)
+	        SE(ID)%BA_PAR(J,J,K)=SE(ID)%BA_PAR(J,J,K)-WSE_BY_RJ
 !
-	      REV_HNST=HNST(J,K)*B_RAT
-	      T3=REV_HNST*WSE(J,K)*JREC(K)
-	      DI_FAC=T3/DI(ION_LEV,K)
-	      ED_FAC=T3/ED(K)
-	      SE(ID)%BA_PAR(J,ION_V,K)=SE(ID)%BA_PAR(J,ION_V,K)  + DI_FAC
-	      SE(ID)%BA_PAR(J,NT-1,K) =SE(ID)%BA_PAR(J,NT-1,K)   + ED_FAC
+	        REV_HNST=HNST(J,K)*B_RAT
+	        T3=REV_HNST*WSE(J,K,IP)*JREC(K)
+	        DI_FAC=T3/DI(ION_LEV,K)
+	        ED_FAC=T3/ED(K)
+	        SE(ID)%BA_PAR(J,ION_V,K)=SE(ID)%BA_PAR(J,ION_V,K)  + DI_FAC
+	        SE(ID)%BA_PAR(J,NT-1,K) =SE(ID)%BA_PAR(J,NT-1,K)   + ED_FAC
 !
 ! Include ionizations/recombinations implicitly in the rate equation
 ! of the target ion (eg He++(gs) for He+ ion/recoms ).
 !
-	      SE(ID)%BA_PAR(ION_EQ,J,K)    =SE(ID)%BA_PAR(ION_EQ,J,K)     + WSE_BY_RJ
-	      SE(ID)%BA_PAR(ION_EQ,ION_V,K)=SE(ID)%BA_PAR(ION_EQ,ION_V,K) - DI_FAC
-	      SE(ID)%BA_PAR(ION_EQ,NT-1,K) =SE(ID)%BA_PAR(ION_EQ,NT-1,K)  - ED_FAC
+	        SE(ID)%BA_PAR(ION_EQ,J,K)    =SE(ID)%BA_PAR(ION_EQ,J,K)     + WSE_BY_RJ
+	        SE(ID)%BA_PAR(ION_EQ,ION_V,K)=SE(ID)%BA_PAR(ION_EQ,ION_V,K) - DI_FAC
+	        SE(ID)%BA_PAR(ION_EQ,NT-1,K) =SE(ID)%BA_PAR(ION_EQ,NT-1,K)  - ED_FAC
 !
-	      IF(.NOT. FIXED_T)THEN
-	        T_FAC=T3*( dlnHNST_dlnT(J,K) +
-	1             (dlnDIST_dlnT(1,K)-dlnDIST_dlnt(ION_LEV,K)) )/T(K) +
-	1             dWSEdT(J,K)*(REV_HNST*JREC(K)-HN(J,K)*JPHOT(K)) +
-	1             REV_HNST*WSE(J,K)*dJRECdT(K)
-	        SE(ID)%BA_PAR(J,NT,K)   =SE(ID)%BA_PAR(J,NT,K)     + T_FAC
-	        SE(ID)%BA_PAR(ION_EQ,NT,K)   =SE(ID)%BA_PAR(ION_EQ,NT,K)    - T_FAC
-	      END IF
+	        IF(.NOT. FIXED_T)THEN
+	          T_FAC=T3*( dlnHNST_dlnT(J,K) +
+	1               (dlnDIST_dlnT(1,K)-dlnDIST_dlnt(ION_LEV,K)) )/T(K) +
+	1               dWSEdT(J,K,IP)*(REV_HNST*JREC(K)-HN(J,K)*JPHOT(K)) +
+	1               REV_HNST*WSE(J,K,IP)*dJRECdT(K)
+	          SE(ID)%BA_PAR(J,NT,K)   =SE(ID)%BA_PAR(J,NT,K)     + T_FAC
+	          SE(ID)%BA_PAR(ION_EQ,NT,K)   =SE(ID)%BA_PAR(ION_EQ,NT,K)    - T_FAC
+	        END IF
 !
-	    END IF		!WSE(J,K) .NE. 0
+	      END IF		!WSE(J,K) .NE. 0
+	    END DO
 	  END DO
 	END DO
 !

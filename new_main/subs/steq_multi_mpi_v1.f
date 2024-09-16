@@ -155,6 +155,14 @@
 	1         F_TO_S_MAPPING,TMP_VEC_COOL,T(I),TMP_VEC_ED,IONE,
 	1         COMPUTE_BA,FIXED_T,LAST_ITERATION)
 !
+!	WRITE(6,*)MYPE,DST,DEND
+!	WRITE(6,*)LEVNAME_F(1),LEVNAME_F(N_F)
+!	FLUSH(UNIT=6)
+!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	CALL MPI_FINALIZE()
+!	STOP
+!
+!
 ! 
 !
 ! *********************** Code for Electron Energy Balance **********************************

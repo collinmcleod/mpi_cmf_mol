@@ -24,22 +24,23 @@
 	1                       F_TO_S_MAPPING,NU_CONT,T,
 	1                       DST,DEND,ND,
 	1                       COMPUTE_BA,FIXED_T,LAST_ITERATION,
-	1                       DESC,ZION,PHOT_ID,ID)
+	1                       DESC,ZION,NPHOT,ID)
 	USE SET_KIND_MODULE
 	USE MOD_LEV_DIS_BLK
 	IMPLICIT NONE
 	EXTERNAL SUB_PHOT_GEN
 !
-	INTEGER ID
+	INTEGER ID,NPHOT
 	INTEGER N_S,N_F,ND
-	REAL(KIND=LDP) WSE_S(N_S,DST:ND)
-	REAL(KIND=LDP) dWSE_SdT(N_S,DST:ND)
-	REAL(KIND=LDP) WCR(N_S,DST:ND)
-	REAL(KIND=LDP) dWCRdT(N_S,DST:ND)
-	REAL(KIND=LDP) HNST_S(N_S,DST:ND)
-	REAL(KIND=LDP) dlnHNST_S_dlnT(N_S,DST:ND)
+	REAL(KIND=LDP) WSE_S(N_S,DST:DEND,NPHOT)
+	REAL(KIND=LDP) dWSE_SdT(N_S,DST:DEND,NPHOT)
+	REAL(KIND=LDP) WCR(N_S,DST:DEND,NPHOT)
+	REAL(KIND=LDP) dWCRdT(N_S,DST:DEND,NPHOT)
 !
-	REAL(KIND=LDP) HNST_F_ON_S(N_F,DST:ND)
+	REAL(KIND=LDP) HNST_S(N_S,DST:DEND)
+	REAL(KIND=LDP) dlnHNST_S_dlnT(N_S,DST:DEND)
+	REAL(KIND=LDP) HNST_F_ON_S(N_F,DST:DEND)
+!
 	REAL(KIND=LDP) EDGE_F(N_F)			!In 10^15 Hz
 	INTEGER F_TO_S_MAPPING(N_F)
 	REAL(KIND=LDP) T(ND)
@@ -47,7 +48,7 @@
 	REAL(KIND=LDP) NU_CONT
 	REAL(KIND=LDP) ZION
 	CHARACTER*(*) DESC
-	INTEGER PHOT_ID
+	INTEGER IP,PHOT_ID
 !
 	REAL(KIND=LDP) YDIS(ND)		!Constant for computing level dissolution/
 	REAL(KIND=LDP) XDIS(ND)		!Constant for computing level dissolution/
@@ -92,116 +93,118 @@
 !
 ! Get edge frequencies.
 !
-	T1=0.0D0; J=-PHOT_ID
-	CALL SUB_PHOT_GEN(ID,EDGE,T1,EDGE_F,N_F,J,L_TRUE)
+	DO IP=1,NPHOT
+	  T1=0.0D0; J=-IP; PHOT_ID=IP
+	  CALL SUB_PHOT_GEN(ID,EDGE,T1,EDGE_F,N_F,J,L_TRUE)
 !
 ! Get photoionization cross-sections for all levels. The first call returns
 ! the threshold cross-section when NU < EDGE.
 !
-	IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
-	  CALL SUB_PHOT_GEN(ID,ALPHA_VEC,NU_CONT,EDGE_F,N_F,PHOT_ID,L_TRUE)
-	ELSE
-	  CALL SUB_PHOT_GEN(ID,ALPHA_VEC,NU_CONT,EDGE_F,N_F,PHOT_ID,L_FALSE)
-	END IF
+	  IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
+	    CALL SUB_PHOT_GEN(ID,ALPHA_VEC,NU_CONT,EDGE_F,N_F,PHOT_ID,L_TRUE)
+	  ELSE
+	    CALL SUB_PHOT_GEN(ID,ALPHA_VEC,NU_CONT,EDGE_F,N_F,PHOT_ID,L_FALSE)
+	  END IF
 !
 ! DIS_CONST is the constant K appearing in the expression for level dissolution.
-! A negative value for DIS_CONST implies that the cross-section is zero.
+! A negative value f_CONST implies that the cross-section is zero.
 !
-	DIS_CONST(1:N_F)=-1.0_LDP
-	IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
-	  ZION_CUBED=ZION*ZION*ZION
-	  DO I_F=1,N_F
-	    IF(NU_CONT .LT. EDGE_F(I_F) .AND. ALPHA_VEC(I_F) .NE. 0 .AND. NU_CONT .GT. 0.8_LDP*EDGE_F(I_F))THEN
-	      NEFF=SQRT(3.289395_LDP*ZION*ZION/(EDGE_F(I_F)-NU_CONT))
-	      IF(NEFF .GT. 2*ZION)THEN
-	        T1=MIN(1.0_LDP,16.0_LDP*NEFF/(1+NEFF)/(1+NEFF)/3.0_LDP)
-	         DIS_CONST(I_F)=( T1*ZION_CUBED/(NEFF**4) )**1.5_LDP
+	  DIS_CONST(1:N_F)=-1.0_LDP
+	  IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
+	    ZION_CUBED=ZION*ZION*ZION
+	    DO I_F=1,N_F
+	      IF(NU_CONT .LT. EDGE_F(I_F) .AND. ALPHA_VEC(I_F) .NE. 0 .AND. NU_CONT .GT. 0.8_LDP*EDGE_F(I_F))THEN
+	        NEFF=SQRT(3.289395_LDP*ZION*ZION/(EDGE_F(I_F)-NU_CONT))
+	        IF(NEFF .GT. 2*ZION)THEN
+	          T1=MIN(1.0_LDP,16.0_LDP*NEFF/(1+NEFF)/(1+NEFF)/3.0_LDP)
+	          DIS_CONST(I_F)=( T1*ZION_CUBED/(NEFF**4) )**1.5_LDP
+	        END IF
 	      END IF
-	    END IF
-	  END DO
-	END IF
+	    END DO
+	  END IF
 !
-	DO_ALL=.FALSE.
-	IF(COMPUTE_BA)DO_ALL=.TRUE.
-	IF(FIXED_T)DO_ALL=.FALSE.
-	IF(LAST_ITERATION)DO_ALL=.TRUE.
+	  DO_ALL=.FALSE.
+	  IF(COMPUTE_BA)DO_ALL=.TRUE.
+	  IF(FIXED_T)DO_ALL=.FALSE.
+	  IF(LAST_ITERATION)DO_ALL=.TRUE.
 !
-	DO DPTH_INDX=DST,DEND
-	  WSE_S(:,DPTH_INDX)=0.0_LDP
-	  WCR(:,DPTH_INDX)=0.0_LDP
-	  dWSE_SdT(:,DPTH_INDX)=0.0_LDP
-	  dWCRdT(:,DPTH_INDX)=0.0_LDP
+	  DO DPTH_INDX=DST,DEND
+	    WSE_S(:,DPTH_INDX,IP)=0.0_LDP
+	    WCR(:,DPTH_INDX,IP)=0.0_LDP
+	    dWSE_SdT(:,DPTH_INDX,IP)=0.0_LDP
+	    dWCRdT(:,DPTH_INDX,IP)=0.0_LDP
 !
 ! Compute dissolution vectors that are independent of level.
 !
-	  IF(MOD_DO_LEV_DIS)THEN
-	    J=DPTH_INDX
-	    YDIS(J)=1.091_LDP*(X_LEV_DIS(J)+4.0_LDP*(ZION-1)*A_LEV_DIS(J))*
-	1             B_LEV_DIS(J)*B_LEV_DIS(J)
-	    XDIS(J)=B_LEV_DIS(J)*X_LEV_DIS(J)
-	  END IF
+	    IF(MOD_DO_LEV_DIS)THEN
+	      J=DPTH_INDX
+	      YDIS(J)=1.091_LDP*(X_LEV_DIS(J)+4.0_LDP*(ZION-1)*A_LEV_DIS(J))*
+	1               B_LEV_DIS(J)*B_LEV_DIS(J)
+	      XDIS(J)=B_LEV_DIS(J)*X_LEV_DIS(J)
+	    END IF
 !
 ! We have to loop over depth (rather than frequency) because of the
 ! FULL to SUPER level mapping.
 !
 ! Note that WSE_S and WCR have alternate signs.
 !
-	  IF(DO_ALL)THEN
+	    IF(DO_ALL)THEN
 
-	      J=DPTH_INDX
-	      DO I_F=1,N_F
-	        I_S=F_TO_S_MAPPING(I_F)
-	        IF(NU_CONT .GE. EDGE(I_F))THEN
-	          T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
-	          WSE_S(I_S,J)=WSE_S(I_S,J) + T1*HNST_F_ON_S(I_F,J)
-	          WCR(I_S,J)=WCR(I_S,J) - EDGE(I_F)*T1*HNST_F_ON_S(I_F,J)
-	          T2=T1*HNST_F_ON_S(I_F,J)*(dlnHNST_S_dlnT(I_S,J)+1.5_LDP+HDKT*EDGE_F(I_F)/T(J))/T(J)
-	          dWSE_SdT(I_S,J)=dWSE_SdT(I_S,J) - T2
-	          dWCRdT(I_S,J)=dWCRdT(I_S,J) + EDGE(I_F)*T2
+	        J=DPTH_INDX
+	        DO I_F=1,N_F
+	          I_S=F_TO_S_MAPPING(I_F)
+	          IF(NU_CONT .GE. EDGE(I_F))THEN
+	            T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
+	            WSE_S(I_S,J,IP)=WSE_S(I_S,J,IP) + T1*HNST_F_ON_S(I_F,J)
+	            WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE(I_F)*T1*HNST_F_ON_S(I_F,J)
+	            T2=T1*HNST_F_ON_S(I_F,J)*(dlnHNST_S_dlnT(I_S,J)+1.5_LDP+HDKT*EDGE_F(I_F)/T(J))/T(J)
+	            dWSE_SdT(I_S,J,IP)=dWSE_SdT(I_S,J,IP) - T2
+	            dWCRdT(I_S,J,IP)=dWCRdT(I_S,J,IP) + EDGE(I_F)*T2
 !
 ! We only allow for level dissolutions when the ionizations are occurring to
 ! the ground state.
 !
-	        ELSE IF(DIS_CONST(I_F) .GE. 0.0_LDP)THEN
-	          T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
-	          T2=7.782_LDP+XDIS(J)*DIS_CONST(I_F)
-	          T3=T2/(T2+YDIS(J)*DIS_CONST(I_F)*DIS_CONST(I_F))
-	          IF(T3 .GT. PHOT_DIS_PARAMETER)THEN
-	            T3=T1*T3
-	            WSE_S(I_S,J)=WSE_S(I_S,J) + T3*HNST_F_ON_S(I_F,J)
-	            WCR(I_S,J)=WCR(I_S,J) - EDGE_F(I_F)*T3*HNST_F_ON_S(I_F,J)
-	            T2=T3*HNST_F_ON_S(I_F,J)*(dlnHNST_S_dlnT(I_S,J)+1.5_LDP+HDKT*EDGE_F(I_F)/T(J))/T(J)
-	            dWSE_SdT(I_S,J)=dWSE_SdT(I_S,J) - T2
-	            dWCRdT(I_S,J)=dWCRdT(I_S,J) + EDGE_F(I_F)*T2
+	          ELSE IF(DIS_CONST(I_F) .GE. 0.0_LDP)THEN
+	            T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
+	            T2=7.782_LDP+XDIS(J)*DIS_CONST(I_F)
+	            T3=T2/(T2+YDIS(J)*DIS_CONST(I_F)*DIS_CONST(I_F))
+	            IF(T3 .GT. PHOT_DIS_PARAMETER)THEN
+	              T3=T1*T3
+	              WSE_S(I_S,J,IP)=WSE_S(I_S,J,IP) + T3*HNST_F_ON_S(I_F,J)
+	              WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE_F(I_F)*T3*HNST_F_ON_S(I_F,J)
+	              T2=T3*HNST_F_ON_S(I_F,J)*(dlnHNST_S_dlnT(I_S,J)+1.5_LDP+HDKT*EDGE_F(I_F)/T(J))/T(J)
+	              dWSE_SdT(I_S,J,IP)=dWSE_SdT(I_S,J,IP) - T2
+	              dWCRdT(I_S,J,IP)=dWCRdT(I_S,J,IP) + EDGE_F(I_F)*T2
+	            END IF
 	          END IF
-	        END IF
-	      END DO
-	    ELSE
+	        END DO
+	      ELSE
 !
-	      J=DPTH_INDX
-	      DO I_F=1,N_F
-	        I_S=F_TO_S_MAPPING(I_F)
-	        IF(NU_CONT .GE. EDGE(I_F))THEN
-	          T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
-	          WSE_S(I_S,J)=WSE_S(I_S,J) + T1*HNST_F_ON_S(I_F,J)
-	          WCR(I_S,J)=WCR(I_S,J) - EDGE(I_F)*T1*HNST_F_ON_S(I_F,J)
+	        J=DPTH_INDX
+	        DO I_F=1,N_F
+	          I_S=F_TO_S_MAPPING(I_F)
+	          IF(NU_CONT .GE. EDGE(I_F))THEN
+	            T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
+	            WSE_S(I_S,J,IP)=WSE_S(I_S,J,IP) + T1*HNST_F_ON_S(I_F,J)
+	            WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE(I_F)*T1*HNST_F_ON_S(I_F,J)
 !
 ! We only allow for level dissolutions when the ionizations are occurring to
 ! the ground state.
 !
-	        ELSE IF(DIS_CONST(I_F) .GE. 0.0_LDP)THEN
-	          T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
-	          T2=7.782_LDP+XDIS(J)*DIS_CONST(I_F)
-	          T3=T2/(T2+YDIS(J)*DIS_CONST(I_F)*DIS_CONST(I_F))
-	          IF(T3 .GT. PHOT_DIS_PARAMETER)THEN
-	            T3=T1*T3
-	            WSE_S(I_S,J)=WSE_S(I_S,J) + T3*HNST_F_ON_S(I_F,J)
-	            WCR(I_S,J)=WCR(I_S,J) - EDGE(I_F)*T3*HNST_F_ON_S(I_F,J)
+	          ELSE IF(DIS_CONST(I_F) .GE. 0.0_LDP)THEN
+	            T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
+	            T2=7.782_LDP+XDIS(J)*DIS_CONST(I_F)
+	            T3=T2/(T2+YDIS(J)*DIS_CONST(I_F)*DIS_CONST(I_F))
+	            IF(T3 .GT. PHOT_DIS_PARAMETER)THEN
+	              T3=T1*T3
+	              WSE_S(I_S,J,IP)=WSE_S(I_S,J,IP) + T3*HNST_F_ON_S(I_F,J)
+	              WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE(I_F)*T3*HNST_F_ON_S(I_F,J)
+	            END IF
 	          END IF
-	        END IF
-	      END DO
-	    END IF
-	END DO		!Depth index
+	        END DO
+	      END IF
+	  END DO		!Depth index
+	END DO                  !Photon route
 !
 	RETURN
 	END

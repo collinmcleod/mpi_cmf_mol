@@ -60,9 +60,9 @@
 	REAL(KIND=LDP) DI(DST:DEND)			!Ion density for B levels.
 	REAL(KIND=LDP) ED(ND)				!Electron density
 	REAL(KIND=LDP) T(ND)				!Temperature in 10^4K.
-	REAL(KIND=LDP) JREC(ND)				! (2hv^3/c/c+J).exp()*FQW/v
-	REAL(KIND=LDP) dJRECdT(ND)			!
-	REAL(KIND=LDP) JPHOT(ND)	        	! J*FQW/v	
+	REAL(KIND=LDP) JREC(DST:DEND)				! (2hv^3/c/c+J).exp()*FQW/v
+	REAL(KIND=LDP) dJRECdT(DST:DEND)			!
+	REAL(KIND=LDP) JPHOT(DST:DEND)	        	! J*FQW/v	
 	LOGICAL FIXED_T
 !
 ! Constants for opacity etc.
@@ -85,7 +85,7 @@
 	ION_V=SE(ID)%LNK_TO_IV(ION_EQ_IN_BA)
 !
 	DO I=DST,DEND			!Which depth point.
-	  IF(JREC(I) .NE. 0.0_LDP .AND. WSE_X(1,1) .NE. 0.0_LDP)THEN
+	  IF(JREC(I) .NE. 0.0_LDP .AND. WSE_X(1,DST) .NE. 0.0_LDP)THEN
 	    RECIP_B_ION=HNST_B(1,I)/HN_B(1,I)
 	    BSTIM=JREC(I)*RECIP_B_ION
 	  ELSE
