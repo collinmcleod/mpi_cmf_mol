@@ -17,10 +17,10 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(adjust_cmat_to_lte.o)\
       $(LIB)(adjust_sn_r_grid.o)\
       $(LIB)(adjust_pops.o)\
-      $(LIB)(allocate_wse_arrays.o)\
+      $(LIB)(allocate_wse_arrays_mpi_v1.o)\
       $(LIB)(auto_clump_rev.o)\
       $(LIB)(auto_add_ion.o)\
-      $(LIB)(ba_update_v7.o)\
+      $(LIB)(ba_update_mpi_v1.o)\
       $(LIB)(check_hydro_def.o)\
       $(LIB)(check_ions_present.o)\
       $(LIB)(check_tmin.o)\
@@ -88,8 +88,8 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(sub_guess_dc_v2.o)\
       $(LIB)(sum_steq_sol.o)\
       $(LIB)(tst_rd_seq.o)\
-      $(LIB)(var_op_v10.o)\
-      $(LIB)(var_x_opa_eta_v4.o)\
+      $(LIB)(var_op_mpi_v1.o)\
+      $(LIB)(var_x_opa_eta_mpi_v1.o)\
       $(LIB)(vehb_byj_v1.o)\
       $(LIB)(vsebyj_multi_mpi_v1.o)\
       $(LIB)(vsebyj_x_mpi_v1.o)\
@@ -173,9 +173,9 @@ $(LIB)(update_ba_for_line.o) : update_ba_for_line.f $(UP_MODS)
 	$(F90) -c $(OPTION)  update_ba_for_line.f
 	ar $(AR_OPTION) $(LIB) update_ba_for_line.o
 
-$(LIB)(var_op_v10.o) : var_op_v10.f $(DIS)
-	$(F90) -c $(OPTION)  var_op_v10.f
-	ar $(AR_OPTION) $(LIB) var_op_v10.o
+$(LIB)(var_op_v10.o) : var_op_mpi_v1.f $(DIS)
+	$(F90) -c $(OPTION)  var_op_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) var_op_mpi_v1.o
 
 $(LIB)(wr_level_links.o) : wr_level_links.f $(MOD)
 	$(F90) -c $(OPTION)  wr_level_links.f

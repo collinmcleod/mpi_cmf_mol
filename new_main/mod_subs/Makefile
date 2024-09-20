@@ -30,7 +30,7 @@ MOD = $(LIB_MOD)(mod_cmfgen.o)\
       $(LIB_MOD)(shock_power_mod.o)\
       $(LIB_MOD)(steq_data_mod.o)\
       $(LIB_MOD)(two_phot_mod.o)\
-      $(LIB_MOD)(var_rad_mod.o)
+      $(LIB_MOD)(var_rad_mod_mpi_v1.o)
 
 OBJ = $(LIB)(adjust_r_grid_v4.o)\
       $(LIB)(adjust_den_vecs.o)\
@@ -39,8 +39,8 @@ OBJ = $(LIB)(adjust_r_grid_v4.o)\
       $(LIB)(comp_grey_v2.o)\
       $(LIB)(comp_grey_v4.o)\
       $(LIB)(comp_opac.o)\
-      $(LIB)(comp_var_opac.o)\
-      $(LIB)(do_var_cont.o)\
+      $(LIB)(comp_var_opac_mpi_v1.o)\
+      $(LIB)(do_var_cont_mpi_v1.o)\
       $(LIB)(eval_lte_v5.o)\
       $(LIB)(eval_root_lte_mpi_v1.o)\
       $(LIB)(grey_t_iterate.o)\

@@ -6,7 +6,7 @@
 	USE SET_KIND_MODULE
 	USE MOD_CMFGEN
 	USE CONTROL_VARIABLE_MOD
-	USE VAR_RAD_MOD
+	USE VAR_RAD_MOD_MPI_V1
 	USE OPAC_MOD
 	USE STEQ_DATA_MOD
 	USE LINE_VEC_MOD
@@ -187,7 +187,7 @@
 !
 ! We now pass the continuum emissivity and opacity without any scattering
 ! contribution. We use TA as a zeroed vec for ESEC, which was subtracted
-! from CHI_CONT inside BA_UPDATE_V7.
+! from CHI_CONT inside BA_UPDATE_MPI_V1
 !
 	    INDX_BA_METH=ND+1
 	    IF(NEW_LINE_BA)INDX_BA_METH=MIN(MAX(INDX_BA_METH_RD,1),ND)
@@ -195,16 +195,16 @@
 	      TA(1:INDX_BA_METH-1)=ETA_NOSCAT(1:INDX_BA_METH-1); TA(INDX_BA_METH:ND)=ETA(INDX_BA_METH:ND)
 	      TB(1:INDX_BA_METH-1)=CHI_NOSCAT(1:INDX_BA_METH-1); TB(INDX_BA_METH:ND)=CHI(INDX_BA_METH:ND)
 	      TC(1:INDX_BA_METH-1)=0.0_LDP;                        TC(INDX_BA_METH:ND)=CHI_SCAT(INDX_BA_METH:ND)
-              CALL BA_UPDATE_V7(VJ,VCHI_ALL,VETA_ALL,
+              CALL BA_UPDATE_MPI_V1(VJ,VCHI_ALL,VETA_ALL,
 	1             TA,TB,TC,T,POPS,RJ,FL,FQW,
 	1             COMPUTE_NEW_CROSS,FINAL_CONSTANT_CROSS,DO_SRCE_VAR_ONLY,
-	1             BA_CHK_FAC,NION,NT,NUM_BNDS,ND,DST,DEND)
+	1             BA_CHK_FAC,NION,NT,NUM_BNDS,DST,DEND,ND)
 	    ELSE IF(.NOT. LAMBDA_ITERATION)THEN
 	      TA(1:ND)=0.0_LDP
-              CALL BA_UPDATE_V7(VJ,VCHI_ALL,VETA_ALL,
+              CALL BA_UPDATE_MPI_V1(VJ,VCHI_ALL,VETA_ALL,
 	1             ETA_NOSCAT,CHI_NOSCAT,TA,T,POPS,RJ,FL,FQW,
 	1             COMPUTE_NEW_CROSS,FINAL_CONSTANT_CROSS,DO_SRCE_VAR_ONLY,
-	1             BA_CHK_FAC,NION,NT,NUM_BNDS,ND,DST,DEND)
+	1             BA_CHK_FAC,NION,NT,NUM_BNDS,DST,DEND,ND)
 	    END IF
 !
 	    IF(LST_ITERATION .AND. VERBOSE_OUTPUT .AND. .NOT. LAMBDA_ITERATION)THEN
@@ -424,11 +424,10 @@
 !
 	      I=SIM_LINE_POINTER(SIM_INDX)
 	      ID=VEC_ID(I)
+	      dZ_POPS=0.0_LDP
 !
 ! Can now update rate equation for variation in Z.
 !
-	      I=NT*NUM_BNDS*ND
-	      CALL DP_ZERO(dZ_POPS,I)
 !
 ! Check which matrices get used to compute dZ_POPS. We include:
 !   (i) all transitions designated to be important.
@@ -543,7 +542,7 @@
 	      END IF
 !
 	      IF(.NOT. FIXED_T)THEN
-	        DO L=INDX_BA_METH,DEND
+	        DO L=MAX(INDX_BA_METH,DST),DEND
 	          K=GET_DIAG(L)
 	          T3=SCL_FAC
 	          IF(POP_ATOM(L) .GE. SCL_LINE_DENSITY_LIMIT)T3=1.0_LDP
@@ -558,7 +557,7 @@
 	      END IF
 !
 	      IF(.NOT. FIXED_T)THEN
-	        DO L=DST,INDX_BA_METH-1
+	        DO L=DST,MIN(DEND,INDX_BA_METH-1)
 	          K=GET_DIAG(L)
 	          T3=SCL_FAC
 	          IF(POP_ATOM(L) .GE. SCL_LINE_DENSITY_LIMIT)T3=1.0_LDP
@@ -581,8 +580,7 @@
 !
 ! Must now zero dZ since next time it is used it will be for a new line.
 !
-	      I=NM*NUM_BNDS*(DEND-DST+1)
-	      CALL DP_ZERO(dZ(1,1,1,SIM_INDX),I)
+	      dZ(:,:,:,SIM_INDX)=0.0_LDP
 !
 	    END IF	!End_res_zone .and. .not. weak_line
 	  END DO	!SIM_INDX

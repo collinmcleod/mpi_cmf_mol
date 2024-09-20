@@ -32,7 +32,7 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(cmf_rel_dust_qw.o)\
       $(LIB)(derivr.o)\
       $(LIB)(derivs.o)\
-      $(LIB)(drhsdchi_pp.o)\
+      $(LIB)(drhsdchi_pp_mpi_v1.o)\
       $(LIB)(define_grid_v2.o)\
       $(LIB)(define_grid_v2_gam.o)\
       $(LIB)(expn.o)\

@@ -224,7 +224,7 @@ C
 ! Compute slopes in linear-linear plane. These are used to used to ensure
 ! cubic is monotonic in each interval.
 !
-	  DO I=MAX(1,DST-1),MAX(ND-1,DEND)
+	  DO I=MAX(1,DST-1),MIN(ND-1,DEND)
 	    SLOPE(I)=(CHI(I+1)-CHI(I))/(R(I+1)-R(I))
 	  END DO
 	  IF(DEND .EQ. ND .AND. DST .EQ. ND)THEN
@@ -238,7 +238,7 @@ C
 	    dCHIdR(1)=( SIGN(ONE,SLOPE(1))+SIGN(ONE,dCHIdR(1)) )*
 	1            MIN(ABS(SLOPE(1)),0.5_LDP*ABS(dCHIdR(1)))
 	  END IF
-	  DO I=DST,DEND-1
+	  DO I=MAX(2,DST),DEND-1
 	    dCHIdR(I)=( SIGN(ONE,SLOPE(I-1))+SIGN(ONE,SLOPE(I)) )*
 	1            MIN(ABS(SLOPE(I-1)),ABS(SLOPE(I)),0.5_LDP*ABS(dCHIdR(I)))
 	  END DO

@@ -14,8 +14,7 @@ OBJ= $(LIB)(ave_level_energy.o)\
      $(LIB)(colcool_sl_v4.o)\
      $(LIB)(colcool_sl_v5.o)\
      $(LIB)(colcool_sl_mpi_v1.o)\
-     $(LIB)(comp_free_free_v1.o)\
-     $(LIB)(comp_free_free_v2.o)\
+     $(LIB)(comp_free_free_mpi_v1.o)\
      $(LIB)(cut_points_v3.o)\
      $(LIB)(do_h0_ff.o)\
      $(LIB)(ff_res_gaunt.o)\

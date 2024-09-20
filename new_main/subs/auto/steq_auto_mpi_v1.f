@@ -52,15 +52,15 @@
 !
 	REAL(KIND=LDP) HN_F(N_F,DST:DEND)
 	REAL(KIND=LDP) HNST_F(N_F,DST:DEND)
+	REAL(KIND=LDP) DIERECOM(DST:DEND)
+	REAL(KIND=LDP) DIECOOL(DST:DEND)
+!
 	REAL(KIND=LDP) FEDGE_F(N_F)
 	REAL(KIND=LDP) G_F(N_F)
 	CHARACTER*(*) LEVNAME_F(N_F)
 	CHARACTER*(*) AUTO_FILE
 	INTEGER F_TO_S_MAPPING(N_F)
 	LOGICAL COMPUTE_BA
-!
-	REAL(KIND=LDP) DIERECOM(ND)
-	REAL(KIND=LDP) DIECOOL(ND)
 !
 	REAL(KIND=LDP) CHIBF,CHIFF,HDKT,TWOHCSQ
 	COMMON/CONSTANTS/ CHIBF,CHIFF,HDKT,TWOHCSQ
@@ -98,13 +98,15 @@
 	  END DO
 	  IF(IBEG_AUTO .EQ. 0)RETURN
         ELSE IF(FEDGE_F(N_F) .LT. 0.0_LDP)THEN
-          LUER=ERROR_LU()
-          WRITE(LUER,*)' '
-          WRITE(LUER,*)'Warning: possible error in STEQ_AUTO_V1'
-          WRITE(LUER,*)'No autoionization probabilities available'
-          WRITE(LUER,*)'Model has states above the ionization limit'
-          WRITE(LUER,'(A,A)')' AUTO_FILE is ',TRIM(AUTO_FILE)
-          WRITE(LUER,*)' '
+          IF(DST .EQ. 1)THEN
+	    LUER=ERROR_LU()
+            WRITE(LUER,*)' '
+            WRITE(LUER,*)'Warning: possible error in STEQ_AUTO_V1'
+            WRITE(LUER,*)'No autoionization probabilities available'
+            WRITE(LUER,*)'Model has states above the ionization limit'
+            WRITE(LUER,'(A,A)')' AUTO_FILE is ',TRIM(AUTO_FILE)
+            WRITE(LUER,*)' '
+	  END IF
           RETURN
 	ELSE
 	  RETURN
@@ -165,7 +167,7 @@
 	    DO K=IBEG_AUTO,N_F
 	      J=F_TO_S_MAPPING(K)
 	      WRITE(10,'(A,3X,I5)')LEVNAME_F(K),K
-	      WRITE(10,'(8ES16.8)')(AUTO(K)*HNST_F(K,I),AUTO(K)*HN_F(K,I),I=1,ND)
+	      WRITE(10,'(8ES16.8)')(AUTO(K)*HNST_F(K,I),AUTO(K)*HN_F(K,I),I=DST,DEND)
 	      WRITE(10,'(A)')' '
 	    END DO
 	  CLOSE(UNIT=10)

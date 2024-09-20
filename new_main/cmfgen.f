@@ -129,7 +129,7 @@
 	END IF
 	CALL SET_LINE_BUFFERING(LUWARN)
         CALL DATE_TIME(TIME)
-        WRITE(LUER,'(//,'' Model started on:'',15X,(A))')TIME
+        IF(MYPE .EQ. 0)WRITE(LUER,'(//,'' Model started on:'',15X,(A))')TIME
 !
 ! Set constants.
 !
@@ -312,7 +312,7 @@
 	  CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	   STOP
 	ELSE
-	  WRITE(LUER,*)'Set species information in CMFGEN'
+	  IF(MYPE .EQ. 0)WRITE(LUER,*)'Set species information in CMFGEN'
 	END IF
 !
 ! Convert from the abundance on a logarithmic scale with H=12.0 dex, to

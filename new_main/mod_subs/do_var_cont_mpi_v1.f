@@ -26,7 +26,7 @@
 !
 	SUBROUTINE DO_VAR_CONT_MPI_V1(POPS,SECTION,EDDINGTON,
 	1                    FL,CONT_FREQ,FREQ_INDX,FIRST_FREQ,TX_OFFSET,
-	1                    DST,DEND,ND,NC,NP,NUM_BNDS,DIAG_INDX,NT,NM,
+	1                    ND,NC,NP,NUM_BNDS,DIAG_INDX,NT,NM,
 	1                    NDEXT,NCEXT,NPEXT,MAX_SIM,NM_KI)
 	USE SET_KIND_MODULE
 	USE ANG_QW_MOD
@@ -52,7 +52,6 @@
 !
 	INTEGER NUM_BNDS
 	INTEGER DIAG_INDX
-	INTEGER DST,DEND
 	INTEGER ND,NC,NP
 	INTEGER NT
 	INTEGER NM
@@ -309,7 +308,7 @@
 	     CALL VAR_MOM_PP_MPI_V1(R,TA,CHI_CLUMP,CHI_SCAT_CLUMP,FEDD,
 	1           TX,dJ_DIF_d_T,dJ_DIF_d_dTdR,DO_THIS_TX_MATRIX,
 	1           HBC_CMF,NBC_CMF,INBC,
-	1           DIF,DBB,dDBBdT,dTdR,IC,METHOD,COHERENT_ES,DST,DEMD,ND,NM)
+	1           DIF,DBB,dDBBdT,dTdR,IC,METHOD,COHERENT_ES,DST,DEND,ND,NM)
 	   ELSE IF(PLANE_PARALLEL)THEN
 	     CALL PP_VAR_MOM_CMF_V1(TA,CHI_CLUMP,CHI_SCAT_CLUMP,V,SIGMA,R,
 	1           TX,TVX,dJ_DIF_d_T,dJ_DIF_d_dTdR,
@@ -707,15 +706,12 @@
 !
 	CALL TUNE(1,'VAROPAC')
 !	INCLUDE 'VAROPAC_V4.INC'
-	CALL COMP_VAR_OPAC(POPS,RJ,FL,CONT_FREQ,FREQ_INDX,
-	1                SECTION,ND,NT,LST_DEPTH_ONLY)
+	CALL COMP_VAR_OPAC_MPI_V1(POPS,RJ,FL,CONT_FREQ,FREQ_INDX,
+	1                SECTION,NUM_BNDS,ND,NT,LST_DEPTH_ONLY)
 	CALL TUNE(2,'VAROPAC')
 ! 
 !
-! Zero VJ array.
-!
-	CALL DP_ZERO(VJ,NT*NUM_BNDS*ND)
-!
+	VJ=0.0_LDP
 	IF(CONT_VEL)THEN
 !
 ! NB: We no longer include the variation ESEC variation with CHI, but treat it
@@ -737,16 +733,28 @@
 !	  DO X_INDX=4,NM
 !
 	  dJ_LOC=0.0_LDP
-	  DO X_INDX=3,NM
-	    IF(DO_THIS_TX_MATRIX(X_INDX))THEN
-	      DO K=1,ND
-	        DO J=BNDST(K),BNDEND(K)
-	          L=BND_TO_FULL(J,K)
-	          dJ_LOC(X_INDX,J,K)=TX(K,L,X_INDX)
-	        END DO
+	  IF(NUM_BNDS .EQ. 1)THEN
+	    DO X_INDX=3,NM
+	      DO K=DST,DEND
+	        dJ_LOC(X_INDX,DIAG_INDX,K)=TX(K,K,X_INDX)
 	      END DO
-	    END IF
-	  END DO
+	    END DO
+	  ELSE
+	    DO X_INDX=3,NM
+	      IF(DO_THIS_TX_MATRIX(X_INDX))THEN
+	        DO K=DST,DEND
+	          DO J=BNDST(K),BNDEND(K)
+	            L=BND_TO_FULL(J,K)
+	            IF((DEND-L)*(L-DST) .GE. 0)THEN
+	              dJ_LOC(X_INDX,J,K)=TX(K,L,X_INDX)
+	            ELSE
+	              
+	            END IF
+	          END DO
+	        END DO
+	      END IF
+	    END DO
+	  END IF
 !
 ! Compute VJ which gives the variation of J with respect to the atomic
 ! populations. NB: Electron scattering cross-section (6.65D-15) was replaced
@@ -820,7 +828,7 @@
 	    DO J=BNDST(K),BNDEND(K)		!Depth of variable index
 	      L=BND_TO_FULL(J,K)
 	      DO I=1,NT
-	        VJ(I,J,K)=VJ(I,J,K)+1          (F2DA(K,L)*VCHI(I,L)+FC(K,L)*VETA(I,L))
+	        VJ(I,J,K)=VJ(I,J,K)+(F2DA(K,L)*VCHI(I,L)+FC(K,L)*VETA(I,L))
 	      END DO
 	    END DO
 	  END DO
@@ -832,7 +840,7 @@
 !
 	  IF(DIF .AND. ND .EQ. NUM_BNDS)THEN
 	    T1=DBB/DTDR
-	    DO K=DST,END
+	    DO K=DST,DEND
 	      DO I=1,NT-1
 	        VJ(I,NUM_BNDS,K)=VJ(I,NUM_BNDS,K)+FA(K)*T1*DIFFW(I)
 	      END DO

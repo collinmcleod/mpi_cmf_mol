@@ -186,7 +186,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(rd_f_to_s_ids_v4.o)\
       $(LIB)(rd_free_val.o)\
       $(LIB)(rd_log.o)\
-      $(LIB)(rd_sol_abund_scale.o)\
+      $(LIB)(rd_sol_abund_scale_mpi_v1.o)\
       $(LIB)(rd_t_ed.o)\
       $(LIB)(rd_t_ed_v2.o)\
       $(LIB)(rdgendie_v4.o)\
