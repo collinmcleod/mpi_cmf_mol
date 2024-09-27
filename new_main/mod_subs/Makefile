@@ -20,6 +20,7 @@ MOD = $(LIB_MOD)(mod_cmfgen.o)\
       $(LIB_MOD)(gam_mu_mod.o)\
       $(LIB_MOD)(line_mod.o)\
       $(LIB_MOD)(line_vec_mod.o)\
+      $(LIB_MOD)(luminosity_mod.o)\
       $(LIB_MOD)(mod_gamma_trans_v3.o)\
       $(LIB_MOD)(mod_rd_gamray_cntrl_variables.o)\
       $(LIB_MOD)(mod_read_nuc_decay_data_v2.o)\

@@ -106,9 +106,12 @@
 ! We assume that both lines and continuum are ordered from highest to
 ! lowest frequencies.
 !
-	WRITE(6,*)V_DOP
-	WRITE(6,*)OBS_PRO_EXT_RAT
-	WRITE(6,*)VINF
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'V_DOP=',V_DOP
+	  WRITE(6,*)'OBS_PRO_EXT_RAT=',OBS_PRO_EXT_RAT
+	  WRITE(6,*)'VINF=',VINF
+	END IF
+!
 	MAX_B_EXTENT  = 1.0_LDP+(OBS_PRO_EXT_RAT*VINF+3.0_LDP*V_DOP)/C_KMS
 	MAX_R_EXTENT  = 1.0_LDP-(OBS_PRO_EXT_RAT*VINF+3.0_LDP*V_DOP)/C_KMS
 !
@@ -132,10 +135,12 @@
 !
 	MAX_BW_EXTENT = MAX(MAX_BW_EXTENT,MAX_B_EXTENT+2.0_LDP*dV_OBS_BIG/C_KMS)
 !
-	WRITE(6,'(A,2ES10.3,A)')' Maximum red  profile extent is ',MAX_R_EXTENT,(1.0_LDP-MAX_R_EXTENT)*C_KMS,' km/s'
-	WRITE(6,'(A,2ES10.3,A)')' Maximum red  wing    extent is ',MAX_RW_EXTENT,(1.0_LDP-MAX_RW_EXTENT)*C_KMS,' km/s'
-	WRITE(6,'(A,2ES10.3,A)')' Maximum blue profile extent is ',MAX_B_EXTENT,(MAX_B_EXTENT-1.0_LDP)*C_KMS,' km/s'
-	WRITE(6,'(A,2ES10.3,A)')' Maximum blue wing    extent is ',MAX_BW_EXTENT,(MAX_BW_EXTENT-1.0_LDP)*C_KMS,' km/s'
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,'(A,2ES10.3,A)')' Maximum red  profile extent is ',MAX_R_EXTENT,(1.0_LDP-MAX_R_EXTENT)*C_KMS,' km/s'
+	  WRITE(6,'(A,2ES10.3,A)')' Maximum red  wing    extent is ',MAX_RW_EXTENT,(1.0_LDP-MAX_RW_EXTENT)*C_KMS,' km/s'
+	  WRITE(6,'(A,2ES10.3,A)')' Maximum blue profile extent is ',MAX_B_EXTENT,(MAX_B_EXTENT-1.0_LDP)*C_KMS,' km/s'
+	  WRITE(6,'(A,2ES10.3,A)')' Maximum blue wing    extent is ',MAX_BW_EXTENT,(MAX_BW_EXTENT-1.0_LDP)*C_KMS,' km/s'
+	END IF
 !
 ! Spacing in km/s across various parts of the frequency spectrum. NB: These
 ! meanings have changed from version V3.

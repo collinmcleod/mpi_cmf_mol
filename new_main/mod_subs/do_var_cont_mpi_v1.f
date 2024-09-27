@@ -642,7 +642,6 @@
 	        NL=SIM_NL(SIM_INDX)
 	        NUP=SIM_NUP(SIM_INDX)
 	        IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
-!$OMP PARALLEL DO PRIVATE(J,K,OPAC_FAC, EMIS_FAC)
 	          DO J=DST,DEND
 	            OPAC_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*NEG_OPAC_FAC(J)*
 	1               (dL_RAT_dT(J,SIM_INDX)*POPS(NL,J)-GLDGU(SIM_INDX)*dU_RAT_dT(J,SIM_INDX)*POPS(NUP,J))
@@ -705,7 +704,6 @@
 !
 !
 	CALL TUNE(1,'VAROPAC')
-!	INCLUDE 'VAROPAC_V4.INC'
 	CALL COMP_VAR_OPAC_MPI_V1(POPS,RJ,FL,CONT_FREQ,FREQ_INDX,
 	1                SECTION,NUM_BNDS,ND,NT,LST_DEPTH_ONLY)
 	CALL TUNE(2,'VAROPAC')
@@ -776,9 +774,11 @@
 	        IF(ION_ID(1) .EQ. 'HMI')THEN
 	          VJ(2,J,K)=VJ(2,J,K) + CHI_RAY(L)*dj_LOC(5,J,K)/ATM(2)%XzV_F(1,L)
 	        ELSE
-	          VJ(1,J,K)=VJ(1,J,K) + CHI_RAY(L)*dj_LOC(5,J,K)/ATM(1)%XzV_F(1,L)
+	          IF(J .EQ. DIAG_INDX)VJ(1,J,K)=VJ(1,J,K) + CHI_RAY(L)*dj_LOC(5,J,K)/ATM(1)%XzV_F(1,L)
 	        END IF
 	      END IF
+!
+! ***** THE ABOVE USE OF DIAG INDX needs to be FIXED :: URGENT  ***
 !
 ! Now must do line terms.
 !

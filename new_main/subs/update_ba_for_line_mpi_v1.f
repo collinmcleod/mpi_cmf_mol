@@ -149,10 +149,10 @@
 	         FLUSH(UNIT=530+MYPE)
 	       END IF
 	    END IF
-	    IF(MOD(FREQ_INDX,1000) .EQ. 0 .AND. DST .GT. 1)THEN
-	      WRITE(6,*)FREQ_INDX,DST,DEND,FINAL_CONSTANT_CROSS
-	      FLUSH(UNIT=6)
-	    END IF
+!	    IF(MOD(FREQ_INDX,1000) .EQ. 0 .AND. DST .GT. 1)THEN
+!	      WRITE(6,*)FREQ_INDX,DST,DEND,FINAL_CONSTANT_CROSS
+!	      FLUSH(UNIT=6)
+!	    END IF
 !
 ! 
 ! Note that ATM(ID+2)%EQXzV is the ion equation. Since Auger ionization,

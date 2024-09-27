@@ -198,9 +198,7 @@
 !
 	INTEGER IERR
 	INTEGER ERRORCODE
-	INTEGER NTHREAD
 	INTEGER NUM_DEPTHS_PER_THREAD
-	INTEGER MYPE
 	INTEGER DST		!Start depth index for a particular process
 	INTEGER DEND		!End index for a particular process
 !

@@ -52,14 +52,12 @@
 	REAL(KIND=LDP) BIG_LIM,LIT_LIM
 	INTEGER I,J,K,IINC,IDEC,IOS,LU_SUM
 	INTEGER COUNT(7)
-	INTEGER MYPE,IERR
+	INTEGER IERR
 	LOGICAL LOC_WR_BA_INV
 	LOGICAL DO_LEVEL_CHK
 	include 'mpif.h'
 !
 	LUER=ERROR_LU()
-	CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYPE,IERR)
-!
 	CALL SET_CASE_UP(SCALE_OPT,IONE,IZERO)
 	IF(SCALE_OPT(1:5) .NE. 'LOCAL' .AND. SCALE_OPT(1:4) .NE. 'NONE'
 	1   .AND. SCALE_OPT(1:6) .NE. 'GLOBAL'
@@ -69,26 +67,35 @@
 	1          ' MAJOR scaling assumed'
 	END IF
 !
-! Solve for the perturbations. ND: The scaling of BA is now done within
-! CMF_BLKBAND.
+! Solve for the perturbations. ND: The scaling of BA is now done within CMF_XXX_BAND routines.
 !
-	IF(METH_SOL(1:4) .EQ. 'DIAG' .OR. METH_SOL(1:3) .EQ. 'TRI')THEN
-	  CALL TUNE(IONE,'BLKBAND')
+	IF(METH_SOL(1:4) .EQ. 'DIAG')THEN
 !
-! Perform the solution for depth L. The IONE refers to DIAG_INDX, NUM_BNDS,
-! and ND respectively.
-!
+	    CALL TUNE(IONE,'DIAG_BAND')
 	    LOC_WR_BA_INV=WR_BA_INV
 	    IF(LAMBDA_IT)LOC_WR_BA_INV=.FALSE.
-	    CALL CMF_BLKBAND_MPI_V1(SOL_MAT,POPS,METH_SOL,SUCCESS,
+	    CALL CMF_DIAG_BAND_MPI_V1(SOL_MAT,POPS,METH_SOL,SUCCESS,
 	1              DIAG_INDX,NT,NION,NUM_BNDS,DST,DEND,ND,
 	1              BA_COMPUTED,LOC_WR_BA_INV,WR_PRT_INV)
 	    IF(.NOT. SUCCESS)THEN
-	      WRITE(LUER,*)'Error in CMF_BLKBAND_V3 - shutting code down'
+	      WRITE(LUER,*)'Error in CMF_DIAG_BAND_MPI_V1 - shutting code down'
 	      STOP
 	    END IF
+	    CALL TUNE(ITWO,'DIAG_BAND')
 !
-	  CALL TUNE(ITWO,'BLKBAND')
+	ELSE IF( METH_SOL(1:3) .EQ. 'TRI')THEN
+!
+	    CALL TUNE(IONE,'TRI_BAND')
+	    LOC_WR_BA_INV=WR_BA_INV
+	    IF(LAMBDA_IT)LOC_WR_BA_INV=.FALSE.
+	    CALL CMF_TRI_BAND_MPI_V1(SOL_MAT,POPS,METH_SOL,SUCCESS,
+	1              DIAG_INDX,NT,NION,NUM_BNDS,DST,DEND,ND,
+	1              BA_COMPUTED,LOC_WR_BA_INV,WR_PRT_INV)
+	    IF(.NOT. SUCCESS)THEN
+	      WRITE(LUER,*)'Error in CMF_TRI_BAND_MPI_V1 - shutting code down'
+	      STOP
+	    END IF
+	    CALL TUNE(ITWO,'TRI_BAND')
 !
 	ELSE
 	  WRITE(LUER,*)'Error - invalid solution method in SOLVEBA'
@@ -123,7 +130,7 @@
 !
 ! Determine maximum corrections to the 'population parameters', and output summary file:
 !
-	CALL CREATE_CORRECTION_SUM_MPI_V1(SOL_MAT,DECREASE,INCREASE,MAX_dT_COR,DST,DEND,ND,NT)
+	CALL CREATE_CORRECTION_SUM_MPI_V1(SOL_MAT,DECREASE,INCREASE,MAX_dT_COR,IDEC,IINC,DST,DEND,ND,NT)
 !
 	INCREASE_SAVE=INCREASE; DECREASE_SAVE=DECREASE
 	DECREASE=100.0_LDP*DECREASE

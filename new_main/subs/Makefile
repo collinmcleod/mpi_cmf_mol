@@ -26,6 +26,8 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(check_tmin.o)\
       $(LIB)(chk_cool_rates_consist.o)\
       $(LIB)(cmf_blkband_mpi_v1.o)\
+      $(LIB)(cmf_diag_band_mpi_v1.o)\
+      $(LIB)(cmf_tri_band_mpi_v1.o)\
       $(LIB)(create_correction_sum_mpi_v1.o)\
       $(LIB)(create_iv_links_v2.o)\
       $(LIB)(def_new_rg_v1.o)\

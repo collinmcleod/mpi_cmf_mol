@@ -3,6 +3,7 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered 24-Sep-2024:  Added BCD read (and write) option.
 ! Altered 29-Jul-2024:  Added ability to output files directly to a scratch directory.
 ! Altered 16-Dec-2013:  Changed depth index on scratch file from I3.3 to I4.4.
 !                         This was done to allow for clumped models with ND 999.
@@ -48,7 +49,9 @@
 	    WRITE(LUER,*)'IOSTAT=',IOS
 	    STOP
 	  END IF
-	  IF(TYPE .EQ. 'BC')THEN
+	  IF(TYPE .EQ. 'BCD')THEN
+	    READ(LU,IOSTAT=IOS)B,C,D,ROW_SF,COL_SF,POPS,IPIVOT,REPLACE_EQ,ZERO_STEQ
+	  ELSE IF(TYPE .EQ. 'BC')THEN
 	    READ(LU,IOSTAT=IOS)B,C,ROW_SF,COL_SF,POPS,IPIVOT,REPLACE_EQ,ZERO_STEQ
 	  ELSE IF(TYPE .EQ. 'C')THEN
 	    READ(LU,IOSTAT=IOS)C,ROW_SF,COL_SF,POPS,IPIVOT,REPLACE_EQ,ZERO_STEQ
@@ -117,7 +120,9 @@
 	    WRITE(LUER,*)'IOSTAT=',IOS
 	    STOP
 	  END IF
-	  IF(TYPE .EQ. 'BC')THEN
+	  IF(TYPE .EQ. 'BCD')THEN
+	    WRITE(LU,IOSTAT=IOS)B,C,D,ROW_SF,COL_SF,POPS,IPIVOT,REPLACE_EQ,ZERO_STEQ
+	  ELSE IF(TYPE .EQ. 'BC')THEN
 	    WRITE(LU,IOSTAT=IOS)B,C,ROW_SF,COL_SF,POPS,IPIVOT,REPLACE_EQ,ZERO_STEQ
 	  ELSE IF(TYPE .EQ. 'C')THEN
 	    WRITE(LU,IOSTAT=IOS)C,ROW_SF,COL_SF,POPS,IPIVOT,REPLACE_EQ,ZERO_STEQ

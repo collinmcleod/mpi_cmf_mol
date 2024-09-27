@@ -70,6 +70,8 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(root_gatherv_vec_mpi_v1.o)\
       $(LIB)(all_gatherv_vec_mpi_v1.o)\
       $(LIB)(gather_atm_mpi_v1.o)\
+      $(LIB)(gather_partial_vec_mpi_v1.o)\
+      $(LIB)(gather_self_vec_mpi_v1.o)\
       $(LIB)(gather_pops_mpi_v1.o)\
       $(LIB)(gausel.o)\
       $(LIB)(gbf.o)\

@@ -20,12 +20,12 @@ C
 	STRING=' '
 	DO WHILE (INDEX(STRING,'[') .EQ. 0)		!Skip blank lines
 	  READ(LUI,'(A)')STRING
-	  IF (INDEX(STRING,'[') .EQ. 0)WRITE(LUO,'(A)')STRING
+	  IF (INDEX(STRING,'[') .EQ. 0 .AND. MYPE .EQ. 0)WRITE(LUO,'(A)')STRING
 	END DO
 C
 C Check if KEY matches
 C
-	IF( INDEX(STRING,'['//KEY//']') .EQ. 0)THEN	
+	IF( INDEX(STRING,'['//KEY//']') .EQ. 0 .AND. MYPE .EQ. 0)THEN	
 	  WRITE(LUO,*)'Error in RD_LOG - KEY deos not match'
 	  WRITE(LUO,*)'KEY=',KEY
 	  STOP
@@ -35,7 +35,7 @@ C Now read in value
 C
 	READ(STRING,*)VALUE
 C
-	WRITE(LUO,10)VALUE,KEY,A
+	IF(MYPE .EQ. 0)WRITE(LUO,10)VALUE,KEY,A
 10	FORMAT(12X,L1,5X,'[',A,']',T35,A)
 C
 	RETURN
@@ -58,7 +58,7 @@ C
 C
 C Check if KEY matches
 C
-	IF( INDEX(STRING,'['//KEY//']') .EQ. 0)THEN	
+	IF( INDEX(STRING,'['//KEY//']') .EQ. 0 .AND. MYPE .EQ. 0)THEN	
 	  WRITE(LUO,*)'Error in RD_2LOG - KEY deos not match'
 	  WRITE(LUO,*)'KEY=',KEY
 	  STOP
@@ -67,7 +67,7 @@ C
 C Now read in value
 C
 	READ(STRING,*)VALUE1,VALUE2
-	WRITE(LUO,10)VALUE1,VALUE2,KEY,A
+	IF(MYPE .EQ. 0)WRITE(LUO,10)VALUE1,VALUE2,KEY,A
 10	FORMAT(10X,L1,',',L1,5X,'[',A,']',T35,A)
 C
 	RETURN
@@ -84,12 +84,12 @@ C
 	STRING=' '
 	DO WHILE (INDEX(STRING,'[') .EQ. 0)		!Skip blank lines
 	  READ(LUI,'(A)')STRING
-	  IF (INDEX(STRING,'[') .EQ. 0)WRITE(LUO,'(A)')STRING
+	  IF (INDEX(STRING,'[') .EQ. 0 .AND. MYPE .EQ. 0)WRITE(LUO,'(A)')STRING
 	END DO
 C
 C Check if KEY matches
 C
-	IF( INDEX(STRING,'['//KEY//']') .EQ. 0)THEN	
+	IF( INDEX(STRING,'['//KEY//']') .EQ. 0 .AND. MYPE .EQ. 0)THEN	
 	  WRITE(LUO,*)'Error in RD_INT - KEY deos not match'
 	  WRITE(LUO,*)'KEY=',KEY
 	  STOP
@@ -98,7 +98,7 @@ C
 C Now read in value
 C
 	READ(STRING,*)VALUE
-	WRITE(LUO,10)VALUE,KEY,A
+	IF(MYPE .EQ. 0)WRITE(LUO,10)VALUE,KEY,A
 10	FORMAT(5X,I8,5X,'[',A,']',T35,A)
 C
 	RETURN
@@ -121,7 +121,7 @@ C
 C
 C Check if KEY matches
 C
-	IF( INDEX(STRING,'['//KEY//']') .EQ. 0)THEN	
+	IF( INDEX(STRING,'['//KEY//']') .EQ. 0 .AND. MYPE .EQ. 0)THEN	
 	  WRITE(LUO,*)'Error in RD_DBLE - KEY deos not match'
 	  WRITE(LUO,*)'KEY=',KEY
 	  STOP
@@ -130,7 +130,7 @@ C
 C Now read in value
 C
 	READ(STRING,*)VALUE
-	WRITE(LUO,10)VALUE,KEY,A
+	IF(MYPE .EQ. 0)WRITE(LUO,10)VALUE,KEY,A
 10	FORMAT(1X,1PE12.5,5X,'[',A,']',T35,A)
 C
 	END
@@ -153,7 +153,7 @@ C
 C
 C Check if KEY matches
 C
-	IF( INDEX(STRING,'['//KEY//']') .EQ. 0)THEN	
+	IF( INDEX(STRING,'['//KEY//']') .EQ. 0 .AND. MYPE .EQ. 0)THEN	
 	  WRITE(LUO,*)'Error in RD_CHAR - KEY deos not match'
 	  WRITE(LUO,*)'KEY=',KEY
 	  STOP
@@ -162,7 +162,7 @@ C
 C Now set value.
 C
 	VALUE=STRING(1:6)
-	WRITE(LUO,10)VALUE,KEY,A
+	IF(MYPE .EQ. 0)WRITE(LUO,10)VALUE,KEY,A
 10	FORMAT(7X,A6,5X,'[',A,']',T35,A)
 C
 	RETURN
@@ -192,7 +192,7 @@ C
 C Check if KEY matches
 C
 	KEY_LOC=INDEX(STRING,'['//KEY//']')
-	IF(KEY_LOC .EQ. 0)THEN	
+	IF(KEY_LOC .EQ. 0 .AND. MYPE .EQ. 0)THEN	
 	  WRITE(LUO,*)'Error in RD_NCHAR - KEY deos not match'
 	  WRITE(LUO,*)'KEY=',KEY
 	  STOP
@@ -207,7 +207,7 @@ C
 !	  STRING=' '
 !	  STRING(13-K:12)=VALUE
 !	END IF
-	WRITE(LUO,10)STRING(1:MAX(12,K)),KEY,A
+	IF(MYPE .EQ. 0)WRITE(LUO,10)STRING(1:MAX(12,K)),KEY,A
 10	FORMAT(1X,A,5X,'[',A,']',T35,A)
 C
 	RETURN

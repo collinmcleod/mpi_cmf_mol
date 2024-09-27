@@ -325,11 +325,13 @@
 	  END DO
 	  SIG_REV_KMS=SIG_GAU_KMS
 	  IF(L1 .EQ. 0)THEN
+	    IF(MYPE .EQ. 0)THEN
 	      WRITE(LUER,*)' '
 	      WRITE(LUER,*)'Warning in RDPHOT_GEN_V1: ',DESC
 	      WRITE(LUER,*)'Sigma of smoothing Gaussian is unavailable'
 	      WRITE(LUER,*)'Assuming data does not need to be smoothed'
 	      DO_SMOOTHING=.FALSE.
+	    END IF
 	  ELSE
 	    READ(HEAD_STR(J),*)SIG_SM
 	    IF(SIG_SM .GE. 0.9_LDP*SIG_GAU_KMS)THEN

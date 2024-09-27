@@ -20,14 +20,10 @@
 !
 	REAL(KIND=LDP), ALLOCATABLE :: INT_dBdT(:)     	!ND - Int. of dB/dT dv (to calculate ROSSMEAN)
 !
-	REAL(KIND=LDP), ALLOCATABLE :: RLUMST(:)      	!ND - Luminosity as a function of depth
-	REAL(KIND=LDP), ALLOCATABLE :: MECH_LUM(:)     	!ND - Mechanical luminosity
 	REAL(KIND=LDP), ALLOCATABLE :: SOB(:)      	!ND - Used in computing continuum flux
-	REAL(KIND=LDP), ALLOCATABLE :: LLUMST(:)      	!ND - Line luminosity.
-	REAL(KIND=LDP), ALLOCATABLE :: DIELUM(:)      	!ND - Dielectronic line emission luminosity.
-	REAL(KIND=LDP), ALLOCATABLE :: DEP_RAD_EQ(:)    !ND - Integrated departure from radiative equilibrium
-	REAL(KIND=LDP), ALLOCATABLE :: DJDt_FLUX(:)     !ND - DJDT correction to integrated flux.
-	REAL(KIND=LDP), ALLOCATABLE :: DJDt_TERM(:)     !ND -
+	REAL(KIND=LDP), ALLOCATABLE :: dE_DJDt(:)       !ND - DJDT correction to integrated flux.
+	REAL(KIND=LDP), ALLOCATABLE :: DJDt_TERM(:)     !ND - DJDT correction to integrated flux (at each frequency).
+	REAL(KIND=LDP), ALLOCATABLE :: DEP_RAD_EQ(:)    !ND - Integrated departure from radi
 !
 ! Vector giving the MINIMUM Doppler width at each depth.
 !
@@ -122,10 +118,11 @@
 !
 	END MODULE RADIATION_MOD
 !
-	SUBROUTINE SET_RADIATION_MOD(ND,NDMAX,NPMAX)
+	SUBROUTINE SET_RADIATION_MOD(DST,DEND,ND,NDMAX,NPMAX)
 	USE SET_KIND_MODULE
 	USE RADIATION_MOD
 	IMPLICIT NONE
+	INTEGER DST,DEND
 	INTEGER ND,NDMAX,NPMAX
 !
 	INTEGER IOS
@@ -145,15 +142,11 @@
 !
 	IF(IOS .EQ. 0)ALLOCATE ( INT_dBdT(ND),STAT=IOS )  	!Integral of dB/dT over nu (to calculate ROSSMEAN)
 !
-	IF(IOS .EQ. 0)ALLOCATE ( RLUMST(ND),STAT=IOS )		!Luminosity as a function of depth
-	IF(IOS .EQ. 0)ALLOCATE ( MECH_LUM(ND),STAT=IOS )	!Mechanical luminosity
 	IF(IOS .EQ. 0)ALLOCATE ( SOB(ND),STAT=IOS )   		!Used in computing continuum flux
-	IF(IOS .EQ. 0)ALLOCATE ( LLUMST(ND),STAT=IOS )    	!Line luminosity.
-	IF(IOS .EQ. 0)ALLOCATE ( DIELUM(ND),STAT=IOS )    	!Dielectronic line emission luminosity.
-	IF(IOS .EQ. 0)ALLOCATE ( DEP_RAD_EQ(ND),STAT=IOS )    	!Depature from radiative equilibrium.
-	IF(IOS .EQ. 0)ALLOCATE ( DJDt_TERM(ND),STAT=IOS )	!
-	IF(IOS .EQ. 0)ALLOCATE ( DJDt_FLUX(ND),STAT=IOS )    	!DJDt correction to integrated flux.
 	IF(IOS .EQ. 0)ALLOCATE ( VDOP_VEC(ND),STAT=IOS )
+	IF(IOS .EQ. 0)ALLOCATE ( dE_DJDt(DST:DEND),STAT=IOS )    	!DJDt correction to integrated flux.
+	IF(IOS .EQ. 0)ALLOCATE ( DJDt_TERM(DST:DEND),STAT=IOS )    	!DJDt correction to integrated flux.
+	IF(IOS .EQ. 0)ALLOCATE ( DEP_RAD_EQ(DST:DEND),STAT=IOS )
 !
 ! Transfer equation vectors
 !

@@ -462,9 +462,11 @@
 !	1                  VEC_FREQ(ML),VEC_STRT_FREQ(ML),NU(LINE_END_INDX_IN_NU(ML))
 !	END DO
 !
-	WRITE(LUER,'(A,T40,I7)')' Number of line frequencies is:',N_LINE_FREQ
-	WRITE(LUER,'(A,T40,I7)')' Number of frequencies is:',NCF
-	WRITE(LUER,*)' '
+	IF(DST .EQ. 1)THEN
+	  WRITE(LUER,'(A,T40,I7)')' Number of line frequencies is:',N_LINE_FREQ
+	  WRITE(LUER,'(A,T40,I7)')' Number of frequencies is:',NCF
+	  WRITE(LUER,*)' '
+	END IF
 !
 ! Redefine frequency quadrature weights.
 !
@@ -485,7 +487,7 @@
 	  IF(VEC_FREQ(ML) .GT. MIN_CONT_FREQ*(1.0_LDP+1.1_LDP*VINF/2.998E+05_LDP))EXIT
 	END DO
 	I=I-N_LINE_FREQ
-	IF(I .NE. 0)THEN
+	IF(I .NE. 0 .AND. DST .EQ. 1)THEN
 	  WRITE(LUER,*)'Warning from SET_FREQUENCY_GRID'
 	  WRITE(LUER,'(1X,I5,A,A)')I,' weak lines in ',
 	1        'extreme IR will be ignored as outside continuum range.'

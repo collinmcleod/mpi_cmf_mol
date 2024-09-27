@@ -11,13 +11,12 @@ LIB_MOD=$(LIB_DIR)libmod.a
 # Entries for library
 #
 OBJ = $(LIB)(steq_ba_two_phot_rate_mpi_v1.o)\
-      $(LIB)(get_j_for_two_phot.o)\
+      $(LIB)(get_j_for_two_phot_mpi_v1.o)\
       $(LIB)(two_phot_rate.o)\
       $(LIB)(two_phot_rate_mpi_v1.o)\
       $(LIB)(set_two_phot_v2.o)\
       $(LIB)(set_two_phot_v3.o)\
       $(LIB)(set_two_phot_atm_mpi_v1.o)\
-      $(LIB)(set_two_phot_root_mpi_v1.o)\
       $(LIB)(two_phot_opac.o)\
       $(LIB)(two_phot_opac_v3.o)\
       $(LIB)(two_phot_opac_mpi_v1.o)\

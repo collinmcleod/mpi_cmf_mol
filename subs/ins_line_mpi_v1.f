@@ -94,7 +94,7 @@
 	INTEGER I,J,K		!Miscellaneous loop variables.
 	INTEGER LU_ER
 	INTEGER LU
-	INTEGER MYPE,IERR
+	INTEGER IERR
 	REAL(KIND=LDP) C_KMS
 	REAL(KIND=LDP) dNU
 	REAL(KIND=LDP) dNU_NEXT
@@ -110,7 +110,6 @@
 	EXTERNAL ERROR_LU,SPEED_OF_LIGHT
 	INCLUDE 'mpif.h'
 !
-	CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYPE,IERR)
 	C_KMS=1.0E-05_LDP*SPEED_OF_LIGHT()
 	LU_ER=ERROR_LU()
 	CALL GET_VERBOSE_INFO(VERBOSE)
@@ -194,8 +193,10 @@
 !
 	dNU_on_NU=FRAC_DOP*MINVAL(VEC_MIN_VDOP)/C_KMS
 !
-        WRITE(6,*)'In INS_LINE_MPI_V1 FRAC_DOP is',FRAC_DOP
-        WRITE(6,*)'In INS_LINE_MPI_V1 VDop is',MINVAL(VEC_MIN_VDOP)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'In INS_LINE_MPI_V1 FRAC_DOP is',FRAC_DOP
+	  WRITE(6,*)'In INS_LINE_MPI_V1 VDop is',MINVAL(VEC_MIN_VDOP)
+	END IF
 !
 ! To avoid numerical instabilities in the iteration procedure when solving
 ! for the corrections we ensure that the frequencies bracketing a bound-free
@@ -433,7 +434,7 @@
 	    STOP
 	  END IF
 	END DO
-	WRITE(LU_ER,'(1X,A,1PE9.2,A)')
+	IF(MYPE .EQ. 0)WRITE(LU_ER,'(1X,A,1PE9.2,A)')
 	1          'Minimum frequency spacing is:',T1,'km/s'
 !
 ! Test that all lines treated in blanketing mode have LINE_ST_INDX and

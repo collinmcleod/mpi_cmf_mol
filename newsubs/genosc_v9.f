@@ -311,7 +311,7 @@
 ! Check the energy levels are in order.
 !
 	  DO I=2,N
-	   IF(FEDGE(I) .GT. FEDGE(I-1))THEN
+	   IF(FEDGE(I) .GT. FEDGE(I-1) .AND. MYPE .EQ. 0)THEN
 	      WRITE(LUER,*)' '
 	      WRITE(LUER,*)'Warning/error reading in Level Names from '//TRIM(FILNAME)
 	      WRITE(LUER,*)'Energy levels are out of order: levels are:',I-1,I

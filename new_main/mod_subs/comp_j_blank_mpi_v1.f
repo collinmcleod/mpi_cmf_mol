@@ -1,4 +1,4 @@
-!
+!_TERM
 ! Subroutine to compute the mean intensity. This routine replaces
 ! COMP_J_CONT.INC and was developed to faciltate inclusion of additional
 ! options without making CMFGEN_SUB continually larger.
@@ -672,7 +672,7 @@ C
 	         END DO
 	         T1=HFLUX_AT_IB*R(ND)*R(ND)
 	         T2=HFLUX_AT_OB/RJ(1)
-	         CALL OUT_JH(TA,RSQHNU,T1,T2,FL,NCF,R,V,ND,FIRST_FREQ,'NORMAL')
+	         IF(WRITE_JH)CALL OUT_JH(TA,RSQHNU,T1,T2,FL,NCF,R,V,ND,FIRST_FREQ,'NORMAL')
 	       END IF
 	     ELSE IF(PLANE_PARALLEL)THEN
 	       IF(FIRST_FREQ .AND. J_IT_COUNTER .EQ. 0)WRITE(LUER,*)'Calling PP_MOM_CMF_V1'
@@ -712,7 +712,7 @@ C
 	         END DO
 	         T1=HFLUX_AT_IB*R(ND)*R(ND)
 	         T2=HFLUX_AT_OB/RJ(1)
-	         CALL OUT_JH(TA,RSQHNU,T1,T2,FL,NCF,R,V,ND,FIRST_FREQ,'NORMAL')
+	         IF(WRITE_JH)CALL OUT_JH(TA,RSQHNU,T1,T2,FL,NCF,R,V,ND,FIRST_FREQ,'NORMAL')
 	       END IF
 	     ELSE IF(USE_LAM_ES)THEN
 	       IF(FIRST_FREQ .AND. J_IT_COUNTER .EQ. 0)WRITE(LUER,*)'Using USE_LAM_ES instead of solving moment equatons'
@@ -735,7 +735,7 @@ C
 	         END DO
 	         T1=HFLUX_AT_IB*R(ND)*R(ND)
 	         T2=HFLUX_AT_OB/RJ(1)
-	         CALL OUT_JH(TA,RSQHNU,T1,T2,FL,NCF,R,V,ND,FIRST_FREQ,'NORMAL')
+	         IF(WRITE_JH)CALL OUT_JH(TA,RSQHNU,T1,T2,FL,NCF,R,V,ND,FIRST_FREQ,'NORMAL')
 	       END IF
 	     ELSE
 	       IF(FIRST_FREQ .AND. J_IT_COUNTER .EQ. 0)WRITE(LUER,*)'Calling MOM_J_CMF_V11'
@@ -763,7 +763,7 @@ C
 	         END DO
 	         T1=HFLUX_AT_IB*R(ND)*R(ND)
 	         T2=HFLUX_AT_OB/RJ(1)
-	         CALL OUT_JH(TA,RSQHNU,T1,T2,FL,NCF,R,V,ND,FIRST_FREQ,'NORMAL')
+	         IF(WRITE_JH)CALL OUT_JH(TA,RSQHNU,T1,T2,FL,NCF,R,V,ND,FIRST_FREQ,'NORMAL')
 	       END IF
 	     END IF
 	     CALL TUNE(ITWO,'MOM_J_CMF')
@@ -805,7 +805,7 @@ C
 C
 C Output RJ for subsequent iterations.
 C
-	    WRITE(LU_EDD,REC=ACCESS_F)(RJ(I),I=1,ND),FL
+	    IF(MYPE .EQ. 0)WRITE(LU_EDD,REC=ACCESS_F)(RJ(I),I=1,ND),FL
 C
 C Compute K for use in computing mechanical energy loss.
 C
@@ -982,7 +982,7 @@ C
 C
 C Output mean intensity for subsequent iterations.
 C
-	    WRITE(LU_EDD,REC=ACCESS_F)(RJ(I),I=1,ND),FL
+	    IF(MYPE .EQ. 0)WRITE(LU_EDD,REC=ACCESS_F)(RJ(I),I=1,ND),FL
 C
 C Update record for next frequency
 	    ACCESS_F=ACCESS_F+1

@@ -92,7 +92,7 @@ C
 	1            NION,'Total # of ionization stages'
 	  WRITE(LU1,'(1X,I10,T20,A)',ERR=800,IOSTAT=IOS)
 	1            NUM_BANDS,'# of bands'
-	  WRITE(LU1,'(1X,I10,T20,A)',ERR=800,IOSTAT=IOS)
+	  WRITE(LU1,'(1X,2I10,T20,A)',ERR=800,IOSTAT=IOS)
 	1            DST,DEND,'Depth point range'
 !
 ! Output dimesnions of each structure.

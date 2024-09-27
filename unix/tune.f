@@ -67,6 +67,9 @@ C
 	DATA FIRST_TOO_MANY/.TRUE./
 	DATA FIRST_UNMATCHED/.TRUE./
 !
+! We will only get time for process 0
+!
+	IF(MYPE .NE. 0)RETURN
         IF (FIRSTTIME)THEN
           FIRSTTIME=.FALSE.
           DO  I=1,MAX_IDS

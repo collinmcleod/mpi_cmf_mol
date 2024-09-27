@@ -54,9 +54,10 @@
 	LU_OUT=ERROR_LU()
 	IF(COMPUTE_ALL_CROSS .OR. DELV_CONT .EQ. 0)THEN
 	  NU_EVAL(:)=NU(:)
-	  WRITE(LU_OUT,'(A)')' '
-	  WRITE(LU_OUT,'(A)')'The continuum will be evaluated at all',
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LU_OUT,'(/,A)')'The continuum will be evaluated at all',
 	1                        ' frequencies.'
+	  END IF
 	  RETURN
 	END IF
 !
