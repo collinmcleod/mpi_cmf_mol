@@ -90,6 +90,7 @@
 !
 ! Free-free and bound-free opacities.
 !
+	  CALL TUNE(1,'GEN_OPA_ETA')
 	  DO ID=1,NUM_IONS
 	    IF(ATM(ID)%XzV_PRES)THEN
 	      DO J=1,ATM(ID)%N_XzV_PHOT
@@ -103,6 +104,7 @@
 	      END DO
 	    END IF
 	  END DO
+	  CALL TUNE(2,'GEN_OPA_ETA')
 !
 	  IF(ADD_ADDITIONAL_OPACITY)THEN
 	     DO I=DST,DEND
@@ -140,6 +142,7 @@
 !
 ! This section was originaly XOPAC_V4.INC. See that file for erlier corrections.
 !
+	  CALL TUNE(1,'XRAY_FST_OPAC')
 	  IF(XRAYS)THEN
 	    DO ID=1,NUM_IONS
 	      IF(ATM(ID)%XzV_PRES .AND. ATM(ID+1)%XzV_PRES)THEN
@@ -163,9 +166,11 @@
 	      END IF
 	    END DO
 	  END IF
+	  CALL TUNE(2,'XRAY_FST_OPAC')
 !
 ! Compute scattering opacity. ESEC is zeroed in ESOPAC.
 !
+	  CALL TUNE(1,'NEW_COMP_OAPC')
 	  CALL ESOPAC(ESEC,ED,ND)		!Electron scattering emission factor.
 !
 ! Add in Rayleigh scattering contribution.
@@ -186,10 +191,14 @@
 	  CHI(DST:DEND)=CHI(DST:DEND)+CHI_SCAT(DST:DEND)
 !
 	  IF(.NOT. LST_DEPTH_ONLY)THEN
+	    CALL TUNE(1,'ALL_RED_COMP')
 	    CALL MPI_ALLREDUCE(CHI,CHI_C_EVAL,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	    CALL MPI_ALLREDUCE(ETA,ETA_C_EVAL,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	    CALL TUNE(2,'ALL_RED_COMP')
+	    CALL TUNE(1,'IN_RED_COMP')
 	    CALL MPI_ALLREDUCE(MPI_IN_PLACE,CHI_RAY,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	    CALL MPI_ALLREDUCE(MPI_IN_PLACE,CHI_SCAT,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	    CALL TUNE(2,'IN_RED_COMP')
 	  ElSE
 	    CHI_C_EVAL(ND)=CHI(ND)
 	    ETA_C_EVAL(ND)=ETA(ND)
@@ -197,6 +206,7 @@
 !	  
 	  CHI_NOSCAT_EVAL(:)=CHI_NOSCAT(:)
 	  ETA_NOSCAT_EVAL(:)=ETA_NOSCAT(:)
+	  CALL TUNE(2,'NEW_COMP_OAPC')
 !
 	END IF
 !
@@ -256,6 +266,7 @@
 ! The shock emission is added separately since it does not occur at the
 ! local electron temperature.
 !
+	CALL TUNE(1,'XRAY_COMP_OPAC')
 	IF(XRAYS)THEN
 !
 	  ZETA=0.0_LDP
@@ -345,6 +356,7 @@
 	ELSE
 	  ETA_MECH=0.0_LDP
 	END IF
+	CALL TUNE(2,'XRAY_COMP_OPAC')
 !
 ! Set a minimum emissivity. Mainly important when X-rays are not present.
 !
