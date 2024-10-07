@@ -17,7 +17,9 @@ include Makefile_definitions
 # libraries and executables.
 
 all : info d_tools d_blas d_dust d_lpack d_nm_subs d_stark d_unix d_subs d_plane d_newsubs d_pgplt \
-         d_lte d_new_main d_disp d_spec_plt d_obs d_misc
+         d_lte d_new_main d_obs 
+     
+#    d_lte d_new_main d_disp d_spec_plt d_obs d_misc
 
 # We now MAKE the required libraries and executables.
 
@@ -53,10 +55,10 @@ d_lte:
 	(cd lte_hydro; make)
 d_new_main:
 	(cd new_main; make )
-d_disp:
-	(cd disp; make ) 
-d_spec_plt:
-	(cd spec_plt; make )
+#d_disp:
+#	(cd disp; make ) 
+#d_spec_plt:
+#	(cd spec_plt; make )
 d_obs:
 	(cd obs; make )
 d_misc:

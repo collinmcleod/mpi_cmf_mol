@@ -30,17 +30,18 @@ endif
 
 MOD_DIR=$(INSTALL_DIR)mod/
 
-ifeq ($(HOST),'CRC')
+ifeq ($(HOST),'CRCX')
 
 $(info Creating CRC compiler definitions)
 
  F90 = mpif90 -fopenmp -m64
  F90nomp = mpif90 -m64
- FG  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -ffpe-trap=invalid -I$(MOD_DIR) -J$(MOD_DIR)
+# FG  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -ffpe-trap=invalid -I$(MOD_DIR) -J$(MOD_DIR)
  FH  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -I$(MOD_DIR) -J$(MOD_DIR)
-# FG  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments  -ffpe-trap=invalid -fbacktrace -I$(MOD_DIR) -J$(MOD_DIR)
+ FG  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments  -ffpe-trap=invalid -fbacktrace -I$(MOD_DIR) -J$(MOD_DIR)
  FD  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments  -ffpe-trap=invalid -fbacktrace -I$(MOD_DIR) -J$(MOD_DIR)
- FFREE  = -O -fno-backslash -I$(MOD_DIR) -J$(MOD_DIR)
+# FFREE  = -O -fno-backslash -I$(MOD_DIR) -J$(MOD_DIR)
+ FFREE  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
  FFRED  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
 
  BLAS=
@@ -50,3 +51,29 @@ $(info Creating CRC compiler definitions)
  PGLIB=-L$(PGPLOT_DIR) -lpgplot
 
 endif
+
+
+ifeq ($(HOST),'CRC')
+
+$(info Creating CRC compiler definitions)
+
+# F90 = /ihome/crc/install/intel/2020.4/compilers_and_libraries/linux/bin/intel64/ifort -qopenmp  -mkl -pg -traceback -nbs
+ F90 = mpiifort -qopenmp  -mkl -pg -traceback -nbs
+ F90nomp = mpiifort -mkl -pg -traceback   -nbs
+# FG  = -g -O0  -ffpe-trap=invalid -extend_source   -I$(MOD_DIR)  -J$(MOD_DIR)
+ FG  = -O  -extend_source  -O2 -I$(MOD_DIR)
+ FH  = -O -extend_source   -O2  -I$(MOD_DIR)
+ FD  = -g -O0  -ffpe-trap=invalid -extend_source   -I$(MOD_DIR) -J$(MOD_DIR)
+ FFREE  = -O -nbs -extend_source -I$(MOD_DIR)
+# FFREE  = -g -nbs -O0 -I$(MOD_DIR) -extend_source  -J$(MOD_DIR)
+ FFRED  = -g -nbs -O0 -I$(MOD_DIR) -extend_source  -J$(MOD_DIR)
+
+
+ BLAS=
+ LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
+-Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
+ X11LIB=-L/usr/X11R6/lib -lX11
+ PGLIB=-L$(PGPLOT_DIR) -lpgplot
+
+endif
+

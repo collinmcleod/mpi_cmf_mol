@@ -143,11 +143,11 @@
 	        END IF
 	      END DO
 	      CALL TUNE(2,'BA_CONT_UP')
-	      IF(MYPE .LT. 2)THEN
-	         WRITE(530+MYPE,*)SE(1)%BA_PAR(1,1,DST),
-	1         SE(1)%BA_PAR(ATM(1)%NXzV:SE(1)%N_SE,1,DST)
-	         FLUSH(UNIT=530+MYPE)
-	       END IF
+!	      IF(MYPE .LT. 2)THEN
+!	         WRITE(530+MYPE,*)SE(1)%BA_PAR(1,1,DST),
+!	1         SE(1)%BA_PAR(ATM(1)%NXzV:SE(1)%N_SE,1,DST)
+!	         FLUSH(UNIT=530+MYPE)
+!	       END IF
 	    END IF
 !	    IF(MOD(FREQ_INDX,1000) .EQ. 0 .AND. DST .GT. 1)THEN
 !	      WRITE(6,*)FREQ_INDX,DST,DEND,FINAL_CONSTANT_CROSS

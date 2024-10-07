@@ -50,13 +50,13 @@
 ! Altered 24-Oct-1995. GIONC2_S deleted from call.
 !
 	INTEGER ND
+	INTEGER DST,DEND
 	REAL(KIND=LDP) ED(ND)			!Electron density
 	REAL(KIND=LDP) T(ND)			!Temperature 10^4K
 	REAL(KIND=LDP) DIC2_S(DST:DEND)		!Ion density (Super levels)
 	REAL(KIND=LDP) DIC2_F(DST:DEND)		!Ion density (Full model atom)
 	REAL(KIND=LDP) ZC2			!Ion charge
 !
-	INTEGER DST,DEND
 	INTEGER NC2_F
 	REAL(KIND=LDP) C2_F(NC2_F,DST:DEND)
 	REAL(KIND=LDP) C2LTE_F(NC2_F,DST:DEND)

@@ -407,12 +407,12 @@
 	  END DO			!ISPEC
 	  IF(MYPE .EQ. 0)WRITE(6,*)'Set root pops';FLUSH(UNIT=6)
 	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Scatter departure coefficients and ions to all processors.
 !
 	CALL SCATTER_XzV_F_AND_IONS(ND)
 	IF(MYPE .EQ. 0)WRITE(6,*)'Scattered pops';FLUSH(UNIT=6)
-	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! We now need to compute the populations for the model atom with Super-levels.
 ! We do this in reverse order (i.e. highest ionization stage first) in order
@@ -436,7 +436,6 @@
 	1       ROOT(ID+1)%XzV, ATM(ID+1)%NXzV,     ATM(ID+1)%XzV_PRES, IONE, ND)
 	  END DO
 	END IF
-        WRITE(340+MYPE,'(2ES16.8)')(ATM(1)%XzV(I,DST), I=1,10); FLUSH(UNIT=340+MYPE)
 !
 ! Store all quantities in POPS array. This is done here as it enables POPION
 ! to be readily computed. It also ensures that POS is correct if we don't
@@ -451,7 +450,6 @@
 	K=NT*ND
 	CALL MPI_BCAST(POPS,K,MPI_DOUBLE_PRECISION,IZERO,MPI_COMM_WORLD,IERR)
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-        WRITE(340+MYPE,'(2ES16.8)')(POPS(I,5),POPS(I,51), I=1,NT); FLUSH(UNIT=340+MYPE)
 	IF(MYPE .EQ. 0)WRITE(6,*)'Done ION TO POP'
 !
 ! Compute the ion population at each depth.
@@ -642,8 +640,8 @@
 ! Compute the grey temperature structure and the Rosseland optical depth scale.
 ! ROSSMEAN already includes the effect of clumping.
 !
+	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	    CHI(1:ND)=ROSSMEAN(1:ND)
-	    WRITE(LUER,*)'Callng COMP_GREY_V4 in SET_NEW'
 	    CALL COMP_GREY_V4(POPS,TGREY,TA,ROSSMEAN,PLANCKMEAN,COMPUTED,LUER,NC,ND,NP,NT)
 	    IF(.NOT. COMPUTED)THEN
 	      WRITE(LUER,*)'Unable to compute grey temperature structure'
@@ -656,8 +654,10 @@
 !
 ! i.e. TGREY = TGREY . (T/TGREY)_old
 !
+	   CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	   IF(GREY_IOS .EQ. 0)THEN
-	     CALL SCALE_GREY(TGREY,TA,GREY_IOS,LUIN,ND)
+	      CALL SCALE_GREY(TGREY,TA,GREY_IOS,LUIN,ND)
+	      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	   END IF
 !
 ! Now correct T distribution towards grey value. As we don't require the
@@ -688,8 +688,11 @@
 	      T(I)=MAX(T(I),0.95_LDP*T_MIN)
 	      T2=MAX(T3/T(I),T2)
 	    END DO
-	    WRITE(LUER,'('' Largest correction to T in GREY initialization loop is '',ES9.2,'' %'')')100.0*T2
+	    CALL MPI_ALLREDUCE(MPI_IN_PLACE,T2,IONE,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD,IERR)
 	    CALL ALL_GATHERV_VEC_MPI_V1(T,ND)
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(LUER,'('' Largest correction to T in GREY initialization loop is '',ES9.2,'' %'')')100.0*T2
+	    END IF
 !
 ! Now compute non-LTE partition functions. These assume that the
 ! departure coefficients are independent of Temperature. This
@@ -718,9 +721,6 @@
 	1          ATM(ID)%XzV_PRES,ION_ID(ID),TMP_STRING)
 	   END DO
 	   J=DEND-DST+1
-!	   CALL WR2D(U_PAR_FN,J,NUM_IONS,'U_PAR_FUN',240+MYPE); FLUSH(UNIT=240+MYPE)
-!	   CALL WR2D(PHI_PAR_FN,J,NUM_IONS,'PHI_PAR_FUN',245+MYPE); FLUSH(UNIT=240+MYPE)
-!	   CALL WR2D(HIGH_POP,J,NUM_IONS,'PHI_PAR_FUN',250+MYPE); FLUSH(UNIT=240+MYPE)
 !
 ! The non-LTE partition functions are density independent, provided
 ! we assume the departure coefficients remain fixed.
@@ -739,7 +739,6 @@
 ! Recall GAM_SPECIES is set to be the population of the highest ionization
 ! stage.
 !
-	    WRITE(6,*)'Bef EVAL_ED',MYPE,DST,DEND
 	      DO ISPEC=1,NUM_SPECIES
 	        ID=SPECIES_BEG_ID(ISPEC)
 	        J=SPECIES_END_ID(ISPEC)
@@ -823,7 +822,6 @@
 !
 ! For 1st call to FULL_TO_SUP, Last line contains FeX etc as FeXI not installed.
 !
-	    WRITE(6,*)MYPE,'Calling FULL_TO_SUP'
 	    DO ID=NUM_IONS-1,1,-1
 	      CALL FULL_TO_SUP_MPI_V1(
 	1      ATM(ID)%XzV,   ATM(ID)%NXzV,       ATM(ID)%DXzV,      ATM(ID)%XzV_PRES,
@@ -845,14 +843,12 @@
 ! Store all quantities in POPS array. This is done here (rather than
 ! after final iteration) as it enable POPION to be readily computed.
 !
-	    WRITE(6,*)MYPE,'Calling ION_TO_POP'
 	    POPS=0.0_LDP
 	    DO ID=1,NUM_IONS-1
 	      CALL IONTOPOP(POPS, ATM(ID)%XzV, ATM(ID)%DXzV, ED,T,
 	1         ATM(ID)%EQXzV, ATM(ID)%NXzV, NT, DST, DEND,  ND,
 	1         ATM(ID)%XzV_PRES)
 	    END DO
-	    WRITE(6,*)MYPE,'Called ION_TO_POP'
 	    J=ND*NT
 	    CALL MPI_ALLREDUCE(MPI_IN_PLACE,POPS,J,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
@@ -871,7 +867,6 @@
 ! that, for H, He etc that the upper levels with interpolating sequences may not be fully
 ! consistent (due to rounding errors, from another model, etc).
 !
-	    WRITE(6,*)MYPE,'Calling SUP_TO_FULL_V4'
 	    CALL SUP_TO_FULL_V4(POPS,Z_POP,DO_LEV_DISSOLUTION,ND,NT)
 !	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
@@ -880,15 +875,15 @@
 !
 ! Revise ALL LTE populations.
 !
-	    WRITE(6,*)MYPE,'Eval LTE_V5'
 	    CALL EVAL_LTE_V5(DO_LEV_DISSOLUTION,ND)
-	    IF(MYPE .EQ. 0)CALL EVAL_ROOT_LTE_MPI_V1(DO_LEV_DISSOLUTION,ND)
-!	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-!	    CALL MPI_FINALIZE (ierr)
-!	    STOP
+	    IF(MYPE .EQ. 0)THEN
+	      CALL EVAL_ROOT_LTE_MPI_V1(DO_LEV_DISSOLUTION,ND)
+	      WRITE(6,*)'End T iterate',MYPE
+	    END IF
 !
-	END DO		!ITERATE_INIT_T
+	END DO	
 	CALL TUNE(2,'T_ITERATE')
+	WRITE(6,*)'Done iterate',MYPE; FLUSH(UNIT=6)
 !
 	IF(ALLOCATED(U_PAR_FN))THEN
 	  DEALLOCATE (U_PAR_FN,STAT=IOS)
@@ -900,11 +895,12 @@
 !
 	TMP_LOG=.TRUE.
 	CALL WR2D_MPI_V1(ATM(1)%XzVLTE,ATM(1)%NXzV,DST,DEND,ND,'Hyd SL LTEPOP',' ',TMP_LOG,410)
+	IF(MYPE .EQ. 0)WRITE(6,*)'Called WR2D_MPI',MYPE
 !
 ! Restore two photon method option.
 !
 	TWO_PHOTON_METHOD=SAVED_TWO_PHOTON_METHOD
-	IF(MYPE .EQ. 0)WRITE(6,*)'Leaving SET_NEW_MODEL'
+	IF(MYPE .EQ. 0)WRITE(6,*)'Leaving SET_NEW_MODEL'; FLUSH(UNIT=6)
 !
 	RETURN
 	END

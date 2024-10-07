@@ -198,9 +198,8 @@
 !
 	INTEGER IERR
 	INTEGER ERRORCODE
-	INTEGER NUM_DEPTHS_PER_THREAD
-	INTEGER DST		!Start depth index for a particular process
-	INTEGER DEND		!End index for a particular process
+	INTEGER DST			!Start depth index for a particular process
+	INTEGER DEND			!End index for a particular process
 !
 !
 	INTEGER EQNE		!Electron conservation equation

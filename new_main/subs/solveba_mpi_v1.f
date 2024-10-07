@@ -234,7 +234,7 @@
 	    POPS(NT,I)=POPS(NT,I)*(1.0_LDP-SOL_MAT(NT,I)*SCALE)
 	    MINSCALE=MIN(SCALE,MINSCALE)
 	  END DO
-	  WRITE(LUER,'(A,1PE12.4)')' The minimum value of scale for all species is:',MINSCALE
+	  IF(MYPE .EQ. 0)WRITE(LUER,'(A,1PE12.4)')' The minimum value of scale for all species is:',MINSCALE
 !
 !
 	ELSE IF(SCALE_OPT(1:5) .EQ. 'MAJOR')THEN
@@ -262,7 +262,7 @@
 ! Limit the change in T to a maximum of 20%.
 !
 	  SCALE=MIN( 0.2_LDP/MAX_dT_COR,SCALE )
-	  WRITE(LUER,'(A,1PE12.4)')' The value of scale is:',SCALE
+	  IF(MYPE .EQ. 0)WRITE(LUER,'(A,1PE12.4)')' The value of scale is:',SCALE
 	  T1=SCALE
 	  CALL MPI_REDUCE(T1,SCALE,IONE,MPI_DOUBLE_PRECISION,MPI_MAX,IZERO,MPI_COMM_WORLD,IERR)
 !

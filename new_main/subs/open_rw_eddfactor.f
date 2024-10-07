@@ -42,6 +42,7 @@
 !
 	INTEGER IOS
 	INTEGER I,K,J
+	INTEGER IERR
 	INTEGER IREC
 	INTEGER LUER
 	INTEGER ERROR_LU
@@ -49,6 +50,7 @@
 !
 	INTEGER, PARAMETER :: IZERO=0
 	CHARACTER(LEN=11) FILE_DATE
+	include 'mpif.h'
 !
 	ACCESS_F=0
 	LUER=ERROR_LU()
@@ -60,7 +62,7 @@
 ! will contain the date.
 !
 	IF(COMPUTE_EDDFAC)THEN
-	ELSE
+	ELSE IF(MYPE .EQ. 0)THEN
 	  CALL READ_DIRECT_INFO_V3(K,J,FILE_DATE,FILENAME,LU_EDD,IOS)
 	  IF(IOS .NE. 0)THEN
 	    WRITE(LUER,*)'Error --- unable to open ',TRIM(FILENAME),'_INFO -- will compute new f'
@@ -77,7 +79,7 @@
 	  END IF
 	END IF
 !
-	IF(.NOT. COMPUTE_EDDFAC)THEN
+	IF(MYPE .EQ. 0 .AND. .NOT. COMPUTE_EDDFAC)THEN
 	  OPEN(UNIT=LU_EDD,FILE=FILENAME,FORM='UNFORMATTED',
 	1       ACCESS='DIRECT',STATUS='OLD',RECL=RECORD_SIZE,IOSTAT=IOS)
 	  IF(IOS .EQ. 0)THEN
@@ -86,7 +88,7 @@
 	      IF(T1 .EQ. 0.0_LDP .OR. IOS .NE. 0)THEN
 	        WRITE(LUER,'(/,A)')' Warning --- All values not'//
 	1                      ' computed - will compute new F'
-	        WRITE(LUER,'(A)')'Currently trying to read ',TRIM(FILENAME)
+	        WRITE(LUER,'(A)')'Currently trying to read '//TRIM(FILENAME)
 	        COMPUTE_EDDFAC=.TRUE.
 	      END IF
 	    END IF
@@ -97,8 +99,9 @@
 	    COMPUTE_EDDFAC=.TRUE.
 	  END IF
 	END IF
+	I=1; CALL MPI_BCAST(COMPUTE_EDDFAC,I,MPI_LOGICAL,IZERO,MPI_COMM_WORLD,IERR)
 !
-	IF(COMPUTE_EDDFAC)THEN
+	IF(COMPUTE_EDDFAC .AND. MYPE .EQ. 0)THEN
 	  IF(USE_FIXED_J)THEN
 	    WRITE(LUER,'(//,A,/)')'Error in OPEN_RW_EDDFACTOR'
 	    WRITE(LUER,*)'Program will compute new values but this is'//
@@ -106,6 +109,7 @@
 	    WRITE(LUER,*)'Currently trying to read ',TRIM(FILENAME)
 	    WRITE(LUER,*)'You need to set USE_J_FIXED=F or copy over a valid EDDFAC file.'
 	    WRITE(LUER,'(A,//)')' Stopping program'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,2,IERR)
 	    STOP
 	  END IF
 !
@@ -133,6 +137,20 @@
 	1        R,V,LANG_COORD,ND,
 	1        R_EXT,V_EXT,LANG_COORD_EXT,ND_EXT,
 	1        ACCESS_F,FILENAME,LU_EDD)
+	END IF
+!
+! Neede a barrier here to make sure EDDFACTOR has been created by the root process.
+!
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	IF(MYPE .NE. 0)THEN
+	  OPEN(UNIT=LU_EDD,FILE=FILENAME,FORM='UNFORMATTED',ACTION='READ',
+	1       ACCESS='DIRECT',STATUS='OLD',RECL=RECORD_SIZE,IOSTAT=IOS)
+	  IF(IOS .NE. 0)THEN
+	    WRITE(6,*)'Unable to open EDDFACTOR file for non-root processors.'
+	    WRITE(6,*)'MYPE,IOS=',MYPE,IOS
+	    STOP
+	  END IF 
+	  IF(COMPUTE_EDDFAC)ACCESS_F=INITIAL_ACCESS_REC
 	END IF
 !
 	RETURN

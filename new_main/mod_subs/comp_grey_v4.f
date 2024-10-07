@@ -87,8 +87,6 @@
 !
 	COMPUTED=.TRUE.
 	LUWARN=WARNING_LU()
-	WRITE(LUWARN,'(/,A,3I6)')' Begin COMP_GREY_V4',ND,NC,NP
-	WRITE(LUER,'(/,A,3I6)')' Begin COMP_GREY_V4',ND,NC,NP
 	PI=4.0_LDP*ATAN(1.0_LDP)
 	CHI(1:ND)=ROSSMEAN(1:ND)
 !
@@ -148,15 +146,17 @@
 	     NEW_FREQ=.FALSE.
 	   END DO
 !
-	   OPEN(UNIT=7,FILE='GREY_CHK',STATUS='UNKNOWN')
-	     WRITE(7,'(A)')
-	     WRITE(7,'(A)')'Check for plane-parallel grey atmosphere calculation'
-	     WRITE(7,'(A)')
-	     WRITE(7,'(4X,A,5(11X,A))')'I','    R','    J','Ray J','    f','  Tau'
-	     DO I=1,ND
-	       WRITE(7,'(1X,I4,5(ES16.6))')I,R(I),RJ(I),TC(I),GAMH(I),TAU_ROSS(I)
-	     END DO
-	   CLOSE(UNIT=7)
+	   IF(MYPE .EQ. 0)THEN
+	     OPEN(UNIT=7,FILE='GREY_CHK',STATUS='UNKNOWN')
+	       WRITE(7,'(A)')
+	       WRITE(7,'(A)')'Check for plane-parallel grey atmosphere calculation'
+	       WRITE(7,'(A)')
+	       WRITE(7,'(4X,A,5(11X,A))')'I','    R','    J','Ray J','    f','  Tau'
+	       DO I=1,ND
+	         WRITE(7,'(1X,I4,5(ES16.6))')I,R(I),RJ(I),TC(I),GAMH(I),TAU_ROSS(I)
+	       END DO
+	     CLOSE(UNIT=7)
+	  END IF
 !
 	ELSE IF(JGREY_WITH_V_TERMS)THEN
 !

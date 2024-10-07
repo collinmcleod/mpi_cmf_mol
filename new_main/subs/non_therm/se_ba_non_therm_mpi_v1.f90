@@ -40,7 +40,7 @@
 	REAL(KIND=LDP) ION_EXC_EN
 	REAL(KIND=LDP) SCALE
 	REAL(KIND=LDP) GUPPER
-	REAL(KIND=LDP) T1_SUM(DST:DEND),T2_SUM(ND)
+	REAL(KIND=LDP) T1_SUM(1:ND),T2_SUM(ND)
 !
 	INTEGER ID
 	INTEGER ISPEC
@@ -257,37 +257,39 @@
 	CALL MPI_REDUCE(MPI_IN_PLACE,T1_SUM,ND,MPI_DOUBLE_PRECISION,MPI_SUM,IZERO,MPI_COMM_WORLD,IERR)
 	CALL MPI_REDUCE(MPI_IN_PLACE,T2_SUM,ND,MPI_DOUBLE_PRECISION,MPI_SUM,IZERO,MPI_COMM_WORLD,IERR)
 !
-        OPEN(UNIT=LU_TH,FILE='NON_THERM_SPEC_INFO',STATUS='UNKNOWN',POSITION='APPEND')
-	  WRITE(LU_TH,*)''
-	  WRITE(LU_TH,'(X,A5,6(A12))')'Depth','Ne(NT)','Ne','Ne(NT)/Ne','Ek(NT)','Ek','Ek(NT)/Ek'
-	  DO DPTH_INDX=DST,DEND
-	    WRITE(LU_TH,'(X,I5,6ES12.4)')DPTH_INDX,T1_SUM(I),ED(DPTH_INDX),T1_SUM(I)/ED(DPTH_INDX),             &
+	IF(MYPE .EQ. 0)THEN
+          OPEN(UNIT=LU_TH,FILE='NON_THERM_SPEC_INFO',STATUS='UNKNOWN',POSITION='APPEND')
+	    WRITE(LU_TH,*)''
+	    WRITE(LU_TH,'(X,A5,6(A12))')'Depth','Ne(NT)','Ne','Ne(NT)/Ne','Ek(NT)','Ek','Ek(NT)/Ek'
+	    DO DPTH_INDX=DST,DEND
+	      WRITE(LU_TH,'(X,I5,6ES12.4)')DPTH_INDX,T1_SUM(I),ED(DPTH_INDX),T1_SUM(I)/ED(DPTH_INDX),             &
 	                             T2_SUM(I),1.5_LDP*8.617343E-5_LDP*ED(DPTH_INDX)*T(DPTH_INDX)*1.0E4_LDP,   &
 	                             T2_SUM(I)/(1.5_LDP*8.617343E-5_LDP*ED(DPTH_INDX)*T(DPTH_INDX)*1.0E4_LDP)
-	  END DO
+	    END DO
 !
-	  WRITE(LU_TH,'(//,A)')'Comparison of heating fractions (SE as evaluated in SE_BA_NON_THERM)'
-	  WRITE(LU_TH,'(//,A,9(3X,A))')       &
+	    WRITE(LU_TH,'(//,A)')'Comparison of heating fractions (SE as evaluated in SE_BA_NON_THERM)'
+	    WRITE(LU_TH,'(//,A,9(3X,A))')       &
 	            '  Fe_nuc(eV)','    Felec','Felec(SE)','     Fion',' Fion(SE)','     Fexc',' Fexc(SE)', &
 	            '  E_ion  ','  E_exc  ','  E_cool '
-	  DO I=DST,DEND
-	  IF(WRK_EDEP_eV(I) .NE. 0.0_LDP)THEN
-	    T2=Hz_TO_eV*LOCAL_ION_HEATING(I)/WRK_EDEP_eV(I)
-	    T3=Hz_TO_eV*LOCAL_EXC_HEATING(I)/WRK_EDEP_eV(I)
-	  ELSE
-	    T2=0.0_LDP
-	    T3=0.0_LDP
-	  END IF
-	  T1=(1.0_LDP-T2-T3)
-	  WRITE(LU_TH,'(ES12.4,9(ES12.4))')WRK_EDEP_eV(I),        &
-	               FRAC_ELEC_HEATING(I),T1,         &
-	               FRAC_ION_HEATING(I),T2,          &
-	               FRAC_EXCITE_HEATING(I),T3, &
-	               Hz_TO_eV*LOCAL_ION_HEATING(I),Hz_TO_eV*LOCAL_EXC_HEATING(I), &
-	               Hz_TO_eV*LOCAL_ION_HEATING(I)+Hz_TO_eV*LOCAL_EXC_HEATING(I)
-	END DO
-	CLOSE(LU_TH)
-	WRITE(6,*)'Scale factor is ',DEC_NRG_SCL_FAC
+	    DO I=DST,DEND
+	    IF(WRK_EDEP_eV(I) .NE. 0.0_LDP)THEN
+	      T2=Hz_TO_eV*LOCAL_ION_HEATING(I)/WRK_EDEP_eV(I)
+	      T3=Hz_TO_eV*LOCAL_EXC_HEATING(I)/WRK_EDEP_eV(I)
+	    ELSE
+	      T2=0.0_LDP
+	      T3=0.0_LDP
+	    END IF
+	    T1=(1.0_LDP-T2-T3)
+	    WRITE(LU_TH,'(ES12.4,9(ES12.4))')WRK_EDEP_eV(I),        &
+	                 FRAC_ELEC_HEATING(I),T1,         &
+	                 FRAC_ION_HEATING(I),T2,          &
+	                 FRAC_EXCITE_HEATING(I),T3, &
+	                 Hz_TO_eV*LOCAL_ION_HEATING(I),Hz_TO_eV*LOCAL_EXC_HEATING(I), &
+	                 Hz_TO_eV*LOCAL_ION_HEATING(I)+Hz_TO_eV*LOCAL_EXC_HEATING(I)
+	  END DO
+	  CLOSE(LU_TH)
+	  WRITE(6,*)'Scale factor is ',DEC_NRG_SCL_FAC
+	END IF
 !
 	RETURN
 	END

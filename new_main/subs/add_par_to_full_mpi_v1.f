@@ -38,15 +38,6 @@
 	    DO IV=1,SE(ID)%N_IV
 	      DO IS=1,SE(ID)%N_SE
 	         SE(ID)%BA(IS,IV,DIAG_INDX,K)=SE(ID)%BA(IS,IV,DIAG_INDX,K) + SE(ID)%BA_PAR(IS,IV,K)
-	      END DO
-	    END DO
-	  END DO
-	END DO
-!
-	DO ID=1,NION
-	  DO K=DST,DEND
-	    DO IV=1,SE(ID)%N_IV
-	      DO IS=1,SE(ID)%N_SE
 	         SE(ID)%BA_PAR(IS,IV,K)=0.0_LDP
 	      END DO
 	    END DO

@@ -52,13 +52,21 @@
 !
 	INTEGER J,L,ML
 	INTEGER NL,NUP
+	LOGICAL, SAVE :: FIRST=.TRUE.
 !
 	PI=4.0_LDP*ATAN(1.0_LDP)
 	LUER=ERROR_LU()
-	IF(TWO_METHOD .NE. TWO_PHOTON_METHOD)THEN
-	  TWO_METHOD=TWO_PHOTON_METHOD
-	  WRITE(LUER,*)'Using ',TRIM(TWO_METHOD),' method for two-photon decay'
+	IF(N_TWO .EQ. 0 .AND. FIRST)THEN
+	  IF(MYPE .EQ. 0)WRITE(6,*)'Two photon processes switched off'
+	  FIRST=.FALSE.
+	  RETURN
 	END IF
+	IF(TWO_METHOD .NE. TWO_PHOTON_METHOD .AND. FIRST)THEN
+	  TWO_METHOD=TWO_PHOTON_METHOD
+	  IF(MYPE .EQ. 0)WRITE(LUER,*)'Using ',TRIM(TWO_METHOD),' method for two-photon decay'
+	  FIRST=.FALSE.
+	END IF
+	FIRST=.FALSE.
 !
 ! The factor 10^10 arises since R is units of 10^10cm, and we
 ! scale CHI (and ETA) so that R.CHI is dimensionless, and

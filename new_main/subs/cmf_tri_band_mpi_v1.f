@@ -182,6 +182,7 @@
         REAL(KIND=LDP), ALLOCATABLE :: B_MAT(:,:,:)
         REAL(KIND=LDP), ALLOCATABLE :: C_MAT(:,:,:)
         REAL(KIND=LDP), ALLOCATABLE :: D_MAT(:,:,:)
+        REAL(KIND=LDP), ALLOCATABLE :: RUB(:,:)
 !
         REAL(KIND=LDP), ALLOCATABLE :: ORIG_POPS(:,:)
         REAL(KIND=LDP), ALLOCATABLE :: OLD_EST(:,:)
@@ -240,6 +241,7 @@
 	ALLOCATE (B_MAT(N,N,DST:DEND),STAT=IOS)
         IF(IOS .EQ. 0)ALLOCATE (C_MAT(N,N,DST:DEND),STAT=IOS)
         IF(IOS .EQ. 0)ALLOCATE (D_MAT(N,N,DST:DEND),STAT=IOS)
+        IF(IOS .EQ. 0)ALLOCATE (RUB(N,N),STAT=IOS)
         IF(IOS .EQ. 0)ALLOCATE (COL_SF(N,DST:DEND),STAT=IOS)
         IF(IOS .EQ. 0)ALLOCATE (ROW_SF(N,DST:DEND),STAT=IOS)
         IF(IOS .EQ. 0)ALLOCATE (IPIVOT(N,DST:DEND),STAT=IOS)
@@ -260,26 +262,29 @@
              STOP
           END IF
 !
-! Don't need D_MAT -- just the STEQ array.
-!
+	  USE_PASSED_REP=.TRUE.
 	  DO K=DST,DEND
 	    IF(K .EQ. ND)LAST_MATRIX=.TRUE.
 	    DEPTH_INDX=K
+!
+! Read in LU decompostion of C, and the original BD matrices. This must be done before the
+! call to GENERATE sice we need REPALCE_EQ and ZERO_STEQ.
+!
+	    OUT_TYPE='BCD'
+            CALL READ_BCD_MAT(B_MAT(:,:,K),C_MAT(:,:,K),D_MAT(:,:,K),ROW_SF(:,K),COL_SF(:,K),
+	1          IPIVOT(:,K),ORIG_POPS(:,K),REPLACE_EQ(:,K),ZERO_STEQ(:,K),
+	1          N,NION,DEPTH_INDX,OUT_TYPE)
+!
+! Don't need D_MAT -- just the STEQ array.
+!
 	    CALL GENERATE_FULL_MATRIX_V3(
-	1         D_MAT,STEQ(1,K),POPS,REPLACE_EQ,ZERO_STEQ,
+	1         RUB,STEQ(1,K),POPS,REPLACE_EQ(:,K),ZERO_STEQ(:,K),
 	1         N,ND,NION,NUM_BNDS,
 	1         DIAG_INDX,DIAG_INDX,DEPTH_INDX,
 	1         FIRST_MATRIX,LAST_MATRIX,USE_PASSED_REP)
 	     FIRST_MATRIX=.FALSE.
 !
 	     STEQ_STORE(:,K)=STEQ(:,K)
-!
-! Read in LU decompostion of C, and the original BD matrices.
-!
-	     OUT_TYPE='BCD'
-             CALL READ_BCD_MAT(B_MAT(:,:,K),C_MAT(:,:,K),D_MAT(:,:,K),ROW_SF(:,K),COL_SF(:,K),
-	1          IPIVOT(:,K),ORIG_POPS(:,K),REPLACE_EQ(:,K),ZERO_STEQ(:,K),
-	1          N,NION,DEPTH_INDX,OUT_TYPE)
 	  END DO
 	ELSE
 !
@@ -424,7 +429,7 @@
 	CALL WR2D_GATH_MPI_V1(STEQ_STORE,N,DST,DEND,ND,'STEQ_ARRAY','*',L_TRUE,16)
 	FLAG=.TRUE.
 !
-	DEALLOCATE (B_MAT,C_MAT,D_MAT)
+	DEALLOCATE (B_MAT,C_MAT,D_MAT,RUB)
 	DEALLOCATE(OLD_EST,IPIVOT,COL_SF,ROW_SF)
 	IF(ALLOCATED(ORIG_POPS))DEALLOCATE (ORIG_POPS)
 !

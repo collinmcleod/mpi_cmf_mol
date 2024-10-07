@@ -41,7 +41,7 @@ C
 	LUER=ERROR_LU()
 	IF(SCRATCH_DIR .EQ. 'GARBAGE')THEN
 	  CALL GET_ENVIRONMENT_VARIABLE('SCRATCH_DIR',SCRATCH_DIR)
-	  IF(SCRATCH_DIR .NE. ' ')WRITE(LUER,*)'Scratch directory is: ',TRIM(SCRATCH_DIR)
+	  IF(SCRATCH_DIR .NE. ' ' .AND. MYPE .EQ. 0)WRITE(LUER,*)'Scratch directory is: ',TRIM(SCRATCH_DIR)
 	END IF
 C
 C Indicate in pointer file that BA and STEQ are currently being written.
@@ -92,8 +92,10 @@ C
 	1            NION,'Total # of ionization stages'
 	  WRITE(LU1,'(1X,I10,T20,A)',ERR=800,IOSTAT=IOS)
 	1            NUM_BANDS,'# of bands'
-	  WRITE(LU1,'(1X,2I10,T20,A)',ERR=800,IOSTAT=IOS)
-	1            DST,DEND,'Depth point range'
+	  WRITE(LU1,'(1X,I10,T20,A)',ERR=800,IOSTAT=IOS)
+	1            DST,'Depth point start'
+	  WRITE(LU1,'(1X,I10,T20,A)',ERR=800,IOSTAT=IOS)
+	1            DEND,'Depth point end'
 !
 ! Output dimesnions of each structure.
 !

@@ -25,6 +25,7 @@ MOD = $(LIB_MOD)(mod_cmfgen.o)\
       $(LIB_MOD)(mod_rd_gamray_cntrl_variables.o)\
       $(LIB_MOD)(mod_read_nuc_decay_data_v2.o)\
       $(LIB_MOD)(mod_lev_dis_blk.o)\
+      $(LIB_MOD)(mpi_err_check.o)\
       $(LIB_MOD)(nuc_iso_mod.o)\
       $(LIB_MOD)(opac_mod.o)\
       $(LIB_MOD)(radiation_mod.o)\
