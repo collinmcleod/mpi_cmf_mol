@@ -199,10 +199,12 @@
 	  P_GELEC(I)=g_ELEC
 	  P_GTOT(I)=g_TOT
 !
+! Using ES13.6 rather than 1X,ES12.6 avoids an intel warning.
+!
 	  IF(R .GT. 9.99E+04_LDP)THEN
-	    FMT='(1X,ES12.6,ES13.4,F9.2,6(ES14.4),2F11.2)'
+	    FMT='(ES13.6,ES13.4,F9.2,6(ES14.4),2F11.2)'
 	  ELSE
-	    FMT='(1X,F12.6,ES13.4,F9.2,6(ES14.4),3F11.3)'
+	    FMT='(F13.6,ES13.4,F9.2,6(ES14.4),3F11.3)'
 	  END IF
 	  WRITE(LU_OUT,FMT)R,V,E,VdVdR,dPdR,dTPdR,g_TOT,g_RAD,g_ELEC,Gamma,MT,E_ON_GRAD
 	END DO

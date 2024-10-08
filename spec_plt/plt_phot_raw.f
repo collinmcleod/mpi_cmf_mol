@@ -551,7 +551,7 @@
                 ICOUNT=ICOUNT+1
 	        INDX_1=J
 	        EDGE=ENERGY_1(INDX_1)
-	        WRITE(6,'(4X,A,A,T40,ES10.4)')'Level name/energy is: ',TRIM(NAME_1(INDX_1)),EDGE
+	        WRITE(6,'(4X,A,A,T40,ES11.4)')'Level name/energy is: ',TRIM(NAME_1(INDX_1)),EDGE
 	        IF(TYPE_1(INDX_1) .GE. 20 .AND. TYPE_1(INDX_1) .LE. 23)THEN
 	          NV=NUM_VALS_1(INDX_1)
 	          XV(1:NV)=NU_1(LOC_1(INDX_1):LOC_1(INDX_1)+NV-1)
@@ -679,7 +679,7 @@
 	    TEMP=1.0_LDP
 	    CALL GEN_IN(TEMP,'Temperature in 10^4K')
 	    IF(TEMP .NE. 0)THEN
-	      WRITE(6,'(A,ES10.4,3X,A,F5.1,3X,A,F4.1,3X,A,I6,3X,A,F6.2)')
+	      WRITE(6,'(A,ES11.4,3X,A,F5.1,3X,A,F4.1,3X,A,I6,3X,A,F6.2)')
 	1        ' EDGE=',EDGE,'g=',STAT_WEIGHT,'gion=',GION_1,'NV=',NV,'T(10^K)=',TEMP
 	      T1=EDGE+EXC_EN_1
 	      CALL RECOM_OPAC_V2(YV,XV,T1,FREQ_SCL_FAC,STAT_WEIGHT,GION_1,NV,NV,TOTAL_REC,TEMP)

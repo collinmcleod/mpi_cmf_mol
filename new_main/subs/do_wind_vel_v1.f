@@ -259,13 +259,13 @@ CONTAINS
 	WRITE(6,'(A,T40,A)')' Number of depth points set is:',TRIM(ADJUSTL(STRING))
 	WRITE(STRING,'(I4)')ND
 	WRITE(6,'(A,T40,A)')' Sarting depth for integration is: ',TRIM(ADJUSTL(STRING))
-	WRITE(STRING,'(ES12.6)')RSTAR
+	WRITE(STRING,'(ES13.6)')RSTAR
 	WRITE(6,'(A,T40,A)')'     Stellar  radius is: ',TRIM(ADJUSTL(STRING))
-	WRITE(STRING,'(ES12.6)')RSOUND
+	WRITE(STRING,'(ES13.6)')RSOUND
 	WRITE(6,'(A,T40,A)')'     Critical radius is: ',TRIM(ADJUSTL(STRING))
-	WRITE(STRING,'(ES12.6)')R_OLD(ND)
+	WRITE(STRING,'(ES13.6)')R_OLD(ND)
 	WRITE(6,'(A,T40,A)')'   Connection radius is: ',TRIM(ADJUSTL(STRING))
-	WRITE(STRING,'(ES12.6)')V_OLD(ND)
+	WRITE(STRING,'(ES13.6)')V_OLD(ND)
 	WRITE(6,'(A,T40,A)')' Connection velocity is: ',TRIM(ADJUSTL(STRING))
 !
 ! Change R to normalized coordinates.

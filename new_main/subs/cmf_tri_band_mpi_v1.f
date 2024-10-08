@@ -19,6 +19,7 @@
 	1                  DIAG_INDX,N,NION,NUM_BNDS,DST,DEND,ND,
 	1                  BA_COMPUTED,WR_BA_INV,WR_PRT_INV)
 	USE SET_KIND_MODULE
+	USE MPI
 	IMPLICIT NONE
 !
 ! Created 24-Sep-2023: Based on CMF_BLK_BAND_V3
@@ -218,7 +219,8 @@
 !
 	INTEGER LUER,ERROR_LU
 	EXTERNAL ERROR_LU
-	INCLUDE 'mpif.h'
+!
+!	INCLUDE 'mpif.h'
 !
 	LUER=ERROR_LU()
 !

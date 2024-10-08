@@ -5,6 +5,7 @@
 !
 	SUBROUTINE GATHER_MAT_TO_ROOT_MPI_V1(IN_MAT,DIM1,DIM2,OUT_MAT,N,ND)
 	USE SET_KIND_MODULE
+	USE MPI
 	IMPLICIT NONE
 !
 	INTEGER DIM1,DIM2,N,ND
@@ -13,15 +14,13 @@
 	INTEGER, ALLOCATABLE, SAVE :: SCAT_DISP(:)
 	INTEGER, ALLOCATABLE, SAVE :: SCAT_SIZE(:)
 !
-	INTEGER DST
+	INTEGER DST,DEND
 	INTEGER IERR
 	INTEGER SEND_SIZE
 	INTEGER NUM_DEPTHS_PER_THREAD
 	INTEGER, PARAMETER :: IZERO=0
 !
-	include 'mpif.h'
-!
-!
+!	include 'mpif.h'
 !
 ! If the send size is the same for all threads, we use the simpler gather.
 !
@@ -43,6 +42,7 @@
 ! Work out send size and displacements if just sending a vector of length ND.
 ! We the multiply by N.
 !
+	  CALL SET_DST_DEND(DST,DEND,ND,NTHREAD,MYPE)
 	  CALL SET_IDISP_ISEND(SCAT_DISP,SCAT_SIZE,ND,NTHREAD)
 	  SCAT_DISP=SCAT_DISP*N
 	  SCAT_SIZE=SCAT_SIZE*N

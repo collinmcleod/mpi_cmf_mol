@@ -245,7 +245,7 @@
 	  END IF
 !
 	  WRITE(6,*)' '
-	  WRITE(6,'(A,ES9.3,5X,A,E9.3,/)')' TAU(Min)=',OLD_TAU(1),'TAU(Max)=',OLD_TAU(ND)
+	  WRITE(6,'(A,ES10.3,5X,A,E10.3,/)')' TAU(Min)=',OLD_TAU(1),'TAU(Max)=',OLD_TAU(ND)
 	  WRITE(6,*)' '
 	  WRITE(6,*)'You may do multiple intervals -- one at a time'
 	  WRITE(6,*)'To exit, put TAU_MIN -ve (or zero)'
@@ -256,7 +256,7 @@
 	  IF(TAU_MIN .LT. OLD_TAU(1) .OR. TAU_MIN .GT. OLD_TAU(ND))THEN
 	    WRITE(6,'(A)')RED_PEN
 	    WRITE(6,*)'Error -- requested TAU_MIN is outside valid range'
-	    WRITE(6,'(A,ES9.3,5X,A,E9.3,/)')' TAU(Min)=',OLD_TAU(1),'TAU(Max)=',OLD_TAU(ND)
+	    WRITE(6,'(A,ES10.3,5X,A,E10.3,/)')' TAU(Min)=',OLD_TAU(1),'TAU(Max)=',OLD_TAU(ND)
 	    WRITE(6,'(A)')DEF_PEN
 	    GOTO 1000
 	  END IF
@@ -267,7 +267,7 @@
 	    IF(TAU_MAX .LT. OLD_TAU(1) .OR. TAU_MAX .GT. OLD_TAU(ND))THEN
 	      WRITE(6,'(A)')RED_PEN
 	      WRITE(6,*)'Error -- requested TAU_MIN is outside valid range'
-	      WRITE(6,'(A,ES9.3,5X,A,E9.3,/)')' TAU(Min)=',OLD_TAU(1),'TAU(Max)=',OLD_TAU(ND)
+	      WRITE(6,'(A,ES10.3,5X,A,ES10.3,/)')' TAU(Min)=',OLD_TAU(1),'TAU(Max)=',OLD_TAU(ND)
 	      WRITE(6,'(A)')DEF_PEN
 	      GOTO 2000
 	    END IF

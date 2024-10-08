@@ -4,6 +4,7 @@
 !
 	SUBROUTINE WR2D_GATH_MPI_V1(A,N,DST,DEND,ND,MES,SYMB,WR_INDEX,LU)
 	USE SET_KIND_MODULE
+	USE MPI
 	IMPLICIT NONE
 !
 ! Altered 10-Feb-2002: SYMB installed as pass option
@@ -31,7 +32,8 @@
 !
 	INTEGER K
 	INTEGER IERR
-	include 'mpif.h'
+!
+!	include 'mpif.h'
 !
 	IF(MYPE .EQ. 0)ALLOCATE(MAT(N,ND))
 	IF(. NOT. ALLOCATED(SCAT_DISP))THEN

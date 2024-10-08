@@ -39,7 +39,7 @@
 	SUBROUTINE RD_OPTIONS_INTO_STORE(LU_IN,LU_OUT)
 	USE SET_KIND_MODULE
 	USE RD_VAR_MOD
-!	USE MPI
+	USE MPI
 	IMPLICIT NONE
 !
 ! Altered: 10-Apr-2009: Now stop code if find inconsistency in presence of '[''s.
@@ -49,7 +49,8 @@
 	INTEGER I,J
 	INTEGER ERROR_LU
 	EXTERNAL ERROR_LU
-	include 'mpif.h'
+!
+!	include 'mpif.h'
 !
 	LUER=ERROR_LU()
 	LUO=LU_OUT
@@ -584,8 +585,8 @@
 !
 	SUBROUTINE MY_MPI_ABORT
 	USE RD_VAR_MOD
+	USE MPI
 	IMPLICIT NONE
-	include 'mpif.h'
 	CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	STOP
 	END

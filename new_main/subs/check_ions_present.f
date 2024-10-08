@@ -246,7 +246,7 @@
 	           WRITE(LUWARN,'(A,A,/,A)')' NB: If XzV needs to be included it will also be necessary to',
 	1                             ' include XzIV, as this was',
 	1                             '      only included as the ground state.'
-	           WRITE(LUWARN,'(A,1X,A,I3,A,ES10.4,A,ES10.4)')' Parameters at check depth:',
+	           WRITE(LUWARN,'(A,1X,A,I3,A,ES11.4,A,ES10.4)')' Parameters at check depth:',
 	1	          'Depth=',DPTH_INDX,'   T=',T_VAL,'   ED=',ED_VAL
 	           FIRST_TIME=.FALSE.
 	         END IF

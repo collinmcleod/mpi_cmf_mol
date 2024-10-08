@@ -1258,7 +1258,7 @@
             IF(LOG_Y)YAXIS='Log F(Jy\d \uarcsec\u-2\d)'
 	  END IF
 	  CALL DP_CURVE(NCF,XV,YV)
-	  WRITE(6,'(A,ES10.4)')' Apperture size in square arc seconds is ',APP_SIZE
+	  WRITE(6,'(A,ES11.4)')' Apperture size in square arc seconds is ',APP_SIZE
 !
 ! 
 ! Plot section:

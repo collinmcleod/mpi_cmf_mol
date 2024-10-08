@@ -141,9 +141,9 @@
 	WRITE(LU,'(A)')'!'
 	WRITE(LU,'(A,7X,A,17X,A,16X,A,4X,2(8X,A,7X,A,X))')'! Index','R','V','dV','N(V1)','dN(V1)/N(V1)','N(V2)','dN(V2)/N(V2)'
 	WRITE(LU,'(A)')'!'
-	WRITE(LU,'(I6,3X,ES12.6,6X,ES12.6)')1,R(1),V(1)
+	WRITE(LU,'(I6,1X,ES14.6,4X,ES14.6)')1,R(1),V(1)
 	DO I=2,ND
-	  WRITE(LU,'(I6,3X,ES12.6,3(6X,ES12.6,5X,F10.3))')
+	  WRITE(LU,'(I6,1X,ES14.6,3(4X,ES14.6,5X,F10.3))')
 	1             I,R(I),V(I),V(I-1)-V(I),
 	1             TA(I),TA(I)/TA(I-1)-1.0_LDP,
 	1             TB(I),TB(I)/TB(I-1)-1.0_LDP
@@ -185,7 +185,7 @@
 	WRITE(LUER,'(A)')' '
 	WRITE(LUER,'(2(A,I4,14X))')    '    JST=',   JST,'   JEND=',JEND
 	WRITE(LUER,'(2(A,F10.4,8X))') ' V(JST)=',V(JST),'V(JEND)=',V(JEND)
-	WRITE(LUER,'(2(A,ES14.8,4X))')' R(JST)=',R(JST),'R(JEND)=',R(JEND)
+	WRITE(LUER,'(2(A,ES15.8,4X))')' R(JST)=',R(JST),'R(JEND)=',R(JEND)
 	WRITE(LUER,'(A)')' '
 !
 100	CONTINUE
@@ -270,9 +270,9 @@
 	WRITE(LU,'(A)')'!'
 	WRITE(LU,'(A,7X,A,17X,A,16X,A,4X,2(8X,A,7X,A,X))')'! Index','R','V','dV','N(V1)','dN(V1)/N(V1)','N(V2)','dN(V2)/N(V2)'
 	WRITE(LU,'(A)')'!'
-	WRITE(LU,'(I6,3X,ES12.6,6X,ES12.6)')1,RNEW(1),VNEW(1)
+	WRITE(LU,'(I6,1X,ES14.6,4X,ES14.6)')1,RNEW(1),VNEW(1)
 	DO I=2,L
-	  WRITE(LU,'(I6,3X,ES12.6,3(6X,ES12.6,5X,F10.3))')
+	  WRITE(LU,'(I6,1X,ES14.6,3(4X,ES14.6,5X,F10.3))')
 	1            I,RNEW(I),VNEW(I),VNEW(I-1)-VNEW(I),
 	1             RTA(I),RTA(I)/RTA(I-1)-1.0_LDP,
 	1             RTB(I),RTB(I)/RTB(I-1)-1.0_LDP
@@ -345,9 +345,9 @@
 	WRITE(LU,'(A)')'!'
 	WRITE(LU,'(A,7X,A,17X,A,16X,A,4X,2(8X,A,7X,A,X))')'! Index','R','V','dV','N(V1)','dN(V1)/N(V1)','N(V2)','dN(V2)/N(V2)'
 	WRITE(LU,'(A)')'!'
-	WRITE(LU,'(I6,3X,ES12.6,6X,ES12.6)')1,R(1),VNEW(1)
+	WRITE(LU,'(I6,1X,ES14.6,4X,ES14.6)')1,R(1),VNEW(1)
 	DO I=2,ND
-	  WRITE(LU,'(I6,3X,ES12.6,3(6X,ES12.6,5X,F10.3))')
+	  WRITE(LU,'(I6,1X,ES14.6,3(4X,ES14.6,5X,F10.3))')
 	1            I,R(I),VNEW(I),VNEW(I-1)-VNEW(I),
 	1             RTA(I),RTA(I)/RTA(I-1)-1.0_LDP,
 	1             RTB(I),RTB(I)/RTB(I-1)-1.0_LDP

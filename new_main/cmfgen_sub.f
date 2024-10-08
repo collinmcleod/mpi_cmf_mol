@@ -25,6 +25,7 @@
 	1                     NDMAX,NPMAX,NCF_MAX,NLINE_MAX,
 	1                     TX_OFFSET,MAX_SIM,NM,NM_KI,NLF)
 	USE SET_KIND_MODULE
+	USE MPI
 	USE MOD_CMFGEN
 	USE ANG_QW_MOD
 !	USE CMF_SOB_MOD
@@ -467,7 +468,7 @@
 	1                 NUM_BNDS )
 ! 
 !
-        INCLUDE 'mpif.h'
+!	INCLUDE 'mpif.h'
 !
 ! Call MPI initialization routines. These must be the first executable
 ! statements in the code. 

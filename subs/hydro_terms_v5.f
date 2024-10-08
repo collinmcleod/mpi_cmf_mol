@@ -241,9 +241,9 @@
 	  IF(TAU(I) .LT. 0.1_LDP)TMP_FMT='ES10.2,F10.2,F12.2)'
 	  IF(PRESSURE_VTURB .EQ. 0.0_LDP)THEN
 	    IF(R(I) .GT. 9.99E+04_LDP)THEN
-	      FMT='(1X,ES12.6,ES17.8,F9.2,5(ES14.4),F9.2,I7,2X,'//TMP_FMT
+	      FMT='(ES13.6,ES17.8,F9.2,5(ES14.4),F9.2,I7,2X,'//TMP_FMT
 	    ELSE
-	      FMT='(1X,F12.6,ES17.8,F9.2,5(ES14.4),F9.2,I7,2X,'//TMP_FMT
+	      FMT='(F13.6,ES17.8,F9.2,5(ES14.4),F9.2,I7,2X,'//TMP_FMT
 	    END IF
 	    WRITE(LU_OUT,FMT)
 	1             R(I),V(I),ERROR,VdVdR,dPdR_ON_ROH,
@@ -278,7 +278,7 @@
 !
 	WRITE(LU_OUT,'(1X,A)')' '
 	PHOT_LOGG=GRAV_CON/RPHOT/RPHOT
-	WRITE(LU_OUT,'(1X,A,ES14.4,A,4X,ES10.4,A)')
+	WRITE(LU_OUT,'(1X,A,ES14.4,A,4X,ES11.4,A)')
 	1          '         Photospheric radius is: ',RPHOT,'(10^10 cm)',RPHOT/6.96D0,'(Rsun)'
 	WRITE(LU_OUT,'(1X,A,ES14.4,A,F7.4,A)')
 	1          'Photospheric surface gravity is: ',PHOT_LOGG,' (',LOG10(PHOT_LOGG),')'

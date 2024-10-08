@@ -172,8 +172,8 @@
 !
 	    IF (ABS( (T1-SN_AGE_DAYS)/(T1+SN_AGE_DAYS) ) .GT. 1.0E-07_LDP) THEN
 	      WRITE(LUER,'(A)') 'New time for Gamma-ray transport calculation is incompatible'
-	      WRITE(LUER,'(A,ES14.8)')'Monte Carlo new time [days]',T1
-	      WRITE(LUER,'(A,ES14.8)')'CMFGEN new time [days]',SN_AGE_DAYS
+	      WRITE(LUER,'(A,ES15.8)')'Monte Carlo new time [days]',T1
+	      WRITE(LUER,'(A,ES15.8)')'CMFGEN new time [days]',SN_AGE_DAYS
 	      STOP
 	    ENDIF
 !

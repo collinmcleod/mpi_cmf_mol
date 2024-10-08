@@ -4,6 +4,7 @@
 !
 	SUBROUTINE SCALE_GREY(TGREY,TAUROSS,IOS,LUIN,ND)
 	USE SET_KIND_MODULE
+	USE MPI
 	IMPLICIT NONE
 !
 ! Altered 21-Dec-2004: Call changed. Routine now returns IOS is successful.
@@ -29,7 +30,8 @@
 	INTEGER I,IERR
 	INTEGER ND_RD
 	LOGICAL FILE_OPEN
-	include 'mpif.h'
+!
+!	include 'mpif.h'
 !
 	IF(MYPE .EQ. 0)THEN
 	IOS=0

@@ -4,6 +4,7 @@
 !
 	SUBROUTINE SUP_TO_FULL_V4(POPS,Z_POP,DO_LEV_DISSOLUTION,ND,NT)
 	USE SET_KIND_MODULE
+	USE MPI
 	USE MOD_CMFGEN
 	IMPLICIT NONE
 !
@@ -21,7 +22,7 @@
 	INTEGER J
 	INTEGER ID
 	INTEGER, PARAMETER :: IONE=1
-	include 'mpif.h'
+!	include 'mpif.h'
 !
 ! We have now store the revised popuations back in their individual
 ! storage locations. For some species we have 2 atomic models. For these

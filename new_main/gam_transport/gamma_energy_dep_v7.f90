@@ -122,7 +122,7 @@
 	WRITE(7,'(A,1X,ES16.7)')'! Fraction absorbed that is kinetic is:',T3/T1
 	WRITE(7,'(A)')'!'
 	WRITE(7,'(I5,T30,A)')ND,'!Number of depth points'
-	WRITE(7,'(ES14.8,T30,A)')SN_AGE_DAYS,'!Current time after explosion '
+	WRITE(7,'(ES15.8,T30,A)')SN_AGE_DAYS,'!Current time after explosion '
 	WRITE(7,'(A)')'!'
 	WRITE(7,'(A1,1X,5(A20,2X))')'!','Radius (10^10 cm)','V (km/s)','Energy dep.',&
 		'Local emission','Decay K.E.'

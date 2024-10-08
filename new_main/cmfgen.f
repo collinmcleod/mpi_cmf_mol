@@ -9,6 +9,7 @@
 !
 	PROGRAM CMFGEN
 	USE SET_KIND_MODULE
+	USE MPI
 	USE MOD_CMFGEN
 	IMPLICIT NONE
 !
@@ -87,7 +88,7 @@
 	LOGICAL DO_TERM_OUT
 	CHARACTER(LEN=20) TIME
 !
- 	INCLUDE 'mpif.h'
+! 	INCLUDE 'mpif.h'
 !
 ! Call MPI initialization routines. These must be the first executable statements in the code. 
 ! MPYE will be use to label each process, and NTHREAD is the number of processors. To avoid

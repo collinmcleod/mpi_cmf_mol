@@ -1,6 +1,7 @@
 	SUBROUTINE WRITE_RECOM_MPI_V1(ND)
 	USE SET_KIND_MODULE
-        USE MOD_CMFGEN
+        USE MPI
+	USE MOD_CMFGEN
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
 !
@@ -14,7 +15,8 @@
 	INTEGER SCAT_DISP(0:NTHREAD-1)
 	INTEGER, PARAMETER :: IZERO=0
 	CHARACTER(LEN=80) TMP_STRING
-        INCLUDE 'mpif.h'
+!
+!        INCLUDE 'mpif.h'
 !
 ! Write out recombination, photoionization and cooling terms for digestion.
 !

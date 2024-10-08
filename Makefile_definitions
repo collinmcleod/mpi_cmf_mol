@@ -30,7 +30,7 @@ endif
 
 MOD_DIR=$(INSTALL_DIR)mod/
 
-ifeq ($(HOST),'CRCX')
+ifeq ($(HOST),'CRC')
 
 $(info Creating CRC compiler definitions)
 
@@ -53,7 +53,7 @@ $(info Creating CRC compiler definitions)
 endif
 
 
-ifeq ($(HOST),'CRC')
+ifeq ($(HOST),'CRCX')
 
 $(info Creating CRC compiler definitions)
 

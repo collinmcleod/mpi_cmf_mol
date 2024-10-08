@@ -7,6 +7,7 @@
 !
 	SUBROUTINE EVAL_LTE_V5(DO_LEV_DISSOLUTION,ND)
 	USE SET_KIND_MODULE
+	USE MPI
 	USE MOD_CMFGEN
 	IMPLICIT NONE
 !
@@ -24,7 +25,7 @@
 !
 	INTEGER I
 	INTEGER ID
-	INCLUDE 'mpif.h'
+!	INCLUDE 'mpif.h'
 !
 ! Revise vector constants for evaluating the level dissolution. These
 ! constants are the same for all species. These are stored in a common block,

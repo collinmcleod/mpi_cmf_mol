@@ -392,8 +392,8 @@
 	  WRITE(LU_V,'(A,A)')'! TLUSTY data read from file: ',TRIM(FILENAME)
 	  WRITE(LU_V,'(A)')'! Output for plane parallel model'
 	  WRITE(LU_V,'(A)')'!'
-	  WRITE(LU_V,'(A,ES10.4,A)')'!          R*=',RSTAR,' Rsun'
-	  WRITE(LU_V,'(A,ES10.4,A)')'!        Mdot=',Mdot,' Msun/yr'
+	  WRITE(LU_V,'(A,ES11.4,A)')'!          R*=',RSTAR,' Rsun'
+	  WRITE(LU_V,'(A,ES11.4,A)')'!        Mdot=',Mdot,' Msun/yr'
 	  WRITE(LU_V,'(A)')'!'
 	  WRITE(LU_V,'(71A)')'!',('*',I=1,70)
 	  WRITE(LU_V,'(71A)')'!',('*',I=1,70)
@@ -710,13 +710,13 @@
 	WRITE(LU_V,'(A)')'!'
 	WRITE(LU_V,'(A,A)')'! TLUSTY data read from file: ',TRIM(FILENAME)
 	WRITE(LU_V,'(A)')'!'
-	WRITE(LU_V,'(A,ES10.4,A)')'!          R*=',RSTAR,' Rsun'
-	WRITE(LU_V,'(A,ES10.4,A)')'!        Mdot=',Mdot,' Msun/yr'
-	WRITE(LU_V,'(A,ES10.4,A)')'!        Vinf=',VINF,' km/s'
-	WRITE(LU_V,'(A,ES10.4,A)')'!        Beta=',BETA
+	WRITE(LU_V,'(A,ES11.4,A)')'!          R*=',RSTAR,' Rsun'
+	WRITE(LU_V,'(A,ES11.4,A)')'!        Mdot=',Mdot,' Msun/yr'
+	WRITE(LU_V,'(A,ES11.4,A)')'!        Vinf=',VINF,' km/s'
+	WRITE(LU_V,'(A,ES11.4,A)')'!        Beta=',BETA
 	IF(BETA .NE. BETA_MIN)THEN
-	  WRITE(LU_V,'(A,ES10.4,A)')'!    Beta_min=',BETA_MIN
-	  WRITE(LU_V,'(A,ES10.4,A)')'!    Beta_scl=',BETA_SCL,
+	  WRITE(LU_V,'(A,ES11.4,A)')'!    Beta_min=',BETA_MIN
+	  WRITE(LU_V,'(A,ES11.4,A)')'!    Beta_scl=',BETA_SCL,
 	1                 ' (Scale height for beta in R*)'
 	END IF
 	WRITE(LU_V,'(A)')'!'

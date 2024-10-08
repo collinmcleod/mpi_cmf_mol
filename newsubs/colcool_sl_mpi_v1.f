@@ -8,6 +8,7 @@
 	1             F_TO_S_MAP,N_F,
 	1             ZION,ID,COL_FILE,OMEGA_COL,ED,T,DST,DEND,ND)
 	USE SET_KIND_MODULE
+	USE MPI
 	IMPLICIT NONE
 !
 ! Altered 20-Sec-2023 : Updated to use standard value for Planck's constant (LONG -- 15-Oct-2023).
@@ -62,7 +63,7 @@
 	REAL(KIND=LDP) OMEGA_F(N_F,N_F)
 	REAL(KIND=LDP) dln_OMEGA_F_dlnT(N_F,N_F)
 !
-	include 'mpif.h'
+!	include 'mpif.h'
 !
 	H=PLANCKS_CONSTANT()*1.0E+15_LDP             !ergs/s (*1.0E+15 due to *nu)
 	TMP_ED=1.0_LDP

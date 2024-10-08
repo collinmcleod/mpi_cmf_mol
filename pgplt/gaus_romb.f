@@ -72,7 +72,7 @@
 	  R(K,1)=R(K,1)+0.5D0*EXP(-(N*H)**EXPONENT )
 	  R(K,1)=2.0D0*R(K,1)*H                          !*1.0D0/SQRT(ACOS(-1.0D0))
 	  IF(TESTING)THEN
-	    WRITE(6,'(A,ES14.8)')'Current unscaled trapazoidal answer:',R(K,1)
+	    WRITE(6,'(A,ES15.8)')'Current unscaled trapazoidal answer:',R(K,1)
 	  END IF
 	  DO L=2,K
 	    J=K-L+1

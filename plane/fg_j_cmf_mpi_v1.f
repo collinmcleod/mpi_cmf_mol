@@ -4,6 +4,7 @@
 !
 	MODULE FG_J_CMF_MOD_MPI_V1
 	USE SET_KIND_MODULE
+	USE MPI
 	IMPLICIT NONE
 !
 ! The *_STORE routines are used to store the radiation field, as computed
@@ -312,7 +313,7 @@
 !
 ! Include MPI definitions.
 !
-	INCLUDE 'mpif.h'
+!	INCLUDE 'mpif.h'
 !
 ! Funtion to return LS as a function of MYPE an I (=IPROC loop counter).
 ! For example, with 4 process, we have
