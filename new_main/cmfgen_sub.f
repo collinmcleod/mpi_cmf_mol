@@ -139,7 +139,7 @@
 !
 	INTEGER, PARAMETER :: LU_DC=9      	!Departure coefficient Output.
 	INTEGER, PARAMETER :: LU_FLUX=10   	!Flux/Luminosity Data (OBSFLUX)
-	INTEGER, PARAMETER :: LU_SE=16     	!Statistical equilibrium and Solution Arrays.
+	INTEGER, PARAMETER :: LU_SE=16     	!Statistical equilibrium and solution arrays.
 	INTEGER, PARAMETER :: LU_NET=17    	!# Line Netrate data.
 	INTEGER, PARAMETER :: LU_OPAC=18   	!Rosseland mean opacity etc.
 	INTEGER, PARAMETER :: LU_DR=19     	!# Downward rate (Nu. Z. A).
@@ -483,16 +483,15 @@
 ! Initialization section
 !
 	DO I=0,NTHREAD-1
-	 IF(MYPE .EQ. I)THEN
+	 IF(MYPE .EQ. 0 .AND. MYPE .EQ. I)THEN
 	    WRITE(6,'(A,/,T20,3(3X,A))')' Top of CMFGEN_SUB:','MYPE',' DST','DEND'
 	    FLUSH(UNIT=6)
-	  END IF
-	  IF(MYPE .EQ. I)THEN
+	  ELSE IF(MYPE .EQ. I)THEN
 	    WRITE(6,'(T20,3I7)')MYPE,DST,DEND; FLUSH(UNIT=6)
 	  END IF
 	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	END DO
-!!
+!
 	LUER=ERROR_LU()
 	LUWARN=WARNING_LU()
 	COMPUTE_LAM=.FALSE.
@@ -510,6 +509,7 @@
 	CNT_FIX_BA=0
 	MAXCH_SUM=0.0_LDP
 	LST_ITERATION=.FALSE.
+	LUM_SCL_FAC=4.1274E-12_LDP              !(4*PI)**2*Dex(+20)/L(sun)
 !
 	DPTH_INDX=3
 	DPTH_INDX=MIN(DPTH_INDX,ND)		!Thus no problem if 84 > ND
@@ -818,7 +818,6 @@
 	    ROOT(ID)%INT_SEQ_XzV=ATM(ID)%INT_SEQ_XzV
 	  END DO
 	END IF
-
 !
 ! 
 !
@@ -951,11 +950,13 @@
 	   END IF
 	END IF
 	IF(NEWMOD)THEN
-	  WRITE(LUER,*)'Starting a new model.'
-	  WRITE(LUER,*)'*_IN files will be used to start model'
-	  WRITE(LUER,*)'Setting ITS_DONE keyword in HYDRO_DEFAULTS to 0'
-	  IF(DO_HYDRO .AND. .NOT. SN_MODEL)THEN
-            CALL UPDATE_KEYWORD(IZERO,'[ITS_DONE]','HYDRO_DEFAULTS',L_TRUE,L_TRUE,LUIN)
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LUER,*)'Starting a new model.'
+	    WRITE(LUER,*)'*_IN files will be used to start model'
+	    WRITE(LUER,*)'Setting ITS_DONE keyword in HYDRO_DEFAULTS to 0'
+	    IF(DO_HYDRO .AND. .NOT. SN_MODEL)THEN
+              CALL UPDATE_KEYWORD(IZERO,'[ITS_DONE]','HYDRO_DEFAULTS',L_TRUE,L_TRUE,LUIN)
+	    END IF
 	  END IF
 	ELSE
 !
@@ -1234,7 +1235,6 @@
         dE_XRAY_1kev=0.0_LDP
         dE_XRAY_TOT=0.0_LDP
 	DEP_RAD_EQ=0.0_LDP
-	LUM_SCL_FAC=4.1274E-12_LDP              !(4*PI)**2*Dex(+20)/L(sun)
 !
 	WRITE(6,*)' Top main section',MYPE,DST,DEND
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)

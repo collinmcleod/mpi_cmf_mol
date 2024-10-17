@@ -55,8 +55,7 @@
 	IF(COMPUTE_ALL_CROSS .OR. DELV_CONT .EQ. 0)THEN
 	  NU_EVAL(:)=NU(:)
 	  IF(MYPE .EQ. 0)THEN
-	    WRITE(LU_OUT,'(/,A)')'The continuum will be evaluated at all',
-	1                        ' frequencies.'
+	    WRITE(LU_OUT,'(/,A)')'The continuum will be evaluated at all frequencies.'
 	  END IF
 	  RETURN
 	END IF
@@ -133,8 +132,10 @@
 	DO ML=1,NCF
 	  IF(NU(ML) .EQ. NU_EVAL(ML))K=K+1
 	END DO
-	WRITE(LU_OUT,'(A)')' '
-	WRITE(LU_OUT,'(A,I7,A)')' The continuum will be evaluated at ',K,' frequencies'
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LU_OUT,'(A)')' '
+	  WRITE(LU_OUT,'(A,I7,A)')' The continuum will be evaluated at ',K,' frequencies'
+	END IF
 !
 ! Check monotocity of continuum evaluations.
 !

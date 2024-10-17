@@ -77,6 +77,46 @@
 !
 !^L
 !
+! Add in free-free contribution. Because SN can be dominated by elements other
+! than H and He, we now sum over all levels. To make sure that we only do this
+! once, we only include the FREE-FREE contribution for the ion when PHOT_ID is one.
+!
+	LOC_DST=DST
+	IF(LST_DEPTH_ONLY)LOC_DST=DEND
+	DO DPTH_INDX=LOC_DST,DEND
+!
+	  IF(ZION .EQ. 0.0_LDP)THEN
+	    I=7				!Used for IO
+	    K=DPTH_INDX
+	    COR_FAC=DI(1,K)
+	    CALL DO_H0_FF(ETA(K),CHI(K),COR_FAC,ED(K),T(K),EMHNUKT(K),NU,I,IONE)
+	  ELSE IF(IONFF .AND. PHOT_ID .EQ. 1)THEN
+!
+! Compute free-free gaunt factors. Replaces call to GFF in following DO loop.
+!
+	    K=DPTH_INDX
+	    GFF_VAL=GFF(NU,T(K),ZION)
+	    IF(ION_LEV .EQ. 1)THEN
+	      CALL FF_RES_GAUNT(GFF_VAL,NU,T(K),ID,GION,ZION,IONE)
+	    END IF
+!
+! We use COR_FAC as a temporary vector containing the sum of all level populations in
+! the ion at each depth.
+!
+	    K=DPTH_INDX
+	    COR_FAC=SUM(DI(:,K),1)
+	    TCHI1=CHIFF*ZION*ZION/(NU*NU*NU)
+	    TETA1=CHIFF*ZION*ZION*TWOHCSQ
+	    ALPHA=ED(K)*COR_FAC*GFF_VAL/SQRT(T(K))
+	    CHI(K)=CHI(K)+TCHI1*ALPHA*(1.0_LDP-EMHNUKT(K))
+	    ETA(K)=ETA(K)+TETA1*ALPHA*EMHNUKT(K)
+	  END IF
+	END DO
+!
+! We now do the bound-free contributions.
+!
+! WARNING -- The routine returns if all the photouiozation cross-sections are zero.
+!
 	LOC_DST=DST
 	IF(LST_DEPTH_ONLY)LOC_DST=DEND
 	DO DPTH_INDX=LOC_DST,DEND
@@ -109,38 +149,6 @@
 	      END DO
 	    END IF
 	  END IF
-!
-!
-! Add in free-free contribution. Because SN can be dominated by elements other
-! than H and He, we now sum over all levels. To make sure that we only do this
-! one, we only include the FREE-FREE contribution for the ion when PHOT_ID is one.
-!
-	  IF(ZION .EQ. 0.0_LDP)THEN
-	    I=7				!Used for IO
-	    K=DPTH_INDX
-	    COR_FAC=DI(1,K)
-	    CALL DO_H0_FF(ETA(K),CHI(K),COR_FAC,ED(K),T(K),EMHNUKT(K),NU,I,IONE)
-	  ELSE IF(IONFF .AND. PHOT_ID .EQ. 1)THEN
-!
-! Compute free-free gaunt factors. Replaces call to GFF in following DO loop.
-!
-	    K=DPTH_INDX
-	    GFF_VAL=GFF(NU,T(K),ZION)
-	    IF(ION_LEV .EQ. 1)THEN
-	      CALL FF_RES_GAUNT(GFF_VAL,NU,T(K),ID,GION,ZION,IONE)
-	    END IF
-	  END IF
-!
-! We use COR_FAC as a temporary vector containing the sum of all level populations in
-! the ion at each depth.
-!
-	  K=DPTH_INDX
-	  COR_FAC=SUM(DI(:,K),1)
-	  TCHI1=CHIFF*ZION*ZION/(NU*NU*NU)
-	  TETA1=CHIFF*ZION*ZION*TWOHCSQ
-	  ALPHA=ED(K)*COR_FAC*GFF_VAL/SQRT(T(K))
-	  CHI(K)=CHI(K)+TCHI1*ALPHA*(1.0_LDP-EMHNUKT(K))
-	  ETA(K)=ETA(K)+TETA1*ALPHA*EMHNUKT(K)
 !
 ! 
 ! Now add in BOUND-FREE contributions. We first compute vectors which can

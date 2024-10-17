@@ -13,7 +13,8 @@
 	USE CONTROL_VARIABLE_MOD
 	USE LINE_MOD
 	USE VAR_RAD_MOD_MPI_V1
-        IMPLICIT NONE
+        USE MPI	
+	IMPLICIT NONE
 !
 ! Incorporated: 02-Jan-2104: LINE_QW_SUM is now a 2D array.
 ! Altered 29-Oct-2012: Changed to V2 but call is the same.
@@ -36,6 +37,7 @@
 	INTEGER I,J,K,L
 	INTEGER ID
 	INTEGER FREQ_INDX
+	LOGICAL TMP_LOG
 	LOGICAL STORAGE_LOC_FOUND
 !
 	IF(ACCURATE)NDEXT=SIZE(TX_EXT,1)
@@ -81,10 +83,15 @@
 	1                              WEAK_LINE(SIM_INDX)=.FALSE.
 	        END DO
 	      END IF
-	      IF(WEAK_LINE(SIM_INDX))NUM_OF_WEAK_LINES=NUM_OF_WEAK_LINES+1
 	    ELSE
 	      WEAK_LINE(SIM_INDX)=.FALSE.
 	    END IF
+!
+! Line is only weak if it is weak at ALL depths.
+!
+	    CALL MPI_ALLREDUCE(WEAK_LINE(SIM_INDX),TMP_LOG,IONE,MPI_LOGICAL,MPI_LAND,MPI_COMM_WORLD,IERR)
+	    WEAK_LINE(SIM_INDX)=TMP_LOG
+	    IF(WEAK_LINE(SIM_INDX))NUM_OF_WEAK_LINES=NUM_OF_WEAK_LINES+1
 ! 
 !
 ! Now need to determine the storage location for the 2 variation parameters.

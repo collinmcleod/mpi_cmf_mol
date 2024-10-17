@@ -171,9 +171,7 @@
 ! coefficient file).
 !
 	    CALL REGRID_T_ED_V3(R,ED,T,POP_ATOM,ND,DC_INTERP_METHOD,'T_IN')
-	    WRITE(6,*)'Read ED and T'; FLUSH(UNIT=6)
 	    DO ID=1,NUM_IONS-1
-	      WRITE(6,*)ID,ROOT(ID)%NXzV_F; FLUSH(UNIT=6)
 	      IF(ROOT(ID)%XzV_PRES)THEN
 	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
 	        ISPEC=SPECIES_LNK(ID)
@@ -383,10 +381,8 @@
 	1                TB,                TA, IONE, ND, ND,
 	1                FIRST,             ATM(ID+1)%XzV_PRES)
 	        IF(ID .NE. SPECIES_BEG_ID(ISPEC))ROOT(ID-1)%DXzV_F(1:ND)=TB(1:ND)
-	        WRITE(171,'(2I5,4ES14.4)')ID,ATM(ID)%NXzV_F,ROOT(ID)%DXzV_F(1),ROOT(ID)%DXzV_F(ND),TA(1),TA(ND)
   	      END IF
 	    END DO
-	    FLUSH(UNIT=171)  
 !
 ! Now scale the population for EACH species to ensure that the species
 ! conservation equation is satisfied.
@@ -563,14 +559,12 @@
 	          END DO
 	        END IF
 	      END DO
-            CALL MPI_ALLREDUCE(CHI,TA,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR); CHI(1:ND)=TA(1:ND)
-            CALL MPI_ALLREDUCE(ETA,TA,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR); ETA(1:ND)=TA(1:ND)
 !
 ! CHECK for negative line opacities.
 !	        CHI_NOSCAT(I)=MAX(0.0_LDP,CHI(I)-ESEC(I))
 !	        IF(CHI(I) .LT. 0.1_LDP*ESEC(I))CHI(I)=0.1_LDP*ESEC(I)
 !
-	      DO I=1,ND
+	      DO I=DST,DEND
 	        CHI_NOSCAT(I)=MAX(0.0_LDP,CHI(I)-CHI_SCAT(I))
 	        IF(CHI(I) .LT. 0.1_LDP*CHI_SCAT(I))CHI(I)=0.1_LDP*CHI_SCAT(I)
 	      END DO
@@ -580,7 +574,7 @@
 	      T1=-HDKT*NU(ML)
 	      T2=FQW(ML)*TWOHCSQ*(NU(ML)**3)
 	      T3=-T1*FQW(ML)*TWOHCSQ*(NU(ML)**3)
-	      DO I=1,ND
+	      DO I=DST,DEND
 	        PLANCKMEAN(I)=PLANCKMEAN(I) + T2*CHI_NOSCAT(I)*EMHNUKT(I)/(1.0_LDP-EMHNUKT(I))
 	        ROSSMEAN(I)=ROSSMEAN(I) + T3*EMHNUKT(I)/CHI(I)/(1.0_LDP-EMHNUKT(I))**2
 	      END DO
@@ -596,12 +590,17 @@
 ! it here, rather than adjust CHI for each frequency.
 !
 	    T1=1.8047E+11_LDP
-	    DO I=1,ND
+	    DO I=DST,DEND
 	      ROSSMEAN(I)=4.0_LDP*CLUMP_FAC(I)*T1*(T(I)**5)/ROSSMEAN(I)
 	      PLANCKMEAN(I)=CLUMP_FAC(I)*PLANCKMEAN(I)/T1/(T(I)**4)
 	    END DO
 !
-	    IF(DST .EQ. 1)THEN
+	    CALL MPI_ALLREDUCE(ROSSMEAN,TA,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	    ROSSMEAN(1:ND)=TA(1:ND)
+            CALL MPI_ALLREDUCE(PLANCKMEAN,TA,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	    PLANCKMEAN(1:ND)=TA(1:ND)
+!
+	    IF(MYPE .EQ. 0)THEN
 	      CALL WRITV(ROSSMEAN,ND,'Rosseland Mean Opacity',88)
 	      CALL WRITV(PLANCKMEAN,ND,'Planck Mean Opacity',88)
 	      TA(1:ND)=1.0E-10_LDP*ROSSMEAN(1:ND)/DENSITY(1:ND)
@@ -611,13 +610,13 @@
 	      FLUSH(UNIT=88)
 	    END IF
 !
-	     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 ! 
 !
 ! Check that inner boundary is deep enough so that LTE can be fully recovered. SOURCE and
 ! TC are used as temporary vectors.
 !
-	    IF(DST .EQ. 1 .AND. MAIN_COUNTER .EQ. 1)THEN
+	    IF(MYPE .EQ. 0 .AND. MAIN_COUNTER .EQ. 1)THEN
 	      CALL TORSCL(TA,ROSSMEAN,R,TB,TC,ND,METHOD,' ')
 	      CALL ESOPAC(ESEC,ED,ND)
 	      CALL TORSCL(TB,ESEC,R,SOURCE,TC,ND,METHOD,' ')
@@ -771,7 +770,6 @@
 	      END IF
 	    END DO
 	    CALL ALL_GATHERV_VEC_MPI_V1(ED,ND)
-	    WRITE(6,*)MYPE,DST,DEND; FLUSH(UNIT=6)
 !	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 ! 
 !

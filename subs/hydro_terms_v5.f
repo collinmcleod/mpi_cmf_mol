@@ -325,12 +325,12 @@
 !
 	  IF( ABS(LOG10(PHOT_LOGG)-LOGG) .GT. 0.02_LDP )THEN
 	    I=ERROR_LU()
-	    WRITE(I,*)'*****************************************************************************************'
+	    WRITE(I,'(A100)')'*****************************************************************************************'
 	    WRITE(I,*)'Warning inconsistent surface gravities'
 	    WRITE(I,*)'This error has occured because you forgot to set HYDRO_DEFAULTS or'
 	    WRITE(I,*)'       or you have done insufficient interations'
 	    WRITE(I,*)'You can ignore this error if not doing Hydro iterations.'
-	    WRITE(I,*)'*****************************************************************************************'
+	    WRITE(I,'(A100)')'*****************************************************************************************'
 	  END IF
 
 	  ERROR_SQ=SQRT(ERROR_SQ/MAX(1,ERROR_CNT))
@@ -339,7 +339,7 @@
 	  IF(ERROR_SQ .GT. 5.0_LDP .OR. ERROR_MAX .GT. 20.0_LDP .OR. T1 .GT. 0.02_LDP)THEN
 	    I=ERROR_LU()
 	    WRITE(I,*)' '
-	    WRITE(I,*)'*****************************************************************************************'
+	    WRITE(I,'(A100)')'*****************************************************************************************'
 	    WRITE(I,'(A)')' Possible error with hydrostatic structure --- large error in photosphere'
 	    WRITE(I,'(A,ES10.2)')'              Mean error is',ERROR_SUM
 	    WRITE(I,'(A,ES10.2)')' Root mean squared error is',ERROR_SQ
@@ -348,7 +348,7 @@
 	    WRITE(I,'(A,ES10.2)')'        R(phot, 10^10cm) is',RPHOT
 	    WRITE(I,'(A,ES10.2)')'             log G(phot) is',LOG10(GPHOT)
 	    WRITE(I,'(A,ES10.2)')'         Specified log g is',LOGG
-	    WRITE(I,*)'*****************************************************************************************'
+	    WRITE(I,'(A100)')'*****************************************************************************************'
 	    WRITE(I,*)' '
 	  END IF
 	END IF

@@ -90,24 +90,25 @@
 	  HIST(IH,IL,IT)=HIST(IH,IL,IT)+1
 	END DO
 !
-	WRITE(6,'(A)')' '
-	WRITE(6,*)'Spectrum convergence information -- % changes'
-	WRITE(6,'(17X,8(2X,ES7.1))')(HIST_LIMS(IH),IH=1,NHIST)
-	DO IL=1,NLAM
-	  IF(IL .LE. 6)THEN
-	    WRITE(6,'(2X,F7.1,A,F7.1,8(2X,I7))')LAM_LIMS(IL-1),'-',LAM_LIMS(IL),(HIST(IH,IL,IT),IH=1,NHIST)
-	  ELSE
-	    WRITE(6,'(2X,ES7.1,A,ES7.1,8(2X,I7))')LAM_LIMS(IL-1),'-',LAM_LIMS(IL),(HIST(IH,IL,IT),IH=1,NHIST)
-	  END IF
-	END DO
-	WRITE(6,'(A)')' '
-	WRITE(6,'(A)')' Largest % change in spectrum for last 5 full iterations - last listed first'
-	WRITE(6,'(10ES10.2)')100.0D0*MAX_FRAC_CHNG
-	WRITE(6,'(A)')' '
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,'(A)')' '
+	  WRITE(6,*)'Spectrum convergence information -- % changes'
+	  WRITE(6,'(17X,8(2X,ES7.1))')(HIST_LIMS(IH),IH=1,NHIST)
+	  DO IL=1,NLAM
+	    IF(IL .LE. 6)THEN
+	      WRITE(6,'(2X,F7.1,A,F7.1,8(2X,I7))')LAM_LIMS(IL-1),'-',LAM_LIMS(IL),(HIST(IH,IL,IT),IH=1,NHIST)
+	    ELSE
+	      WRITE(6,'(2X,ES7.1,A,ES7.1,8(2X,I7))')LAM_LIMS(IL-1),'-',LAM_LIMS(IL),(HIST(IH,IL,IT),IH=1,NHIST)
+	    END IF
+	  END DO
+	  WRITE(6,'(A)')' '
+	  WRITE(6,'(A)')' Largest % change in spectrum for last 5 full iterations - last listed first'
+	  WRITE(6,'(10ES10.2)')100.0D0*MAX_FRAC_CHNG
+	  WRITE(6,'(A)')' '
+	END IF
 !
 	OBS_SAVE=OBS_FLUX
 	IF( MAXVAL(MAX_FRAC_CHNG) .LT. 0.002_LDP)SPECTRUM_CONVERGED=.TRUE.
-	WRITE(6,*)'Exiting CHECK_SPECT'
 !
 	RETURN
 	END

@@ -86,7 +86,7 @@
 ! data, initialize parameters for a NEW MODEL.
 !
 	CALL GEN_ASCI_OPEN(LU,'POINT1','OLD',' ','READ',IZERO,IOS)
-	  IF(IOS .NE. 0)THEN
+	  IF(IOS .NE. 0 .AND. MYPE .EQ. 0)THEN
 	    WRITE(LUER,*)'Error opening POINT1 in SCR_READ'
 	  ELSE
 	    READ(LU,'(A)',IOSTAT=IOS)STRING
@@ -98,14 +98,14 @@
 	      RVSIG_WRITTEN=.FALSE.
               READ(STRING,*,IOSTAT=IOS)IREC,NITSF,LOC_NUMTIMES,LST_NG
 	    END IF
-	    IF(IOS .NE. 0)WRITE(LUER,*)'Error reading POINT1 in SCR_READ'
+	    IF(IOS .NE. 0 .AND. MYPE .EQ. 0)WRITE(LUER,*)'Error reading POINT1 in SCR_READ'
 	  END IF
 !
 	  IF(IOS .NE. 0 .OR. IREC .LT. 1)THEN
 	    INQUIRE(UNIT=LU,OPENED=FILE_OPEN)
 	    IF(FILE_OPEN)CLOSE(UNIT=LU)
 	    CALL GEN_ASCI_OPEN(LU,'POINT2','OLD',' ','READ',IZERO,IOS)
-	    IF(IOS .NE. 0)THEN
+	    IF(IOS .NE. 0 .AND. MYPE .EQ. 0)THEN
 	      WRITE(LUER,*)'Error opening POINT2 in SCR_READ'
 	    ELSE
 	      READ(LU,'(A)',IOSTAT=IOS)STRING
@@ -121,7 +121,7 @@
 	  END IF
 !
 	IF(IOS .NE. 0 .OR. IREC .LT. 1)THEN
-	  WRITE(LUER,*)'Error on reading Pointers in READ_SCRTEMP'
+	  IF(MYPE .EQ. 0)WRITE(LUER,*)'Error on reading Pointers in READ_SCRTEMP'
 	  NEWMOD=.TRUE.
 	  NITSF=0
 	  LST_NG=-1000
@@ -138,8 +138,10 @@
 	1       ACCESS='DIRECT',STATUS='OLD',
 	1       RECL=REC_LEN,IOSTAT=IOS,ACTION='READ')
 	  IF(IOS .NE. 0)THEN
-	    WRITE(LUER,*)'Error opening SCRTEMP for input'
-	    WRITE(LUER,*)'IOSTAT=',IOS
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(LUER,*)'Error opening SCRTEMP for input'
+	      WRITE(LUER,*)'IOSTAT=',IOS
+	    END IF
 	    INQUIRE(UNIT=LU,OPENED=FILE_OPEN)
 	    IF(FILE_OPEN)CLOSE(UNIT=LU)
 	    NEWMOD=.TRUE.
@@ -168,7 +170,7 @@
 	    RECS_FOR_RV=NUM_RV_RECS
 	  END IF
 	  IF(IOS .NE. 0)THEN
-	    WRITE(LUER,*)'Error reading R,V, SIGMA vectors in READ_SCRTEMP'
+	    IF(MYPE .EQ. 0)WRITE(LUER,*)'Error reading R,V, SIGMA vectors in READ_SCRTEMP'
 	    NEWMOD=.TRUE.
 	    NITSF=0
 	    LST_NG=-1000
@@ -220,7 +222,7 @@
 	END IF
 !
 	IF(IOS .NE. 0)THEN
-	  WRITE(LUER,*)'Error on Scratch Read'
+	  IF(MYPE .EQ. 0)WRITE(LUER,*)'Error on Scratch Read'
 	  IREC=IREC-1
 	  NEWMOD=.TRUE.
 	  NITSF=0

@@ -987,7 +987,7 @@
 	  CALL RD_STORE_NCHAR(METH_SOL,'SOL_METH',ISIX,L_TRUE,
 	1            'Which Method To solve Matrix Equations'//
 	1            ' DIAG, TRI, PEN, GSIT or MIN')
-	  IF(NUM_BNDS .EQ. 1 .AND. METH_SOL .NE. 'DIAG')THEN
+	  IF(NUM_BNDS .EQ. 1 .AND. METH_SOL .NE. 'DIAG' .AND. MYPE .EQ.  0)THEN
 	    WRITE(LUER,*)'****************************************'
 	    WRITE(LUER,*)'******WARNING in CMFGEN*****************'
 	    WRITE(LUER,*)'Solution method inconsistent with NUM_BNDS'
