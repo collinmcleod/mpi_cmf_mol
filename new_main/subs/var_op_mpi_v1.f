@@ -16,7 +16,7 @@
 !            atom, with many terms and levels treated as one (i.e using
 !            SUPER levels).
 !
-	SUBROUTINE VAR_OP_MPI_V1(VCHI,VETA,VCHI_NOT_IMP,VETA_NOT_IMP,
+	SUBROUTINE VAR_OP_MPI_V1(
 	1             HN_S,HNST_S,LOG_HNST_S,dlnHNST_S_dlnT,N_S,
 	1	      HNST_F_ON_S,EDGE_F,N_F,F_TO_S_MAPPING,
 	1             DI_S,LOG_DIST_S,dlnDIST_S_dlnT,N_DI,
@@ -25,6 +25,7 @@
 	1             EQHN,GS_ION_EQ,NT,DST,DEND,ND,LST_DEPTH_ONLY)
 	USE SET_KIND_MODULE
 	USE MOD_LEV_DIS_BLK
+	USE MOD_VAR_OPAC_J 
 	IMPLICIT NONE
 !
 ! Altered 23-Oct-2016 - Inckude PHOT_DIS_PARAMETER
@@ -37,8 +38,8 @@
 !                         Most of editing done 6-Feb-2010
 ! Altered 21-May-2002 - Bug fix. In first bound-free section, VCHI was always being
 !                         accesed, instead of PCHI (which points to VCHI or
-!                         VCHI_NOT_IMP).
-! Altered 13-Feb-2002 - VCHI_NOT_IMP, VETA_NOT_IMP inserted.
+!                         VCHI_ALL).
+! Altered 13-Feb-2002 - VCHI_ALL, VETA_ALL inserted.
 ! Altered 05-May-1998 - Bug fix --- ALPHA_VEC not correctly zeroed when level
 !                         dissolution is switched off.
 ! Altered 15-Dec-1997 - MOD_LEV_DIS_BLK replaces include file. Level
@@ -79,11 +80,6 @@ C Constants for opacity etc.
 C
 	REAL(KIND=LDP) CHIBF,CHIFF,HDKT,TWOHCSQ
 	COMMON/CONSTANTS/ CHIBF,CHIFF,HDKT,TWOHCSQ
-C
-	REAL(KIND=LDP), TARGET :: VCHI(NT,DST-1:DEND+1)		!VCHI(I,K)=dCHI(K)/dN(I,K)
-	REAL(KIND=LDP), TARGET :: VETA(NT,DST-1:DEND+1)		!VETA(I,K)=dETA(K)/dN(I,K)
-	REAL(KIND=LDP), TARGET :: VCHI_NOT_IMP(NT,DST-1:DEND+1)
-	REAL(KIND=LDP), TARGET :: VETA_NOT_IMP(NT,DST-1:DEND+1)
 C
 	REAL(KIND=LDP) HN_S(N_S,DST:DEND)
 	REAL(KIND=LDP) HNST_S(N_S,DST:DEND)
@@ -126,9 +122,8 @@ C
 	REAL(KIND=LDP) XDIS(ND)			!Constant for computing level dissolution/
 	REAL(KIND=LDP) DIS_CONST(N_F)		!Constant appearing in dissolution formula.
 	REAL(KIND=LDP) ALPHA_VEC(N_F)		!Photionization cross-section
-	REAL(KIND=LDP) VCHI_TMP(N_F,ND)
 	REAL(KIND=LDP) SUM_ION, SUM_T1, SUM_T2
-	REAL(KIND=LDP) SUM_ION_NOT_IMP, SUM_T1_NOT_IMP, SUM_T2_NOT_IMP
+	REAL(KIND=LDP) SUM_ION_ALL, SUM_T1_ALL, SUM_T2_ALL
 	REAL(KIND=LDP) NEFF,ZION_CUBED,T1,T2
 C
 	INTEGER ND_LOC
@@ -156,8 +151,8 @@ C
 	  PCHI=>VCHI
 	  PETA=>VETA
 	ELSE
-	  PCHI=>VCHI_NOT_IMP
-	  PETA=>VETA_NOT_IMP
+	  PCHI=>VCHI_ALL
+	  PETA=>VETA_ALL
 	END IF
 C
 C ND_LOC indicates the number of depth points we are going to compute the
@@ -282,8 +277,8 @@ C
 	        PCHI=>VCHI
 	        PETA=>VETA
 	      ELSE
-	        PCHI=>VCHI_NOT_IMP
-	        PETA=>VETA_NOT_IMP
+	        PCHI=>VCHI_ALL
+	        PETA=>VETA_ALL
 	      END IF
 C
 C NB: We divide by DI and not DI_F since we want the variation with
@@ -326,7 +321,7 @@ C
 !
 	  DO K=K_ST,DEND
 	    SUM_ION=0.0_LDP; SUM_T1=0.0_LDP;   SUM_T2=0.0_LDP
-	    SUM_ION_NOT_IMP=0.0_LDP; SUM_T1_NOT_IMP=0.0_LDP;   SUM_T2_NOT_IMP=0.0_LDP
+	    SUM_ION_ALL=0.0_LDP; SUM_T1_ALL=0.0_LDP;   SUM_T2_ALL=0.0_LDP
 	    DO I=1,N_F
 	      L=F_TO_S_MAPPING(I)
 	      GENLEV=L+EQHN-1
@@ -343,7 +338,7 @@ C
 	          IF( IMP_VAR(GENLEV) )THEN
 	             VCHI(GENLEV,K)=VCHI(GENLEV,K)+ALPHA
 	          ELSE
-	             VCHI_NOT_IMP(GENLEV,K)=VCHI_NOT_IMP(GENLEV,K)+ALPHA
+	             VCHI_ALL(GENLEV,K)=VCHI_ALL(GENLEV,K)+ALPHA
 	          END IF
 	          TCHI1=ALPHA*EXP(LOG_HNST_S(L,K)+LOG_DI_RAT(K)-HDKT*NU/T(K))
 	          TCHI2=DT_TERM(K)+HDKT_ON_T(K)*(EDGE_F(I)-NU)/T(K)
@@ -353,9 +348,9 @@ C
 	            SUM_T2=SUM_T2+HN_S(L,K)*ALPHA*
 	1             (1.5_LDP+HDKT_ON_T(K)*EDGE_F(I)+dlnHNST_S_dlnT(L,K))
 	          ELSE
-	            SUM_ION_NOT_IMP=SUM_ION_NOT_IMP+TCHI1
-	            SUM_T1_NOT_IMP=SUM_T1_NOT_IMP+TCHI1*TCHI2
-	            SUM_T2_NOT_IMP=SUM_T2_NOT_IMP+HN_S(L,K)*ALPHA*
+	            SUM_ION_ALL=SUM_ION_ALL+TCHI1
+	            SUM_T1_ALL=SUM_T1_ALL+TCHI1*TCHI2
+	            SUM_T2_ALL=SUM_T2_ALL+HN_S(L,K)*ALPHA*
 	1               (1.5_LDP+HDKT_ON_T(K)*EDGE_F(I)+dlnHNST_S_dlnT(L,K))
 	          END IF
 	        END IF
@@ -375,15 +370,15 @@ C
 	      VETA(NT,K)=VETA(NT,K)-T1*SUM_T1
 	    END IF
 !
-	    IF(SUM_ION_NOT_IMP .NE. 0.0_LDP)THEN
-	      VCHI_NOT_IMP(EQION,K)=VCHI_NOT_IMP(EQION,K)-SUM_ION_NOT_IMP/DI_S(ION_LEV,K)
-	      VCHI_NOT_IMP(NT-1,K)=VCHI_NOT_IMP(NT-1,K)-SUM_ION_NOT_IMP/ED(K)
-	      VCHI_NOT_IMP(NT,K)=VCHI_NOT_IMP(NT,K)+SUM_T1_NOT_IMP-SUM_T2_NOT_IMP/T(K)
+	    IF(SUM_ION_ALL .NE. 0.0_LDP)THEN
+	      VCHI_ALL(EQION,K)=VCHI_ALL(EQION,K)-SUM_ION_ALL/DI_S(ION_LEV,K)
+	      VCHI_ALL(NT-1,K)=VCHI_ALL(NT-1,K)-SUM_ION_ALL/ED(K)
+	      VCHI_ALL(NT,K)=VCHI_ALL(NT,K)+SUM_T1_ALL-SUM_T2_ALL/T(K)
 C
 	      T1=TETA1
-	      VETA_NOT_IMP(EQION,K)=VETA_NOT_IMP(EQION,K)+T1*SUM_ION_NOT_IMP/DI_S(ION_LEV,K)
-	      VETA_NOT_IMP(NT-1,K)=VETA_NOT_IMP(NT-1,K)+T1*SUM_ION_NOT_IMP/ED(K)
-	      VETA_NOT_IMP(NT,K)=VETA_NOT_IMP(NT,K)-T1*SUM_T1_NOT_IMP
+	      VETA_ALL(EQION,K)=VETA_ALL(EQION,K)+T1*SUM_ION_ALL/DI_S(ION_LEV,K)
+	      VETA_ALL(NT-1,K)=VETA_ALL(NT-1,K)+T1*SUM_ION_ALL/ED(K)
+	      VETA_ALL(NT,K)=VETA_ALL(NT,K)-T1*SUM_T1_ALL
 	    END IF
 	  END DO
 	END IF

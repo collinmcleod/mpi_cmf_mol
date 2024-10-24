@@ -16,28 +16,6 @@
 	REAL(KIND=LDP), ALLOCATABLE :: FCEXT(:,:)    	!NDMAX,NDMAX
 	REAL(KIND=LDP), ALLOCATABLE :: FAEXT(:)    	!NDMAX-
 !
-! Variation arrays
-! Variable,depth of variable,depth of J. If NUM_BNDS .ne. ND the
-! the variable depth is given by [ VJ(I1,I2,I3) ] I3+I2-NDIAG.
-!
-	REAL(KIND=LDP), ALLOCATABLE :: VJ(:,:,:)    	!NT,NUM_BNDS,ND -
-!
-! Variation line arrays
-!
-	REAL(KIND=LDP), ALLOCATABLE :: TX(:,:,:)    	!ND,ND,NM -
-	REAL(KIND=LDP), ALLOCATABLE :: TVX(:,:,:)    	!ND-1,ND,NM -
-!
-! We make TX_EXT and TVX_EXT allocatable as they are accessed directly
-! in VARCONT and thus must have the correct dimensions.
-!
-	REAL(KIND=LDP), ALLOCATABLE :: TX_EXT(:,:,:)
-	REAL(KIND=LDP), ALLOCATABLE :: TVX_EXT(:,:,:)
-	REAL(KIND=LDP), ALLOCATABLE :: KI(:,:,:)    		  !NDMAX,ND,NM_KI -
-!
-        REAL(KIND=LDP), ALLOCATABLE :: dJ_LOC(:,:,:)              !NM,NUM_BNDS,ND
-        REAL(KIND=LDP), ALLOCATABLE :: dZ(:,:,:,:)                !NM,NUM_BNDS,ND,MAX_SIM
-        REAL(KIND=LDP), ALLOCATABLE :: dZ_POPS(:,:,:)             !NT,NUM_BNDS,ND
-!
 	REAL(KIND=LDP), ALLOCATABLE :: dJ_DIF_d_T_EXT(:)          !NDMAX -
 	REAL(KIND=LDP), ALLOCATABLE :: dJ_DIF_d_dTdR_EXT(:)       !NDMAX -
 	REAL(KIND=LDP), ALLOCATABLE :: dJ_DIF_d_T(:)              !NDMAX -
@@ -87,36 +65,6 @@
 	END IF
 !
 ! Variation arrays
-! Variable,depth of variable,depth of J. If NUM_BNDS .ne. ND the
-! the variable depth is given by [ VJ(I1,I2,I3) ] I3+I2-NDIAG.
-!
-	IF(IOS .EQ. 0)ALLOCATE( VJ(NT,NUM_BNDS,DST:DEND), STAT=IOS)
-!
-! Variation line arrays
-!
-	IF(ALLOCATE_TX)THEN
-	  IF(IOS .EQ. 0)ALLOCATE( TX(ND,DST:DEND,NM),STAT=IOS)
-	  IF(IOS .EQ. 0)ALLOCATE( TVX(ND-1,DST:DEND,NM),STAT=IOS)
-!
-! We make TX_EXT and TVX_EXT allocatable as they are accessed directly
-! in VARCONT and thus must have the correct dimensions.
-!
-	  IF(ACCURATE)THEN
-	    IF(IOS .EQ. 0)ALLOCATE( TX_EXT(NDEXT,DST:DEND,NM), STAT=IOS)
-	    IF(IOS .EQ. 0)ALLOCATE( TVX_EXT(NDEXT-1,DST:DEND,NM), STAT=IOS)
-	  END IF
-	END IF
-!
-! KI is assumed to be of dimension:
-!                         (ND,3,NM_KI) in VAR_FORMSOL (NM >= 4)
-!                         (ND,ND,NM_KI) in VAR_MOMHAM (NM >= 4)
-!                         (ND,ND,NM_KI) in VAR_MOM_J_CMF_V6 (NM >= 2)
-!
-	IF(IOS .EQ. 0)ALLOCATE(KI(NDEXT,NDEXT,NM_KI), STAT=IOS)
-!
-        IF(IOS .EQ. 0)ALLOCATE( dJ_LOC(NM,NUM_BNDS,DST:DEND), STAT=IOS)
-        IF(IOS .EQ. 0)ALLOCATE( dZ(NM,NUM_BNDS,DST:DEND,MAX_SIM), STAT=IOS)
-        IF(IOS .EQ. 0)ALLOCATE( dZ_POPS(NT,NUM_BNDS,DST:DEND), STAT=IOS)
 !
 	IF(IOS .EQ. 0)ALLOCATE ( dJ_DIF_d_T_EXT(NDEXT),STAT=IOS )
 	IF(IOS .EQ. 0)ALLOCATE ( dJ_DIF_d_dTdR_EXT(NDEXT),STAT=IOS )

@@ -3,10 +3,11 @@
 ! the variation in opacity for a plane-parallel atmosphere. The
 ! matrix is tridiagonal.  No velocity filed is present.
 !
-	SUBROUTINE dRHSdCHI_PP_MPI_V1(W,SOURCE,CHI,DTAU,COH_VEC,RJ,F,R,DIFF,DBB,DST,DEND,ND)
+	SUBROUTINE dRHSdCHI_PP_MPI_V1(SOURCE,CHI,DTAU,COH_VEC,RJ,F,R,DIFF,DBB,DST,DEND,ND)
 	USE SET_KIND_MODULE
 	USE MOD_TRAP_DERIVATIVES
-	USE MPI
+	USE MOD_VAR_OPAC_J, ONLY : TX, VDST, VDEND
+	USE MPI 
 	IMPLICIT NONE
 !
 ! Created 19-MAr-2006. Based on VKIEFEAU_IBC & EDD_J_VAR_V5.F (spherical routine).
@@ -23,10 +24,6 @@
 	REAL(KIND=LDP) F(ND)
 	REAL(KIND=LDP) DBB
 	LOGICAL DIFF
-!
-! Output:
-!
-	REAL(KIND=LDP) W(ND,DST:DEND)
 !
 ! Local varaibles.
 !
@@ -52,7 +49,7 @@
 !
 ! Compute W(I,J)=dRHS(I)/dCHI(J)
 !
-	W=0.0_LDP
+	TX(:,:,1)=0.0_LDP
 	LOC_W=0.0_LDP
 	DO I=MAX(2,DST),MIN(DEND,ND-1)
 	  K=I+1
@@ -105,8 +102,8 @@
 !
 	I=ND*ND
 	CALL MPI_ALLREDUCE(MPI_IN_PLACE,LOC_W,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-	DO J=DST,DEND
-	  W(:,J)=LOC_W(:,J)
+	DO J=VDST,VDEND
+	  TX(:,J,1)=LOC_W(:,J)
 	END DO
 !
 	RETURN

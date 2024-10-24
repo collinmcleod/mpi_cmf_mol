@@ -58,6 +58,7 @@
 	REAL(KIND=LDP) T1,T2,T3,T4
 	INTEGER I,J
 	INTEGER ID
+	INTEGER MDST
 	INTEGER PHOT_ID
 	INTEGER LUER,ERROR_LU
 	EXTERNAL ERROR_LU
@@ -65,6 +66,8 @@
 !
 	CHI(1:ND)=0.0_LDP
 	ETA(1:ND)=0.0_LDP
+	MDST=DST
+	IF(LST_DEPTH_ONLY)MDST=DEND
 !
 ! Compute opacity and emissivity. This is a general include file
 ! provided program uses exactly the same variables. Can be achieved
@@ -184,13 +187,13 @@
 	1             ATM(1)%NXzV_F,CONT_FREQ,DST,DEND,ND)
 	  END IF
 !
-	  CHI_NOSCAT(DST:DEND)=CHI(DST:DEND)
-	  ETA_NOSCAT(DST:DEND)=ETA(DST:DEND)
-	  CHI_SCAT(DST:DEND)=ESEC(DST:DEND)+CHI_RAY(DST:DEND)
+	  CHI_NOSCAT(MDST:DEND)=CHI(MDST:DEND)
+	  ETA_NOSCAT(MDST:DEND)=ETA(MDST:DEND)
+	  CHI_SCAT(MDST:DEND)=ESEC(MDST:DEND)+CHI_RAY(MDST:DEND)
 !
 ! Now compute total opacity --- scattering + non scattering.
 !
-	  CHI(DST:DEND)=CHI(DST:DEND)+CHI_SCAT(DST:DEND)
+	  CHI(MDST:DEND)=CHI(MDST:DEND)+CHI_SCAT(MDST:DEND)
 !
 	  IF(.NOT. LST_DEPTH_ONLY)THEN
 	    CALL TUNE(1,'ALL_RED_COMP')
@@ -223,7 +226,7 @@
 ! Evaluate EXP(-hv/kT) for current frequency. This is needed by routines
 ! such as COMP_VAR_JREC etc.
 !
-	  DO J=1,ND
+	  DO J=MDST,ND
 	    EMHNUKT(J)=EXP(-HDKT*FL/T(J))
 	  END DO
 !
@@ -250,7 +253,7 @@
 	  T1=(FL/CONT_FREQ)**3
 	  T2=TWOHCSQ*(CONT_FREQ**3)
 	  T3=TWOHCSQ*(FL**3)
-	  DO J=DST,DEND
+	  DO J=MDST,DEND
 	    T4=ETA_C_EVAL(J)*T1*EXP(-HDKT*(FL-CONT_FREQ)/T(J))
 	    CHI(J)=CHI_C_EVAL(J)+(ETA_C_EVAL(J)/T2-T4/T3)
 	    ETA(J)=T4
@@ -263,10 +266,10 @@
 ! We reset CHI and ETA in case shock X-ray emission has been added to ETA,
 ! or CONT_FREQ was not the first frequency.
 !
-	  CHI(DST:DEND)=CHI_C_EVAL(DST:DEND)
-	  ETA(DST:DEND)=ETA_C_EVAL(DST:DEND)
-	  CHI_NOSCAT(DST:DEND)=CHI_NOSCAT_EVAL(DST:DEND)
-	  ETA_NOSCAT(DST:DEND)=ETA_NOSCAT_EVAL(DST:DEND)
+	  CHI(MDST:DEND)=CHI_C_EVAL(MDST:DEND)
+	  ETA(MDST:DEND)=ETA_C_EVAL(MDST:DEND)
+	  CHI_NOSCAT(MDST:DEND)=CHI_NOSCAT_EVAL(MDST:DEND)
+	  ETA_NOSCAT(MDST:DEND)=ETA_NOSCAT_EVAL(MDST:DEND)
 	END IF
 !
 ! 
@@ -292,7 +295,7 @@
 	      T2=1.0_LDP ; TA(1)=GFF(CONT_FREQ,T_SHOCK_1,T2)
 	      T2=2.0_LDP ; TA(2)=4.0_LDP*GFF(CONT_FREQ,T_SHOCK_1,T2)
 	      T2=6.0_LDP ; TA(3)=36.0_LDP*GFF(CONT_FREQ,T_SHOCK_1,T2)
-	      DO I=DST,DEND
+	      DO I=MDST,DEND
 	        T2=TA(1)*POP_SPECIES(I,1)+TA(2)*POP_SPECIES(I,2) +
 	1         TA(3)*(POP_ATOM(I)-POP_SPECIES(I,1)-POP_SPECIES(I,2))
 	        T3=POP_SPECIES(I,1)+POP_SPECIES(I,2) +
@@ -306,7 +309,7 @@
 	      T2=1.0_LDP ; TA(1)=GFF(CONT_FREQ,T_SHOCK_2,T2)
 	      T2=2.0_LDP ; TA(2)=4.0_LDP*GFF(CONT_FREQ,T_SHOCK_2,T2)
 	      T2=6.0_LDP ; TA(3)=36.0_LDP*GFF(CONT_FREQ,T_SHOCK_2,T2)
-	      DO I=DST,DEND
+	      DO I=MDST,DEND
 	        T2=TA(1)*POP_SPECIES(I,1)+TA(2)*POP_SPECIES(I,2) +
 	1       TA(3)*(POP_ATOM(I)-POP_SPECIES(I,1)-POP_SPECIES(I,2))
 	        T3=POP_SPECIES(I,1)+POP_SPECIES(I,2) +
@@ -327,7 +330,7 @@
 ! We use T3 for the Electron density. We asume H, He, and C are fully ionized
 ! in the X-ray emitting plasma. All other species are assumed have Z=6.0
 !
-	    DO I=DST,DEND
+	    DO I=MDST,DEND
 	      T1=EXP(-V_SHOCK_1/V(I))*(FILL_FAC_XRAYS_1)**2
 	      T2=EXP(-V_SHOCK_2/V(I))*(FILL_FAC_XRAYS_2)**2
 	      T3=POP_SPECIES(I,1)+2.0_LDP*POP_SPECIES(I,2)+
@@ -335,10 +338,10 @@
 	      ZETA(I)=(T1*XRAY_EMISS_1+T2*XRAY_EMISS_2)*T3*POP_ATOM(I)
 	    END DO
 	  END IF
-	  IF(XRAY_SMOOTH_WIND)ZETA(DST:DEND)=ZETA(DST:DEND)*CLUMP_FAC(DST:DEND)		!Should be divided?
+	  IF(XRAY_SMOOTH_WIND)ZETA(MDST:DEND)=ZETA(MDST:DEND)*CLUMP_FAC(MDST:DEND)		!Should be divided?
 !
-          ETA(DST:DEND)=ETA(DST:DEND)+ZETA(DST:DEND)
-	  ETA_MECH(DST:DEND)=TA(DST:DEND)
+          ETA(MDST:DEND)=ETA(MDST:DEND)+ZETA(MDST:DEND)
+	  ETA_MECH(MDST:DEND)=TA(MDST:DEND)
 !
 ! Changed 06-Aug-2003: Clumping was not beeing allowed for when computing
 ! the shock luminosity.
@@ -368,7 +371,7 @@
 !
 ! Set a minimum emissivity. Mainly important when X-rays are not present.
 !
-	DO I=DST,DEND
+	DO I=MDST,DEND
 	  IF(ETA(I) .LT. 1.0E-280_LDP)THEN
 	    ETA(I)=1.0E-280_LDP
 	    ETA_NOSCAT(I)=1.0E-280_LDP
@@ -377,7 +380,7 @@
 !
 ! The continuum source function is defined by:
 !                                              S= ZETA + THETA.J
-	DO I=DST,DEND
+	DO I=MDST,DEND
 	  ZETA(I)=ETA(I)/CHI(I)
 	  THETA(I)=CHI_SCAT(I)/CHI(I)
 	END DO

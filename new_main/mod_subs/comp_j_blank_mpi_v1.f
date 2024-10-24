@@ -886,15 +886,6 @@ C
 	1       'Indx','Nu','J(mom)','J(ray)','%Diff','HBC_CMF',
 	1       'J(mom)','J(ray)','%Diff'
 	    END IF
-	     WRITE(257,*)'ND=',ND; FLUSH(UNIT=257)
-	     WRITE(257,*)'FREQ_INDX=',FREQ_INDX; FLUSH(UNIT=257)
-	     WRITE(257,*)'FL=',FL; FLUSH(UNIT=257)
-	     WRITE(257,*)'RJ(1)=',RJ(1); FLUSH(UNIT=257)
-	     WRITE(257,*)'TC(1)=',TC(1); FLUSH(UNIT=257)
-	     WRITE(257,*)'HBC_CMF(1)=',HBC_CMF(1); FLUSH(UNIT=257)
-	     WRITE(257,*)'RJ(ND)=',RJ(ND); FLUSH(UNIT=257)
-	     WRITE(257,*)'TC(NDEXT)=',TC(NDEXT); FLUSH(UNIT=257)
-	     WRITE(257,*)'T2=',T2; FLUSH(UNIT=257)
 	    WRITE(LU_JCOMP,'(I7,ES16.6,2ES12.4,F10.2,3ES12.4,F10.2)')
 	1                       FREQ_INDX,FL,
 	1                       RJ(1),TC(1),T1,HBC_CMF(1),

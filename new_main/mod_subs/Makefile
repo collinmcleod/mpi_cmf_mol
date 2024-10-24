@@ -32,6 +32,7 @@ MOD = $(LIB_MOD)(mod_cmfgen.o)\
       $(LIB_MOD)(shock_power_mod.o)\
       $(LIB_MOD)(steq_data_mod.o)\
       $(LIB_MOD)(two_phot_mod.o)\
+      $(LIB_MOD)(mod_var_opac_j.o)\
       $(LIB_MOD)(var_rad_mod_mpi_v1.o)
 
 OBJ = $(LIB)(adjust_r_grid_v4.o)\
@@ -57,7 +58,6 @@ OBJ = $(LIB)(adjust_r_grid_v4.o)\
       $(LIB)(set_new_model_estimates.o)\
       $(LIB)(set_abund_clump.o)\
       $(LIB)(solve_for_pops_mpi_v1.o)\
-      $(LIB)(sub_cmf_line.o)\
       $(LIB)(sub_sob_line_v3.o)\
       $(LIB)(wind_scale_pops_v1.o)\
       $(LIB)(sup_to_full_v4.o)

@@ -12,6 +12,7 @@
 	USE LINE_VEC_MOD
 	USE LINE_MOD
 	USE RADIATION_MOD
+	USE MOD_VAR_OPAC_J
 	IMPLICIT NONE
 !
 ! Altered: 04-Oxt-2016 : Now call VSEBYJ_MULTI_V8 and VSEBYJ_X_V7.
@@ -74,6 +75,7 @@
         INTEGER BNDST
         INTEGER BNDEND
         INTEGER BND_TO_FULL
+	LOGICAL NAN_PRES
 !
 ! This function takes a band-index and converts it the equivalent index
 ! in the full matrix. L=BND_TO_FULL(J,K) is equivalent to the statements:
@@ -119,7 +121,7 @@
 !
 ! WE have replaced BA and BAION by BA_PAR and BAION_PAR in calls to
 ! VSEBYJ. Since these are diagonal components, we have had to replace
-! NUM_BANDS by IONE in the calls.
+! NUM_BNDS by IONE in the calls.
 !
 	IF(COMPUTE_BA)THEN
 	  CALL TUNE(IONE,'COMPUTE_BA')
@@ -195,14 +197,12 @@
 	      TA(1:INDX_BA_METH-1)=ETA_NOSCAT(1:INDX_BA_METH-1); TA(INDX_BA_METH:ND)=ETA(INDX_BA_METH:ND)
 	      TB(1:INDX_BA_METH-1)=CHI_NOSCAT(1:INDX_BA_METH-1); TB(INDX_BA_METH:ND)=CHI(INDX_BA_METH:ND)
 	      TC(1:INDX_BA_METH-1)=0.0_LDP;                        TC(INDX_BA_METH:ND)=CHI_SCAT(INDX_BA_METH:ND)
-              CALL BA_UPDATE_MPI_V1(VJ,VCHI_ALL,VETA_ALL,
-	1             TA,TB,TC,T,POPS,RJ,FL,FQW,
+              CALL BA_UPDATE_MPI_V1(TA,TB,TC,T,POPS,RJ,FL,FQW,
 	1             COMPUTE_NEW_CROSS,FINAL_CONSTANT_CROSS,DO_SRCE_VAR_ONLY,
 	1             BA_CHK_FAC,NION,NT,NUM_BNDS,DST,DEND,ND)
 	    ELSE IF(.NOT. LAMBDA_ITERATION)THEN
 	      TA(1:ND)=0.0_LDP
-              CALL BA_UPDATE_MPI_V1(VJ,VCHI_ALL,VETA_ALL,
-	1             ETA_NOSCAT,CHI_NOSCAT,TA,T,POPS,RJ,FL,FQW,
+              CALL BA_UPDATE_MPI_V1(ETA_NOSCAT,CHI_NOSCAT,TA,T,POPS,RJ,FL,FQW,
 	1             COMPUTE_NEW_CROSS,FINAL_CONSTANT_CROSS,DO_SRCE_VAR_ONLY,
 	1             BA_CHK_FAC,NION,NT,NUM_BNDS,DST,DEND,ND)
 	    END IF
@@ -211,7 +211,6 @@
 	        T1=VCHI_ALL(VAR_INDX,DPTH_INDX)*RJ(DPTH_INDX)
                 T2=(CHI(DPTH_INDX)-CHI_SCAT(DPTH_INDX))*VJ(VAR_INDX,DIAG_INDX,DPTH_INDX)
                 T3=T1-VETA_ALL(VAR_INDX,DPTH_INDX)+T2
-!                SUM_BA=SUM_BA+FQW*(T1+CHI_NOSCAT(DPTH_INDX)*VJ(VAR_INDX,DIAG_INDX,DPTH_INDX)-VETA_ALL(VAR_INDX,DPTH_INDX))
                 SUM_BA=SUM_BA+FQW*T3
 	        WRITE(200,'(I10,12ES16.8)')FREQ_INDX,FL,RJ(DPTH_INDX),STEQ_T(DPTH_INDX),T1,VETA_ALL(VAR_INDX,DPTH_INDX),T2,T3,FQW*T3,SUM_BA
 	        WRITE(223,'(I10,12ES16.8)')FREQ_INDX,FL,RJ(DPTH_INDX),ETA(DPTH_INDX)/(CHI(DPTH_INDX)-CHI_SCAT(DPTH_INDX)),
@@ -322,7 +321,7 @@
 !     expression for ZNET.
 !
 	  IF(UPDATE_dZ)THEN
-	    DO L=DST,DEND
+	    DO L=VDST,VDEND
 	      TA(L)=CHI_NOSCAT_PREV(L)/CHI_NOSCAT(L)
 	      IF(ETA_CONT(L) .EQ. 0)THEN
 	        TB(L)=1.0_LDP
@@ -450,10 +449,20 @@
 !
 ! Set up a temporary vector to handle Rayleigh scattering.
 !
+! WARNING WARNING WARNING -- LIMST should be VDST VDEND but ATM(1)%XzV_F(1,L) not defined.
+!
 	      TA(1:ND)=0.0_LDP
 	      IF(SPECIES_PRES(1))THEN			!If H present!
 	        DO L=DST,DEND
-	          TA(L)=CHI_RAY(L)/ATM(1)%XzV_F(1,L)	
+	          TA(L)=CHI_RAY(L)/ATM(1)%XzV_F(1,L)
+	          IF(CHI_RAY(L) .NE. CHI_RAY(L))THEN
+	            WRITE(6,*)'NaN- CHI_RAY(L))',CHI_RAY(L)
+	            FLUSH(UNIT=6); STOP
+	         END IF
+	          IF(TA(L) .NE. TA(L))THEN
+	            WRITE(6,*)'NaN- TA(L))',TA(L)
+	            FLUSH(UNIT=6); STOP
+	         END IF
 	        END DO
 	      END IF
 !

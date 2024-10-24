@@ -31,13 +31,13 @@
 ! then adding to full BA matrix in which terms have arbitrary size.
 !
 	SUBROUTINE BA_UPDATE_MPI_V1(
-	1              VJ,VCHI,VETA,
 	1              ETA_CONT,CHI_CONT,ESEC,T,POPS,RJ,
 	1              NU,FQW,NEW_CONT,FINAL_FREQ,DO_SRCE_VAR_ONLY,
 	1              dJ_CHK_FAC,NION,
 	1              NT,NUM_BNDS,DST,DEND,ND)
 	USE SET_KIND_MODULE
 	USE BA_J_DATA_MOD_MPI_V1
+	USE MOD_VAR_OPAC_J
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
 !
@@ -84,10 +84,7 @@
 !
 	INTEGER NION
   	INTEGER NT,NUM_BNDS,ND,DST,DEND
-	REAL(KIND=LDP) VJ(NT,NUM_BNDS,DST:DEND)
 	REAL(KIND=LDP) POPS(NT,ND)
-	REAL(KIND=LDP) VCHI(NT,DST-1:DEND+1)
-	REAL(KIND=LDP) VETA(NT,DST-1:DEND+1)
 	REAL(KIND=LDP) RJ(ND)
 	REAL(KIND=LDP) dJ_CHK_FAC
 !
@@ -178,7 +175,7 @@
 	  DO L=DST,DEND
 	    DO K=1,NUM_BNDS
 	      IF(K .EQ. DIAG_INDX)THEN
-	        VJ_T(:,K,L)=FQW*( RJ_RAD(L)*VCHI(:,L) - VETA(:,L) +
+	        VJ_T(:,K,L)=FQW*( RJ_RAD(L)*VCHI_ALL(:,L) - VETA_ALL(:,L) +
 	1                         (CHI_CONT(L)-ESEC(L))*VJ(:,K,L) )
 	      ELSE
 	        VJ_T(:,K,L)=FQW*(CHI_CONT(L)-ESEC(L))*VJ(:,K,L)
@@ -234,7 +231,7 @@
 	      IF(K .EQ. DIAG_INDX)THEN
 	        DO I=1,NT
 	           VJ_T(I,K,L)= VJ_T(I,K,L) +
-	1              FQW*(RJ_RAD(L)*VCHI(I,L) - VETA(I,L)+ T1*VJ(I,K,L) )
+	1              FQW*(RJ_RAD(L)*VCHI_ALL(I,L) - VETA_ALL(I,L)+ T1*VJ(I,K,L) )
 	        END DO
 	      ELSE
 	        DO I=1,NT
@@ -257,7 +254,7 @@
 	      QFV_T=FQW*(CHI_CONT(L)-ESEC(L))
    	      DO  J=1,NT	  	  	  	!Variable
 	        BA_T_PAR(J,L)=BA_T_PAR(J,L) + (
-	1             FQW*(RJ_RAD(L)*VCHI(J,L)-VETA(J,L)) + QFV_T*VJ(J,1,L) )
+	1             FQW*(RJ_RAD(L)*VCHI_ALL(J,L)-VETA_ALL(J,L)) + QFV_T*VJ(J,1,L) )
 	      END DO
 	    END DO
 !
@@ -268,7 +265,7 @@
 	        IF(K .EQ. DIAG_INDX)THEN
    	          DO  J=1,NT	  	  	  	!Variable
 	            BA_T_PAR(J,L)=BA_T_PAR(J,L) + (
-	1              FQW*(RJ_RAD(L)*VCHI(J,L)-VETA(J,L)) + QFV_T*VJ(J,K,L) )
+	1              FQW*(RJ_RAD(L)*VCHI_ALL(J,L)-VETA_ALL(J,L)) + QFV_T*VJ(J,K,L) )
 	          END DO
 	        ELSE
    	          DO  J=1,NT	  	  	  !Variable

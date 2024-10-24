@@ -24,6 +24,7 @@
 !
 ! Variation line arrays
 !
+	INTEGER  TX_LOW_DIM,TX_HIGH_DIM
 	REAL(KIND=LDP), ALLOCATABLE :: TX(:,:,:)    	!ND,ND,NM -
 	REAL(KIND=LDP), ALLOCATABLE :: TVX(:,:,:)    	!ND-1,ND,NM -
 !

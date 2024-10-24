@@ -4,11 +4,12 @@
 ! should be called in conjunction with: fcomp_pp.f & mom_j_pp_v1.f
 !
 	SUBROUTINE VAR_MOM_PP_MPI_V1(R,ETA,CHI,ESEC,F,
-	1               TX,dJ_DIFF_dT,dJ_DIFF_ddTdR,DO_THIS_MATRIX,
+	1               dJ_DIFF_dT,dJ_DIFF_ddTdR,DO_THIS_MATRIX,
 	1               HBC_J,HBC_S,IN_HBC,
 	1               DIFF,DBB,dDBBdT,dTdR,
 	1               IC,METHOD,COHERENT,DST,DEND,ND,NM)
 	USE SET_KIND_MODULE
+	USE MOD_VAR_OPAC_J, ONLY : TX, VDST, VDEND
 	USE MPI
 	IMPLICIT NONE
 !
@@ -28,7 +29,6 @@
 !
 ! Radiation field variables.These are computed.
 !
-	REAL(KIND=LDP) TX(ND,DST:DEND,NM)
 	REAL(KIND=LDP) dJ_DIFF_dT(ND)
 	REAL(KIND=LDP) dJ_DIFF_ddTdR(ND)
 	LOGICAL DO_THIS_MATRIX(NM)
@@ -74,9 +74,6 @@
 	INTEGER IERR
 	EXTERNAL ERROR_LU
 !
-	M_DST=MAX(1,DST-1)
-        M_DEND=MIN(DEND+1,ND)
-!
 	TA(1:ND)=>TRI_VECS(1:ND,1)
 	DD(1:ND)=>TRI_VECS(1:ND,2)
 	TC(1:ND)=>TRI_VECS(1:ND,3)
@@ -93,13 +90,19 @@
 !
 ! Compute optical depth scale.
 !
+	M_DST=MAX(1,VDST-1)
+        M_DEND=MIN(VDEND+1,ND)
+!
 	dCHIdR=0.0_LDP      					!(to be checked if needed).
 	CALL DERIVCHI_MPI_V1(dCHIdR,CHI,R,M_DST,M_DEND,ND,METHOD)
 	CALL d_DERIVCHI_dCHI_MPI_V1(dCHIdR,CHI,R,M_DST,M_DEND,ND,METHOD)
-        DO I=M_DST,MIN(ND-1,DEND)
+        DO I=M_DST,MIN(ND-1,M_DEND)
           dR=R(I)-R(I+1)
           DTAU(I)=0.5_LDP*dR*(CHI(I)+CHI(I+1)+dR*(dCHIdR(I+1)-dCHIdR(I))/6.0_LDP)
         END DO
+!
+	M_DST=MAX(1,DST-1)
+        M_DEND=MIN(DEND+1,ND)
 !
 ! If the scattering is incoherent, ETA must contain the full
 ! emissivity.
@@ -178,9 +181,9 @@
 	E2TOR=TOR*EXPN(ITWO,TOR)
 !
 	CALL TUNE(1,'SOL_TX')
- 	CALL dRHSdCHI_PP_MPI_V1(TX(:,:,1),SOURCE,CHI,DTAU,COH_VEC,JNU,F,R,DIFF,DBB,DST,DEND,ND)
+ 	CALL dRHSdCHI_PP_MPI_V1(SOURCE,CHI,DTAU,COH_VEC,JNU,F,R,DIFF,DBB,DST,DEND,ND)
 	IF(DST .EQ. 1)TX(1,1,1)=TX(1,1,1)-(SOURCE(1)+COH_VEC(1)*JNU(1))*(HBC_S-E2TOR)/CHI(1)
-	I=DEND-DST+1
+	I=VDEND-VDST+1
 	CALL SIMPTH_RH(TA,DD,TC,TX(:,:,1),ND,I)
 	CALL TUNE(2,'SOL_TX')
 !
@@ -189,11 +192,11 @@
 	CALL TUNE(1,'ETA_TX')
         TX(:,:,2)=0.0_LDP
         IF(DST .EQ. 1)TX(1,1,2)=0.5_LDP*DTAU(1)/CHI(1)+HBC_S/CHI(1)
-        DO I=MAX(2,DST),MIN(DEND,ND-1)
+        DO I=VDST,VDEND
           TX(I,I,2)=0.5_LDP*(DTAU(I-1)+DTAU(I))/CHI(I)
         END DO
         IF(DEND .EQ. ND)TX(ND,ND,2)=0.5_LDP*DTAU(ND-1)/CHI(ND)		!Diff and non diff
-	I=DEND-DST+1
+	I=VDEND-VDST+1
 	CALL SIMPTH_RH(TA,DD,TC,TX(:,:,2),ND,I)
 	CALL TUNE(2,'ETA_TX')
 !

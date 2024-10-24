@@ -35,7 +35,9 @@
 	USE LINE_MOD
 	USE RADIATION_MOD
 	USE VAR_RAD_MOD_MPI_V1
+	USE MOD_VAR_OPAC_J
 	USE CONTROL_VARIABLE_MOD
+	USE MPI
 	IMPLICIT NONE
 !
 ! Altered 26-Jun-2020 : Fixed bug related when H- is present.
@@ -70,6 +72,7 @@
 !
 	CHARACTER(LEN=*) SECTION
 	LOGICAL FIRST_FREQ
+	LOGICAL NAN_PRES
 !
 ! Use Eddington factors to compute J. This option is needed since continuum and lines, could,
 ! in principal, use different options.
@@ -93,6 +96,11 @@
         COMMON/LINE/ OPLIN,EMLIN
         REAL(KIND=LDP) CHIBF,CHIFF,HDKT,TWOHCSQ
         REAL(KIND=LDP) OPLIN,EMLIN
+!
+	REAL(KIND=LDP), ALLOCATABLE, TARGET, SAVE :: FAC_MATS(:,:,:)
+	REAL(KIND=LDP), POINTER, SAVE ::  STIM_FAC_MAT(:,:)
+	REAL(KIND=LDP), POINTER, SAVE ::  OPAC_FAC_MAT(:,:)
+	REAL(KIND=LDP), POINTER, SAVE ::  EMIS_FAC_MAT(:,:)
 !
 ! These two functions compute the start and end indices when updating
 ! VJ. eg. we do not wish to update VJ( ,1, ) if we are using the banded
@@ -167,15 +175,21 @@
 ! Indicates to  COMP_VAR_OPAC that we are computing the opacity at ALL depths.
 !
 	LST_DEPTH_ONLY=.FALSE.
+	IF(.NOT. ALLOCATED(FAC_MATS))THEN
+	  ALLOCATE(FAC_MATS(ND,MAX_SIM,3))
+	  EMIS_FAC_MAT=>FAC_MATS(:,:,1)
+	  OPAC_FAC_MAT=>FAC_MATS(:,:,2)
+	  STIM_FAC_MAT=>FAC_MATS(:,:,3)
+	END IF
 !
 ! Solve for the perturbations to J in terms of the perturbations
 ! to CHI and ETA. F2DA is the dCHI matrix ; FC the dETA matrix
 ! and FA is the d(diffusion approx) vector for the boundary
 ! condition at the core.
 !
-	  IF(THIS_FREQ_EXT .AND. .NOT. CONT_VEL)THEN
-	    CALL TUNE(1,'DJFEAUEXT')
-	      CALL PERTJFEAU_IBC(F2DAEXT,FCEXT,FAEXT,
+	IF(THIS_FREQ_EXT .AND. .NOT. CONT_VEL)THEN
+	  CALL TUNE(1,'DJFEAUEXT')
+	    CALL PERTJFEAU_IBC(F2DAEXT,FCEXT,FAEXT,
 	1            DTAU,CHIEXT,REXT,ZETAEXT,
 	1            THETAEXT,RJEXT,QEXT,FEXT,dCHIdR,
 	1            TA,TB,TC,HBC_J,HBC_S,INBC,DBB,DIF,
@@ -184,78 +198,78 @@
 ! Put variation matrices on old grid. Note that FA is used for the
 ! diffusion approximation.
 !
-	      CALL REGRID_dCHI(F2DA,CHI,ND,POS_IN_NEW_GRID,
+	    CALL REGRID_dCHI(F2DA,CHI,ND,POS_IN_NEW_GRID,
 	1                          F2DAEXT,CHIEXT,NDEXT,COEF,INDX)
-	      CALL REGRID_dCHI(FC,ETA,ND,POS_IN_NEW_GRID,
+	    CALL REGRID_dCHI(FC,ETA,ND,POS_IN_NEW_GRID,
 	1                          FCEXT,ETAEXT,NDEXT,COEF,INDX)
-	      DO I=1,ND
-	        FA(I)=FAEXT(POS_IN_NEW_GRID(I))
-	      END DO
-	    CALL TUNE(2,'DJFEAUEXT')
+	    DO I=1,ND
+	      FA(I)=FAEXT(POS_IN_NEW_GRID(I))
+	    END DO
+	  CALL TUNE(2,'DJFEAUEXT')
 !
 ! 
 !
-	  ELSE IF(CONT_VEL .AND. .NOT. ACCURATE)THEN
-	    IF(FIRST_FREQ)THEN
-	      TX(:,:,:)=0.0_LDP
-	      TVX(:,:,:)=0.0_LDP
-	      dJ_DIF_d_T(:)=0.0_LDP
-	      dJ_DIF_d_dTdR(:)=0.0_LDP
-	      dRSQH_DIF_d_T=0.0_LDP
-	      dRSQH_DIF_d_dTdR=0.0_LDP
-	      FL_OLD=FL
-	    ELSE
-	      RAT_TOO_BIG=.FALSE.
-	      DO L=1,ND
-	        TA(L)=CHI_NOSCAT_PREV(L)/CHI_NOSCAT(L)
-	        IF(ETA_CONT(L) .EQ. 0.0_LDP)THEN
-                  TB(L)=1.0_LDP
-	        ELSE
-	          TB(L)=ETA_PREV(L)/ETA_CONT(L)
-	        END IF
-	        IF(TA(L) .GT. 5.0_LDP)THEN
-	          TA(L)=0.0_LDP; TB(L)=0.0_LDP
-	        END IF
-!	        IF(TA(L) .GT. 1.5)RAT_TOO_BIG=.TRUE.
-	      END DO
-	      IF(RAT_TOO_BIG)THEN
-	        DO L=1,ND
-	          TA(L)=0.0_LDP
-	          TB(L)=0.0_LDP
-	        END DO
+	ELSE IF(CONT_VEL .AND. .NOT. ACCURATE)THEN
+	  IF(FIRST_FREQ)THEN
+	    TX(:,:,:)=0.0_LDP
+	    TVX(:,:,:)=0.0_LDP
+	    dJ_DIF_d_T(:)=0.0_LDP
+	    dJ_DIF_d_dTdR(:)=0.0_LDP
+	    dRSQH_DIF_d_T=0.0_LDP
+	    dRSQH_DIF_d_dTdR=0.0_LDP
+	    FL_OLD=FL
+	  ELSE
+	    RAT_TOO_BIG=.FALSE.
+	    DO L=1,ND
+	      TA(L)=CHI_NOSCAT_PREV(L)/CHI_NOSCAT(L)
+	      IF(ETA_CONT(L) .EQ. 0.0_LDP)THEN
+                TB(L)=1.0_LDP
+	      ELSE
+	        TB(L)=ETA_PREV(L)/ETA_CONT(L)
 	      END IF
-	      DO J=DST,DEND
-	        T1=ETA_CONT(J)*HDKT*(FL_OLD-FL)/T(J)/T(J)
-	        DO K=1,ND
-	          TX(K,J,3)=TX(K,J,3) * TA(J)
-	          TX(K,J,4)=TX(K,J,4) * TB(J)
-	          TX(K,J,6)=TX(K,J,6) + TX(K,J,4)*T1
-	        END DO
-	      END DO
-	      DO J=DST,DEND
-	        T1=ETA_CONT(J)*HDKT*(FL_OLD-FL)/T(J)/T(J)
-	        DO K=1,ND-1
-	          TVX(K,J,3)=TVX(K,J,3) * TA(J)
-	          TVX(K,J,4)=TVX(K,J,4) * TB(J)
-	          TVX(K,J,6)=TVX(K,J,6) + TVX(K,J,4)*T1
-	        END DO
+	      IF(TA(L) .GT. 5.0_LDP)THEN
+	        TA(L)=0.0_LDP; TB(L)=0.0_LDP
+	      END IF
+!	      IF(TA(L) .GT. 1.5)RAT_TOO_BIG=.TRUE.
+	    END DO
+	    IF(RAT_TOO_BIG)THEN
+	      DO L=1,ND
+	        TA(L)=0.0_LDP
+	        TB(L)=0.0_LDP
 	      END DO
 	    END IF
-	    DO I=1,NM
-	      DO_THIS_TX_MATRIX(I)=.TRUE.
+	    DO J=VDST,VDEND
+	      T1=ETA_CONT(J)*HDKT*(FL_OLD-FL)/T(J)/T(J)
+	      DO K=1,ND
+	        TX(K,J,3)=TX(K,J,3) * TA(J)
+	        TX(K,J,4)=TX(K,J,4) * TB(J)
+	        TX(K,J,6)=TX(K,J,6) + TX(K,J,4)*T1
+	      END DO
 	    END DO
-	    DO I=TX_OFFSET+1,NM
-	      IF(VAR_IN_USE_CNT(I) .EQ. 0)THEN
-	        DO_THIS_TX_MATRIX(I)=.FALSE.
-	      END IF
+	    DO J=VDST,VDEND
+	      T1=ETA_CONT(J)*HDKT*(FL_OLD-FL)/T(J)/T(J)
+	      DO K=1,ND-1
+	        TVX(K,J,3)=TVX(K,J,3) * TA(J)
+	        TVX(K,J,4)=TVX(K,J,4) * TB(J)
+	        TVX(K,J,6)=TVX(K,J,6) + TVX(K,J,4)*T1
+	      END DO
 	    END DO
+	  END IF
+	  DO I=1,NM
+	    DO_THIS_TX_MATRIX(I)=.TRUE.
+	  END DO
+	  DO I=TX_OFFSET+1,NM
+	    IF(VAR_IN_USE_CNT(I) .EQ. 0)THEN
+	      DO_THIS_TX_MATRIX(I)=.FALSE.
+	    END IF
+	  END DO
 !
 ! Use TA as temporary storage for the emissivity.
 !
-	    IF(COHERENT_ES)THEN
-	      TA(1:ND)=ETA_CLUMP(1:ND)
-	      ES_COH_VEC(1:ND)=CHI_SCAT_CLUMP(1:ND)/CHI_CLUMP(1:ND)
-	    ELSE
+	  IF(COHERENT_ES)THEN
+	    TA(1:ND)=ETA_CLUMP(1:ND)
+	    ES_COH_VEC(1:ND)=CHI_SCAT_CLUMP(1:ND)/CHI_CLUMP(1:ND)
+	  ELSE
 !
 ! Two scenarios:
 !    (i) We use a lambda iteration to allow for the variation of J in
@@ -284,40 +298,40 @@
 !	      END DO
 !	    END IF
 !
-	      IF(MIXED_ES_VAR)THEN
-	        T1=2.0_LDP
-	        DO I=1,ND
-	          IF(RJ_ES(I) .GT. RJ(I))THEN
-	            TA(I)=ETA_CLUMP(I)+ESEC_CLUMP(I)*
-	1                   (RJ_ES(I)-RJ(I)/T1)
-	            ES_COH_VEC(I)=ESEC_CLUMP(I)/CHI_CLUMP(I)/T1
-	          ELSE
-	            TA(I)=ETA_CLUMP(I)+ESEC_CLUMP(I)*RJ_ES(I)/T1
-	            ES_COH_VEC(I)=ESEC_CLUMP(I)/CHI_CLUMP(I)*
+	    IF(MIXED_ES_VAR)THEN
+	      T1=2.0_LDP
+	      DO I=1,ND
+	        IF(RJ_ES(I) .GT. RJ(I))THEN
+	          TA(I)=ETA_CLUMP(I)+ESEC_CLUMP(I)*
+	1                 (RJ_ES(I)-RJ(I)/T1)
+	          ES_COH_VEC(I)=ESEC_CLUMP(I)/CHI_CLUMP(I)/T1
+	        ELSE
+	          TA(I)=ETA_CLUMP(I)+ESEC_CLUMP(I)*RJ_ES(I)/T1
+	          ES_COH_VEC(I)=ESEC_CLUMP(I)/CHI_CLUMP(I)*
 	1                    (RJ_ES(I)/RJ(I))/T1
-	          END IF
-	        END DO
-	      ELSE
-	        ES_COH_VEC(1:ND)=0.0_LDP
-	        TA(1:ND)=ETA_CLUMP(1:ND)+ESEC_CLUMP(1:ND)*RJ_ES(1:ND)
-	      END IF
-	   END IF
+	        END IF
+	      END DO
+	    ELSE
+	      ES_COH_VEC(1:ND)=0.0_LDP
+	      TA(1:ND)=ETA_CLUMP(1:ND)+ESEC_CLUMP(1:ND)*RJ_ES(1:ND)
+	    END IF
+	  END IF
 !
-	   CALL TUNE(1,'VAR_MOM_J')
-	   IF(PLANE_PARALLEL_NO_V)THEN
-	     CALL VAR_MOM_PP_MPI_V1(R,TA,CHI_CLUMP,CHI_SCAT_CLUMP,FEDD,
-	1           TX,dJ_DIF_d_T,dJ_DIF_d_dTdR,DO_THIS_TX_MATRIX,
+	  CALL TUNE(1,'VAR_MOM_J')
+	  IF(PLANE_PARALLEL_NO_V)THEN
+	    CALL VAR_MOM_PP_MPI_V1(R,TA,CHI_CLUMP,CHI_SCAT_CLUMP,FEDD,
+	1           dJ_DIF_d_T,dJ_DIF_d_dTdR,DO_THIS_TX_MATRIX,
 	1           HBC_CMF,NBC_CMF,INBC,
 	1           DIF,DBB,dDBBdT,dTdR,IC,METHOD,COHERENT_ES,DST,DEND,ND,NM)
-	   ELSE IF(PLANE_PARALLEL)THEN
-	     CALL PP_VAR_MOM_CMF_V1(TA,CHI_CLUMP,CHI_SCAT_CLUMP,V,SIGMA,R,
+	  ELSE IF(PLANE_PARALLEL)THEN
+	    CALL PP_VAR_MOM_CMF_V1(TA,CHI_CLUMP,CHI_SCAT_CLUMP,V,SIGMA,R,
 	1           TX,TVX,dJ_DIF_d_T,dJ_DIF_d_dTdR,
 	1           dRSQH_DIF_d_T,dRSQH_DIF_d_dTdR,FEDD,GEDD,N_ON_J,
 	1           INBC,HBC_CMF(1),HBC_CMF(2),NBC_CMF(1),NBC_CMF(2),
 	1           FIRST_FREQ,L_FALSE,dLOG_NU,DIF,dTdR,DBB,dDBBdT,IC,
 	1           DO_THIS_TX_MATRIX,METHOD,COHERENT_ES,ND,NM)
-           ELSE IF(USE_J_REL)THEN
-             CALL VAR_JREL_V5(TA,CHI_CLUMP,CHI_SCAT_CLUMP,ES_COH_VEC,V,SIGMA,R,
+          ELSE IF(USE_J_REL)THEN
+            CALL VAR_JREL_V5(TA,CHI_CLUMP,CHI_SCAT_CLUMP,ES_COH_VEC,V,SIGMA,R,
 	1                  TX,TVX,dJ_DIF_d_T,dJ_DIF_d_dTdR,
 	1                  dRSQH_DIF_d_T,dRSQH_DIF_d_dTdR,KI,WM,RHS_dHdCHI,
 	1                  FIRST_FREQ,FL,dLOG_NU,
@@ -326,9 +340,9 @@
 	1                  dTdR,DBB,dDBBdT,IC,
 	1                  INCL_ADVEC_TERMS_IN_TRANS_EQ,INCL_REL_TERMS,
 	1                  DO_THIS_TX_MATRIX,METHOD,ND,NM,NM_KI)
-	   ELSE IF (USE_LAM_ES)THEN
-	   ELSE IF(USE_DJDT_RTE)THEN
-	     CALL VAR_MOM_J_DDT_V6(TA,CHI_CLUMP,CHI_SCAT_CLUMP,ES_COH_VEC,V,R,
+	  ELSE IF (USE_LAM_ES)THEN
+	  ELSE IF(USE_DJDT_RTE)THEN
+	    CALL VAR_MOM_J_DDT_V6(TA,CHI_CLUMP,CHI_SCAT_CLUMP,ES_COH_VEC,V,R,
 	1           TX,TVX,dJ_DIF_d_T,dJ_DIF_d_dTdR,
 	1           dRSQH_DIF_d_T,dRSQH_DIF_d_dTdR,
 	1           KI,WM,RHS_dHdCHI,FEDD,
@@ -337,7 +351,7 @@
 	1           XM_CHK_OPTION,J_CHK_OPTION,H_CHK_OPTION,
 	1           INNER_BND_METH,OUTER_BND_METH,
 	1           ND,NM,NM_KI)
-	   ELSE
+	  ELSE
 	    CALL VAR_MOM_J_CMF_V12(TA,CHI_CLUMP,CHI_SCAT_CLUMP,
 	1           ES_COH_VEC,V,SIGMA,R,
 	1           TX,TVX,dJ_DIF_d_T,dJ_DIF_d_dTdR,
@@ -347,68 +361,70 @@
 	1           INNER_BND_METH,dTdR,DBB,dDBBdT,IC,IB_STAB_FACTOR,
 	1           FL,H_CHK_OPTION,OUT_BC_TYPE,DO_THIS_TX_MATRIX,
 	1           METHOD,ND,NM,NM_KI)
-	   END IF
-	   CALL TUNE(2,'VAR_MOM_J')
+	  END IF
+	  CALL TUNE(2,'VAR_MOM_J')
 !
 ! Correcting for clumping this way does it for both the continuum and lines.
 !
-	    IF(DO_CLUMP_MODEL)THEN
-	      DO J=DST,DEND
-	        DO K=1,ND
-	          TX(K,J,1)=TX(K,J,1)*CLUMP_FAC(J)
-	          TX(K,J,2)=TX(K,J,2)*CLUMP_FAC(J)
-	        END DO
+	  IF(DO_CLUMP_MODEL)THEN
+	    DO J=VDST,VDEND
+	      DO K=1,ND
+	        TX(K,J,1)=TX(K,J,1)*CLUMP_FAC(J)
+	        TX(K,J,2)=TX(K,J,2)*CLUMP_FAC(J)
 	      END DO
-	      DO J=DST,DEND
-	        DO K=1,ND-1
-	          TVX(K,J,1)=TVX(K,J,1)*CLUMP_FAC(J)
-	          TVX(K,J,2)=TVX(K,J,2)*CLUMP_FAC(J)
-	        END DO
+	    END DO
+	    DO J=VDST,VDEND
+	      DO K=1,ND-1
+	        TVX(K,J,1)=TVX(K,J,1)*CLUMP_FAC(J)
+	        TVX(K,J,2)=TVX(K,J,2)*CLUMP_FAC(J)
 	      END DO
-	    END IF
+	    END DO
+	  END IF
 !
 ! For many ALO like calculations, only the variation of J with the source function
 ! is allowed for. The following allows us to do the same thing.
 !
-	   IF(DO_SRCE_VAR_ONLY)THEN
-	      DO J=DST,DEND
-	       T1=-ETA_CLUMP(J)/CHI_CLUMP(J)
-	        DO K=1,ND
-	          TX(K,J,1)=TX(K,J,2)*T1
-	        END DO
+	  IF(DO_SRCE_VAR_ONLY)THEN
+	    DO J=VDST,VDEND
+	      T1=-ETA_CLUMP(J)/CHI_CLUMP(J)
+	      DO K=1,ND
+	        TX(K,J,1)=TX(K,J,2)*T1
 	      END DO
-	      DO J=DST,DEND
-	       T1=-ETA_CLUMP(J)/CHI_CLUMP(J)
-	        DO K=1,ND-1
-	          TVX(K,J,1)=TVX(K,J,2)*T1
-	        END DO
+	    END DO
+	    DO J=VDST,VDEND
+	      T1=-ETA_CLUMP(J)/CHI_CLUMP(J)
+	      DO K=1,ND-1
+	        TVX(K,J,1)=TVX(K,J,2)*T1
 	      END DO
-	   END IF
+	    END DO
+	  END IF
 !
 ! We use TB as a temporary vector for J in the electron scattering emissivity.
 ! Its value depends on whether we have coherent or incoherent e.s.
 !
-	    IF(COHERENT_ES)THEN
-	      TB(1:ND)=RJ(1:ND)
-	    ELSE
-	      TB(1:ND)=RJ_ES(1:ND)
-	    END IF
+	  IF(COHERENT_ES)THEN
+	    TB(1:ND)=RJ(1:ND)
+	  ELSE
+	    TB(1:ND)=RJ_ES(1:ND)
+	  END IF
 !
-	    DO J=DST,DEND
-	      DO K=1,ND
-	        TX(K,J,3)=TX(K,J,3) + TX(K,J,1)
-	        TX(K,J,4)=TX(K,J,4) + TX(K,J,2)
-	        TX(K,J,5)=TX(K,J,5) + TX(K,J,1) + TX(K,J,2)*TB(J)
-	      END DO
+	  DO J=VDST,VDEND
+	    DO K=1,ND
+	      TX(K,J,3)=TX(K,J,3) + TX(K,J,1)
+	      TX(K,J,4)=TX(K,J,4) + TX(K,J,2)
+	      TX(K,J,5)=TX(K,J,5) + TX(K,J,1) + TX(K,J,2)*TB(J)
 	    END DO
+	  END DO
 !
-	    DO J=DST,DEND
+	  IF(.NOT. PLANE_PARALLEL_NO_V)THEN
+	    DO J=VDST,VDEND
 	      DO K=1,ND-1
 	        TVX(K,J,3)=TVX(K,J,3) + TVX(K,J,1)
 	        TVX(K,J,4)=TVX(K,J,4) + TVX(K,J,2)
 	        TVX(K,J,5)=TVX(K,J,5) + TVX(K,J,1) + TVX(K,J,2)*TB(J)
 	      END DO
 	    END DO
+	  END IF
 !
 ! Update line variation matrices. Note that the matrices now refer to the
 ! variation with respect to levels (e.g. the lower and upper level) and
@@ -421,75 +437,100 @@
 ! NB: We paralleize over the second loop, rather than SIM_INDX, as the
 !     variables LOW and UP may be the same for different SIM_INDX values.
 !
-	    CALL TUNE(1,'TX_TVX_VC')
-	    DO SIM_INDX=1,MAX_SIM
-	      LOW=LOW_POINTER(SIM_INDX);    UP=UP_POINTER(SIM_INDX)
-	      IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
-	        DO J=DST,DEND
-	          OPAC_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*NEG_OPAC_FAC(J)
-	          STIM_FAC=OPAC_FAC*U_STAR_RATIO(J,SIM_INDX)*GLDGU(SIM_INDX)
-	          OPAC_FAC=OPAC_FAC*L_STAR_RATIO(J,SIM_INDX)
-	          EMIS_FAC=LINE_EMIS_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*U_STAR_RATIO(J,SIM_INDX)
-	          DO K=1,ND
-	            TX(K,J,LOW)=TX(K,J,LOW) + OPAC_FAC*TX(K,J,1)
-	          END DO
-	          DO K=1,ND
-	            TX(K,J,UP)=TX(K,J,UP) + ( EMIS_FAC*TX(K,J,2) - STIM_FAC*TX(K,J,1) )
-	          END DO
+	  FAC_MATS=0.0_LDP
+	  DO SIM_INDX=1,MAX_SIM
+	    LOW=LOW_POINTER(SIM_INDX);    UP=UP_POINTER(SIM_INDX)
+	    IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
+	      DO J=DST,DEND
+	        OPAC_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*NEG_OPAC_FAC(J)
+	        EMIS_FAC_MAT(J,SIM_INDX)=LINE_EMIS_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*U_STAR_RATIO(J,SIM_INDX)
+	        OPAC_FAC_MAT(J,SIM_INDX)=OPAC_FAC*L_STAR_RATIO(J,SIM_INDX)
+	        STIM_FAC_MAT(J,SIM_INDX)=OPAC_FAC*U_STAR_RATIO(J,SIM_INDX)*GLDGU(SIM_INDX)
+	      END DO
+	    END IF
+	  END DO
+	  IF(NUM_BNDS .EQ. 3)THEN
+	    K=3*ND*MAX_SIM
+	    CALL MPI_ALLREDUCE(MPI_IN_PLACE,FAC_MATS,K,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	  END IF
+!  
+	  CALL TUNE(1,'TX_TVX_VC')
+	  DO SIM_INDX=1,MAX_SIM
+	    LOW=LOW_POINTER(SIM_INDX);    UP=UP_POINTER(SIM_INDX)
+	    IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
+	      DO J=VDST,VDEND
+	        DO K=1,ND
+	          TX(K,J,LOW)=TX(K,J,LOW) + OPAC_FAC_MAT(J,SIM_INDX)*TX(K,J,1)
 	        END DO
-	      END IF
-	    END DO
+	        DO K=1,ND
+	          TX(K,J,UP)=TX(K,J,UP) + ( EMIS_FAC_MAT(J,SIM_INDX)*TX(K,J,2) - STIM_FAC_MAT(J,SIM_INDX)*TX(K,J,1) )
+	        END DO
+	      END DO
+	    END IF
+	  END DO
 !
 ! We now do the update for dH (i.e. TVX)
 !
+	  IF(.NOT. PLANE_PARALLEL_NO_V)THEN
 	    DO SIM_INDX=1,MAX_SIM
 	      LOW=LOW_POINTER(SIM_INDX);    UP=UP_POINTER(SIM_INDX)
 	      IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
-	        DO J=DST,DEND
-	          OPAC_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*NEG_OPAC_FAC(J)
-	          STIM_FAC=OPAC_FAC*U_STAR_RATIO(J,SIM_INDX)*GLDGU(SIM_INDX)
-	          OPAC_FAC=OPAC_FAC*L_STAR_RATIO(J,SIM_INDX)
-	          EMIS_FAC=LINE_EMIS_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*U_STAR_RATIO(J,SIM_INDX)
+	        DO J=VDST,VDEND
 	          DO K=1,ND-1
-	            TVX(K,J,LOW)=TVX(K,J,LOW) + OPAC_FAC*TVX(K,J,1)
+	            TVX(K,J,LOW)=TVX(K,J,LOW) + OPAC_FAC_MAT(J,SIM_INDX)*TVX(K,J,1)
 	          END DO
 	          DO K=1,ND-1
-	            TVX(K,J,UP)=TVX(K,J,UP) + ( EMIS_FAC*TVX(K,J,2) - STIM_FAC*TVX(K,J,1) )
+	            TVX(K,J,UP)=TVX(K,J,UP) + ( EMIS_FAC_MAT(J,SIM_INDX)*TVX(K,J,2) - STIM_FAC_MAT(J,SIM_INDX)*TVX(K,J,1) )
 	          END DO
 	        END DO
 	      END IF
 	    END DO
-	    CALL TUNE(2,'TX_TVX_VC')
+	  END IF
+	  CALL TUNE(2,'TX_TVX_VC')
 !
-	    IF(INCLUDE_dSLdT)THEN
-	      DO SIM_INDX=1,MAX_SIM
-	        NL=SIM_NL(SIM_INDX)
-	        NUP=SIM_NUP(SIM_INDX)
-	        IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
-	          DO J=DST,DEND
-	            OPAC_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*NEG_OPAC_FAC(J)*
-	1              (dL_RAT_dT(J,SIM_INDX)*POPS(NL,J)-GLDGU(SIM_INDX)*dU_RAT_dT(J,SIM_INDX)*POPS(NUP,J))
-	            EMIS_FAC=LINE_EMIS_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*dU_RAT_dT(J,SIM_INDX)*POPS(NUP,J)
-	            DO K=1,ND
-	              TX(K,J,6)=TX(K,J,6) + (OPAC_FAC*TX(K,J,1)+EMIS_FAC*TX(K,J,2))
-	            END DO
-	            DO K=1,ND-1
-	              TVX(K,J,6)=TVX(K,J,6) + (OPAC_FAC*TVX(K,J,1)+EMIS_FAC*TVX(K,J,2))
-	            END DO
-	          END DO
-	        END IF
-	      END DO
+	  IF(INCLUDE_dSLdT)THEN
+	    FAC_MATS=0.0_LDP
+	    DO SIM_INDX=1,MAX_SIM
+	      NL=SIM_NL(SIM_INDX)
+	      NUP=SIM_NUP(SIM_INDX)
+	      IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
+	        DO J=DST,DEND
+	          EMIS_FAC_MAT(J,SIM_INDX)=LINE_EMIS_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*dU_RAT_dT(J,SIM_INDX)*POPS(NUP,J)
+	          OPAC_FAC_MAT(J,SIM_INDX)=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*NEG_OPAC_FAC(J)*
+	1             (dL_RAT_dT(J,SIM_INDX)*POPS(NL,J)-GLDGU(SIM_INDX)*dU_RAT_dT(J,SIM_INDX)*POPS(NUP,J))
+	        END DO
+	      END IF
+	    END DO
+	    IF(NUM_BNDS .EQ. 3)THEN
+	      K=2*ND*MAX_SIM
+	      CALL MPI_ALLREDUCE(MPI_IN_PLACE,FAC_MATS,K,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	    END IF
+!
+	    DO SIM_INDX=1,MAX_SIM
+	      NL=SIM_NL(SIM_INDX)
+	      NUP=SIM_NUP(SIM_INDX)
+	      IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
+	        DO J=VDST,VDEND
+	          DO K=1,ND
+	            TX(K,J,6)=TX(K,J,6) + (OPAC_FAC_MAT(J,SIM_INDX)*TX(K,J,1)+EMIS_FAC_MAT(J,SIM_INDX)*TX(K,J,2))
+	          END DO
+	          DO K=1,ND-1
+	            TVX(K,J,6)=TVX(K,J,6) + (OPAC_FAC_MAT(J,SIM_INDX)*TVX(K,J,1)+EMIS_FAC_MAT(J,SIM_INDX)*TVX(K,J,2))
+	          END DO
+	        END DO
+	      END IF
+	    END DO
+	  END IF
 !
 ! Now zero dCHI and dETA storage locations. These refer to the TOTAL
 ! opacity and emissivity.
 !
-	    TX(:,:,1:2)=0.0_LDP
-	    TVX(:,:,1:2)=0.0_LDP
+	  TX(:,:,1:2)=0.0_LDP
+	  TVX(:,:,1:2)=0.0_LDP
 !
 ! 
 !
-	  ELSE IF(CONT_VEL .AND. ACCURATE)THEN
+	ELSE IF(CONT_VEL .AND. ACCURATE)THEN
 	    IF(FIRST_FREQ)THEN
 	      TX_EXT(:,:,:)=0.0_LDP
 	      TVX_EXT(:,:,:)=0.0_LDP
@@ -506,13 +547,13 @@
 	          TB(L)=0.0_LDP
 	        END DO
 	      END IF
-	      DO J=DST,DEND
+	      DO J=VDST,VDEND
 	        DO K=1,NDEXT
 	          TX_EXT(K,J,3)=TX_EXT(K,J,3) * TA(J)
 	          TX_EXT(K,J,4)=TX_EXT(K,J,4) * TB(J)
 	        END DO
 	      END DO
-	      DO J=DST,DEND
+	      DO J=VDST,VDEND
 	        DO K=1,NDEXT-1
 	          TVX_EXT(K,J,3)=TVX_EXT(K,J,3) * TA(J)
 	          TVX_EXT(K,J,4)=TVX_EXT(K,J,4) * TB(J)
@@ -550,13 +591,13 @@
 ! Correcting for clumping this way does it for both the continuum and lines.
 !
 	    IF(DO_CLUMP_MODEL)THEN
-	      DO J=DST,DEND
+	      DO J=VDST,VDEND
 	        DO K=1,NDEXT
 	          TX_EXT(K,J,1)=TX_EXT(K,J,1)*CLUMP_FAC(J)
 	          TX_EXT(K,J,2)=TX_EXT(K,J,2)*CLUMP_FAC(J)
 	        END DO
 	      END DO
-	      DO J=DST,DEND
+	      DO J=VDST,VDEND
 	        DO K=1,NDEXT-1
 	          TVX_EXT(K,J,1)=TVX_EXT(K,J,1)*CLUMP_FAC(J)
 	          TVX_EXT(K,J,2)=TVX_EXT(K,J,2)*CLUMP_FAC(J)
@@ -572,7 +613,7 @@
 	    ELSE
 	      TB(1:ND)=RJ_ES(1:ND)
 	    END IF
-	    DO J=DST,DEND
+	    DO J=VDST,VDEND
 	      DO K=1,NDEXT
 	        TX_EXT(K,J,3)=TX_EXT(K,J,3) + TX_EXT(K,J,1)
 	        TX_EXT(K,J,4)=TX_EXT(K,J,4) + TX_EXT(K,J,2)
@@ -580,7 +621,7 @@
 	1                                         TX_EXT(K,J,2)*TB(J)
 	      END DO
 	    END DO
-	    DO J=DST,DEND
+	    DO J=VDST,VDEND
 	      DO K=1,NDEXT-1
 	        TVX_EXT(K,J,3)=TVX_EXT(K,J,3) + TVX_EXT(K,J,1)
 	        TVX_EXT(K,J,4)=TVX_EXT(K,J,4) + TVX_EXT(K,J,2)
@@ -597,20 +638,32 @@
 ! For simplicity we have ignored the T dependance of L_STAR_RATIO and
 ! U_STAR_RATIO.
 !
+	    FAC_MATS=0.0_LDP
+	    DO SIM_INDX=1,MAX_SIM
+	      LOW=LOW_POINTER(SIM_INDX);    UP=UP_POINTER(SIM_INDX)
+	      IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
+	        DO J=DST,DEND
+	          OPAC_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*NEG_OPAC_FAC(J)
+	          STIM_FAC_MAT(J,SIM_INDX)=OPAC_FAC*U_STAR_RATIO(J,SIM_INDX)*GLDGU(SIM_INDX)
+	          OPAC_FAC_MAT(J,SIM_INDX)=OPAC_FAC*L_STAR_RATIO(J,SIM_INDX)
+	          EMIS_FAC_MAT(J,SIM_INDX)=LINE_EMIS_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*U_STAR_RATIO(J,SIM_INDX)
+	        END DO
+	      END IF
+	    END DO
+	    IF(NUM_BNDS .EQ. 3)THEN
+	      K=3*ND*MAX_SIM
+	      CALL MPI_ALLREDUCE(MPI_IN_PLACE,FAC_MATS,K,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	    END IF
+!
 	    DO SIM_INDX=1,MAX_SIM
 	      LOW=LOW_POINTER(SIM_INDX);    UP=UP_POINTER(SIM_INDX)
 	      NL=SIM_NL(SIM_INDX);          NUP=SIM_NUP(SIM_INDX)
 	      IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
-	        DO J=DST,DEND
-	          OPAC_FAC=lINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*
-	1                      NEG_OPAC_FAC(J)*L_STAR_RATIO(J,SIM_INDX)
-	          EMIS_FAC=LINE_EMIS_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*
-	1                      U_STAR_RATIO(J,SIM_INDX)
-	          STIM_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*
-	1                      NEG_OPAC_FAC(J)*U_STAR_RATIO(J,SIM_INDX)*GLDGU(SIM_INDX)
+	        DO J=VDST,VDEND
 	          DO K=1,NDEXT
-	            TX_EXT(K,J,LOW)=TX_EXT(K,J,LOW) + OPAC_FAC*TX_EXT(K,J,1)
-	            TX_EXT(K,J,UP)=TX_EXT(K,J,UP) + ( EMIS_FAC*TX_EXT(K,J,2) - STIM_FAC*TX_EXT(K,J,1) )
+	            TX_EXT(K,J,LOW)=TX_EXT(K,J,LOW) + OPAC_FAC_MAT(J,SIM_INDX)*TX_EXT(K,J,1)
+	            TX_EXT(K,J,UP)=TX_EXT(K,J,UP) + ( EMIS_FAC_MAT(J,SIM_INDX)*TX_EXT(K,J,2) - 
+	1                                         STIM_FAC_MAT(J,SIM_INDX)*TX_EXT(K,J,1) )
 	          END DO
 	        END DO
 	      END IF
@@ -622,35 +675,46 @@
 	      LOW=LOW_POINTER(SIM_INDX);    UP=UP_POINTER(SIM_INDX)
 	      NL=SIM_NL(SIM_INDX);          NUP=SIM_NUP(SIM_INDX)
 	      IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
-	        DO J=DST,DEND
-	          OPAC_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*
-	1                      NEG_OPAC_FAC(J)*L_STAR_RATIO(J,SIM_INDX)
-	          EMIS_FAC=LINE_EMIS_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*
-	1                      U_STAR_RATIO(J,SIM_INDX)
-	          STIM_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*
-	1                      NEG_OPAC_FAC(J)*U_STAR_RATIO(J,SIM_INDX)*GLDGU(SIM_INDX)
+	        DO J=VDST,VDEND
 	          DO K=1,NDEXT-1
-	            TVX_EXT(K,J,LOW)=TVX_EXT(K,J,LOW) + OPAC_FAC*TVX_EXT(K,J,1)
-	            TVX_EXT(K,J,UP)=TVX_EXT(K,J,UP) + ( EMIS_FAC*TVX_EXT(K,J,2) - STIM_FAC*TVX_EXT(K,J,1) )
+	            TVX_EXT(K,J,LOW)=TVX_EXT(K,J,LOW) + OPAC_FAC_MAT(J,SIM_INDX)*TVX_EXT(K,J,1)
+	            TVX_EXT(K,J,UP)=TVX_EXT(K,J,UP) + ( EMIS_FAC_MAT(J,SIM_INDX)*TVX_EXT(K,J,2) - 
+	1                                               STIM_FAC_MAT(J,SIM_INDX)*TVX_EXT(K,J,1) )
 	          END DO
 	        END DO
 	      END IF
 	    END DO
 !
 	    IF(INCLUDE_dSLdT)THEN
+	      FAC_MATS=0.0_LDP
 	      DO SIM_INDX=1,MAX_SIM
 	        NL=SIM_NL(SIM_INDX)
 	        NUP=SIM_NUP(SIM_INDX)
 	        IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
 	          DO J=DST,DEND
-	            OPAC_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*NEG_OPAC_FAC(J)*
-	1               (dL_RAT_dT(J,SIM_INDX)*POPS(NL,J)-GLDGU(SIM_INDX)*dU_RAT_dT(J,SIM_INDX)*POPS(NUP,J))
-	            EMIS_FAC=LINE_EMIS_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*dU_RAT_dT(J,SIM_INDX)*POPS(NUP,J)
+	            OPAC_FAC_MAT(J,SIM_INDX)=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*NEG_OPAC_FAC(J)*
+	1             (dL_RAT_dT(J,SIM_INDX)*POPS(NL,J)-GLDGU(SIM_INDX)*dU_RAT_dT(J,SIM_INDX)*POPS(NUP,J))
+	            EMIS_FAC_MAT(J,SIM_INDX)=LINE_EMIS_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*dU_RAT_dT(J,SIM_INDX)*POPS(NUP,J)
+	          END DO
+	        END IF
+	      END DO
+	      IF(NUM_BNDS .EQ. 3)THEN
+	        K=2*ND*MAX_SIM
+	        CALL MPI_ALLREDUCE(MPI_IN_PLACE,FAC_MATS,K,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	      END IF
+!
+	      DO SIM_INDX=1,MAX_SIM
+	        NL=SIM_NL(SIM_INDX)
+	        NUP=SIM_NUP(SIM_INDX)
+	        IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
+	          DO J=VDST,VDEND
 	            DO K=1,NDEXT
-	              TX_EXT(K,J,6)=TX_EXT(K,J,6) + (OPAC_FAC*TX_EXT(K,J,1)+EMIS_FAC*TX_EXT(K,J,2))
+	              TX_EXT(K,J,6)=TX_EXT(K,J,6) + (OPAC_FAC_MAT(J,SIM_INDX)*TX_EXT(K,J,1)+
+	1                                            EMIS_FAC_MAT(J,SIM_INDX)*TX_EXT(K,J,2))
 	            END DO
 	            DO K=1,NDEXT-1
-	              TVX_EXT(K,J,6)=TVX_EXT(K,J,6) + (OPAC_FAC*TVX_EXT(K,J,1)+EMIS_FAC*TVX_EXT(K,J,2))
+	              TVX_EXT(K,J,6)=TVX_EXT(K,J,6) + (OPAC_FAC_MAT(J,SIM_INDX)*TVX_EXT(K,J,1)+
+	1                                              EMIS_FAC_MAT(J,SIM_INDX)*TVX_EXT(K,J,2))
 	            END DO
 	          END DO
 	        END IF
@@ -667,7 +731,7 @@
 ! statistical and radiative equilibrium equations depend only on J.
 !
 	    DO I=3,NM
-	      DO J=DST,DEND
+	      DO J=VDST,VDEND
 	        DO K=1,ND
 	          TX(K,J,I)=TX_EXT(POS_IN_NEW_GRID(K),J,I)
 	        END DO
@@ -681,22 +745,22 @@
 !
 ! 
 !
-	  ELSE IF(EDDINGTON)THEN
-	    CALL TUNE(1,'PERTJFEAU')
-	      CALL PERTJFEAU_IBC(F2DA,FC,FA,
+	ELSE IF(EDDINGTON)THEN
+	  CALL TUNE(1,'PERTJFEAU')
+	    CALL PERTJFEAU_IBC(F2DA,FC,FA,
 	1            DTAU,CHI_CLUMP,R,ZETA,
 	1            THETA,RJ,QEDD,FEDD,dCHIdR,
 	1            TA,TB,TC,HBC_J,HBC_S,INBC,DBB,DIF,
 	1            THK_CONT,ND,METHOD)
-	    CALL TUNE(2,'PERTJFEAU')
-	  ELSE
-	    CALL TUNE(1,'PERTJD')
-	      CALL MULTVEC(SOURCE,ZETA,THETA,RJ,ND)
-	      CALL NEWPERTJD(F2DA,FC,FA,FB,VK,WM,AQW
+	  CALL TUNE(2,'PERTJFEAU')
+	ELSE
+	  CALL TUNE(1,'PERTJD')
+	    CALL MULTVEC(SOURCE,ZETA,THETA,RJ,ND)
+	    CALL NEWPERTJD(F2DA,FC,FA,FB,VK,WM,AQW
 	1       ,DTAU,CHI_CLUMP,dCHIdR,R,Z,P,THETA,SOURCE,TA,TB,TC,XM
 	1       ,DIF,DBB,IC,CHI_SCAT,THK_CONT,NC,ND,NP,METHOD)
 	    CALL TUNE(2,'PERTJD')
-	  END IF
+	END IF
 ! 
 !
 ! Compute the opacity AND emissivity variation as a function of the changes
@@ -743,7 +807,7 @@
 	        DO K=DST,DEND
 	          DO J=BNDST(K),BNDEND(K)
 	            L=BND_TO_FULL(J,K)
-	            IF((DEND-L)*(L-DST) .GE. 0)THEN
+	            IF((VDEND-L)*(L-VDST) .GE. 0)THEN
 	              dJ_LOC(X_INDX,J,K)=TX(K,L,X_INDX)
 	            ELSE
 	              
@@ -860,6 +924,9 @@
 	    END DO
 	  END IF
 	END IF
+	I=NT*NUM_BNDS*(DEND-DST+1)
+	CALL CHECK_VEC_NAN(VJ,I,'VJ_CHECK(STOP)',NAN_PRES)
+	CALL CHECK_VEC_NAN(dJ_LOC,I,'dJ_LOC_CHECK(STOP)',NAN_PRES)
 !
 	FL_OLD=FL
 	RETURN

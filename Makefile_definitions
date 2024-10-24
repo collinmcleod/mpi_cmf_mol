@@ -58,9 +58,9 @@ ifeq ($(HOST),'CRC')
 $(info Creating CRC compiler definitions)
 
 # F90 = /ihome/crc/install/intel/2020.4/compilers_and_libraries/linux/bin/intel64/ifort -qopenmp  -mkl -pg -traceback -nbs
- F90 = mpiifort -qopenmp  -mkl -pg -traceback -nbs
+ F90 = mpiifort -mkl -pg -traceback -nbs 
  F90nomp = mpiifort -mkl -pg -traceback   -nbs
-# FG  = -g -O0  -ffpe-trap=invalid -extend_source   -I$(MOD_DIR)  -J$(MOD_DIR)
+# FG  = -g -O0  -fpe0  -extend_source  -traceback  -I$(MOD_DIR)  -J$(MOD_DIR)
  FG  = -O  -extend_source  -O2 -I$(MOD_DIR)
  FH  = -O -extend_source   -O2  -I$(MOD_DIR)
  FD  = -g -O0  -ffpe-trap=invalid -extend_source   -I$(MOD_DIR) -J$(MOD_DIR)

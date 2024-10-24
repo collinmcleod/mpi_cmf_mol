@@ -10,6 +10,8 @@
 	  IF(VEC(I) .NE. VEC(I))THEN
 	    WRITE(6,*)'Error - NaN present for ',TRIM(DESC)
 	    WRITE(6,'(5ES14.4)')VEC
+	    FLUSH(UNIT=6)
+	    IF(INDEX(DESC,'(STOP)') .NE. 0)STOP
 	    NAN_PRES=.TRUE.
 	    RETURN
 	  END IF

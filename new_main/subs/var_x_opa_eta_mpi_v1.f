@@ -5,13 +5,14 @@
 ! ionizations will generally be determined by the population of the ground
 ! configuration.
 !
-	SUBROUTINE VAR_X_OPA_ETA_MPI_V1(VCHI,VETA,
+	SUBROUTINE VAR_X_OPA_ETA_MPI_V1(
 	1              HN_A,HNST_A,dlnHNST_AdlnT,N_A,
 	1              HN_B,HNST_B,dlnHNST_BdlnT,N_B,
 	1              ED,DI,T,IMP_VAR,
 	1              EQ_A,EQION,AT_NO,Z_A,
 	1              NU,EMHNUKT,NT,DST,DEND,ND,LST_DEPTH_ONLY)
 	USE SET_KIND_MODULE
+	USE MOD_VAR_OPAC_j
 	IMPLICIT NONE
 !
 ! Altered 02-Jun-2019 : Now check if LTE_POP_SUM is close to zero.
@@ -31,7 +32,6 @@
 !
 	INTEGER DST,DEND,ND
 	INTEGER NT,N_A,N_B,EQ_A,EQION
-	REAL(KIND=LDP) VCHI(NT,DST-1:DEND+1),VETA(NT,DST-1:DEND+1)
 	REAL(KIND=LDP) HN_A(N_A,DST:DEND),HNST_A(N_A,DST:DEND),dlnHNST_AdlnT(N_A,DST:DEND)
 	REAL(KIND=LDP) HN_B(N_B,DST:DEND),HNST_B(N_B,DST:DEND),dlnHNST_BdlnT(N_B,DST:DEND)
 	REAL(KIND=LDP) DI(DST:DEND)
