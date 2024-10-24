@@ -35,6 +35,10 @@
 	CHK=.FALSE.
 	IF(.NOT. NEWMOD)THEN
           CALL READ_BA_DATA_MPI_V1(LU_BA,NION,NUM_BNDS,CHK,FIXED_T,SUCCESS,'BAMAT')
+	  CALL MPI_ALLREDUCE(MPI_IN_PLACE,SUCCESS,IONE,MPI_LOGICAL,MPI_LAND,MPI_COMM_WORLD,IERR)
+	  IF(MYPE .EQ. 0 .AND. .NOT. SUCCESS)THEN
+	    WRITE(LUER,'(A,/)')'Unable to open/read all BAMAT files in CMFGEN_SUB'
+	  END IF
 	END IF
 	IF(.NOT. SUCCESS .OR. LAMBDA_ITERATION)THEN
 	  TMP_LOGICAL=SUCCESS
@@ -144,22 +148,20 @@
 	IF(NUM_ITS_TO_DO .EQ. 0)LST_ITERATION=.TRUE.
 	MAIN_COUNTER=MAIN_COUNTER+1
 !
-	IF(MYPE .EQ. 0)THEN
-	  WRITE(LUER,*)' Start of GIT loop -- MYPE =',MYPE
-	  WRITE(LUER,'(A)')' Variable summary in each threadfollows:'
-	  WRITE(LUER,'(A)')' '
-	  WRITE(LUER,'(A)')' '
-	  WRITE(LUER,'(8A10)')'MYPE','IT_COUNT','RD_LAM','LAMBDA','FIXED_T',
-	1                       'COMP._BA','COH._ES','SN_MODEL'
-	  FLUSH(LUER)
-	END IF
-!
+	FLUSH(LUER)
 	DO I=0,NTHREAD-1
+	  IF(MYPE .EQ. 0 .AND. I .EQ. MYPE)THEN
+	    WRITE(LUER,*)' Start of GIT loop -- MYPE =',MYPE
+	    WRITE(LUER,'(A)')' Variable summary in each threadfollows:'
+	    WRITE(LUER,'(A)')' '
+	    WRITE(LUER,'(8A10)')'MYPE','IT_COUNT','RD_LAM','LAMBDA','FIXED_T',
+	1                       'COMP._BA','COH._ES','SN_MODEL'
+	  END IF
 	  IF(MYPE .EQ. I)THEN
 	    WRITE(LUER,'(2I10,6(9X,L1))')MYPE,MAIN_COUNTER,RD_LAMBDA,LAMBDA_ITERATION,FIXED_T,
 	1                   COMPUTE_BA,COHERENT_ES,SN_MODEL
-	    FLUSH(LUER)
 	  END IF
+	  FLUSH(LUER)
 	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	END DO
 !
@@ -298,7 +300,7 @@
 	  DTDR=(T(ND)-T(ND-1))/(R(ND-1)-R(ND))
 	  DIFFW(1:NT)=0.0_LDP
 	ELSE 
-	  WRITE(6,*)'Starting DTDR calcualtion', MYPE; FLUSH(UNIT=6)
+	  IF(MYPE .EQ. 0)WRITE(6,*)'Starting DTDR calculation: MYPE =', MYPE; FLUSH(UNIT=6)
 	  IF(DEND .EQ. ND)THEN
 !
 ! We only need to compute the opacity at the innermost depth, but to save
@@ -330,11 +332,9 @@
 	      END IF
 !
 	      CALL TUNE(IONE,'DTDR_OPAC')
-	  WRITE(6,*)'Calling COMP_OPAC', ML, MYPE; FLUSH(UNIT=6)
 	      CALL COMP_OPAC(POPS,NU_EVAL_CONT,FQW,
 	1                FL,CONT_FREQ,FREQ_INDX,NCF,
 	1                SECTION,ND,NT,LST_DEPTH_ONLY)
-	  WRITE(6,*)'Called COMP_OPAC', ML, MYPE; FLUSH(UNIT=6)
 	      CALL TUNE(ITWO,'DTDR_OPAC')
 !
 ! 
@@ -347,7 +347,6 @@
 	1                  SECTION,NUM_BNDS,ND,NT,LST_DEPTH_ONLY)
 	        CALL TUNE(ITWO,'DTDR_VOPAC')
 	      END IF
-	  WRITE(6,*)'Called COMP_VAR_OPAC', MYPE; FLUSH(UNIT=6)
 ! 
 !
 ! Compute contribution to CHI and VCHI by lines.
@@ -884,12 +883,12 @@
 	  END IF
 	END IF
 	DO I=0,NTHREAD-1
-	  IF(MYPE .EQ. 0)THEN
+	  IF(I .EQ. 0 .AND. MYPE .EQ. I)THEN
 	    FLUSH(UNIT=6); WRITE(6,'(A)')' '
 	    WRITE(6,'(4A12)')'MYPE','EDDINGTON','ACCESS_F','COMP_F'
 	    WRITE(6,'(9X,I3,11X,L1,10X,I2,11X,L1)')MYPE,EDDINGTON,ACCESS_F,COMPUTE_EDDFAC	
 	    FLUSH(UNIT=6)
-	  ELSE IF(MYPE .EQ. 1)THEN
+	  ELSE 
 	    WRITE(6,'(9X,I3,11X,L1,10X,I2,11X,L1)')MYPE,EDDINGTON,ACCESS_F,COMPUTE_EDDFAC	
 	    FLUSH(UNIT=6)
 	  END IF

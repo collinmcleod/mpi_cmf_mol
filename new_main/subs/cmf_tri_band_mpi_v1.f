@@ -392,7 +392,7 @@
 	      ERR_EST(K)=MAX(ERR_EST(K),ABS(NEW_EST(J,K)-OLD_EST(J,K)) / 
 	1                               (ABS(NEW_EST(J,K))+ABS(OLD_EST(J,K))+1.0E-16_LDP))
 	    ELSE
-	      ERR_EST(K)=200.0_LDP
+	      ERR_EST(K)=1.0_LDP
 	    END IF
 	  END DO
 	  CALL TUNE(2,'TRI_DGETRS')
@@ -404,7 +404,7 @@
 	    EXIT
 	  END IF
 	  IF(MYPE .EQ. 0)THEN
-	    WRITE(6,'(1X,A,I4,A,F8.3)')'Maximum error on CM_TRI_BAND iteration',IT_COUNTER,
+	    WRITE(6,'(1X,A,I4,A,F10.5)')'Maximum error on CM_TRI_BAND iteration',IT_COUNTER,
 	1                                ' is (in %): ',200.0_LDP*MAXVAL(ERR_EST)
 	  END IF
 !
@@ -444,7 +444,6 @@
 	    STEQ(:,K)=STEQ(:,K)*(ORIG_POPS(:,K)/POPS(:,K))
 	  END DO
 	END IF	
-	CALL WR2D_GATH_MPI_V1(STEQ_STORE,N,DST,DEND,ND,'STEQ_ARRAY','*',L_TRUE,16)
 	FLAG=.TRUE.
 !
 	DEALLOCATE (B_MAT,C_MAT,D_MAT,RUB)

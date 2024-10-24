@@ -1232,7 +1232,7 @@
         dE_XRAY_TOT=0.0_LDP
 	DEP_RAD_EQ=0.0_LDP
 !
-	WRITE(6,*)' Top main section',MYPE,DST,DEND
+	IF(MYPE .EQ. 0)WRITE(6,*)' About to start main iteration section'
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	INCLUDE 'main_it_section.f'
 ! 
