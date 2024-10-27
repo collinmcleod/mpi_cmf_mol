@@ -1,4 +1,4 @@
-!_TERM
+!
 ! Subroutine to compute the mean intensity. This routine replaces
 ! COMP_J_CONT.INC and was developed to faciltate inclusion of additional
 ! options without making CMFGEN_SUB continually larger.

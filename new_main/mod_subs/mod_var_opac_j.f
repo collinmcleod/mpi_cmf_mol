@@ -1,0 +1,115 @@
+	MODULE MOD_VAR_OPAC_J
+	USE SET_KIND_MODULE
+!
+	INTEGER VDST,VDEND
+!
+	REAL(KIND=LDP), ALLOCATABLE, TARGET :: VCHI(:,:)              !Variation of CHI array.
+	REAL(KIND=LDP), ALLOCATABLE, TARGET :: VETA(:,:)              !Variation of ETA array.
+	REAL(KIND=LDP), ALLOCATABLE, TARGET :: VCHI_ALL(:,:)
+	REAL(KIND=LDP), ALLOCATABLE, TARGET :: VETA_ALL(:,:)
+!
+	REAL(KIND=LDP), ALLOCATABLE :: VCHI_ALL_SAV(:,:)
+	REAL(KIND=LDP), ALLOCATABLE :: VCHI_SAV(:,:)
+	REAL(KIND=LDP), ALLOCATABLE :: VETA_SAV(:,:)
+	REAL(KIND=LDP), ALLOCATABLE :: VETA_ALL_SAV(:,:)
+!
+	REAL(KIND=LDP), ALLOCATABLE :: TX(:,:,:)        !ND,ND,NM -
+	REAL(KIND=LDP), ALLOCATABLE :: TVX(:,:,:)       !ND-1,ND,NM -
+!
+! We make TX_EXT and TVX_EXT allocatable as they are accessed directly
+! in VARCONT and thus must have the correct dimensions.
+!
+	REAL(KIND=LDP), ALLOCATABLE :: TX_EXT(:,:,:)
+	REAL(KIND=LDP), ALLOCATABLE :: TVX_EXT(:,:,:)
+        REAL(KIND=LDP), ALLOCATABLE :: VJ(:,:,:)
+        REAL(KIND=LDP), ALLOCATABLE :: KI(:,:,:)
+!
+        REAL(KIND=LDP), ALLOCATABLE :: dJ_LOC(:,:,:)	 !NM,NUM_BNDS,ND
+        REAL(KIND=LDP), ALLOCATABLE :: dZ(:,:,:,:)	 !NM,NUM_BNDS,ND,MAX_SIM
+        REAL(KIND=LDP), ALLOCATABLE :: dZ_POPS(:,:,:)	 !NT,NUM_BNDS,ND
+!
+	SAVE
+	END MODULE MOD_VAR_OPAC_J
+!
+	SUBROUTINE SET_VAR_OPAC_J(ACCURATE,DST,DEND,ND,NM_KI,MAX_SIM,NM,NT,NUM_BNDS)
+	USE SET_KIND_MODULE
+	USE MOD_VAR_OPAC_J
+	USE MPI
+	IMPLICIT NONE
+!
+	LOGICAL ACCURATE
+	INTEGER MAX_SIM,NM_KI,NM
+	INTEGER NT,NUM_BNDS
+	INTEGER DST,DEND,ND
+	INTEGER I,IERR,IOS
+	INTEGER, PARAMETER :: LUER=6
+!
+	VDST=DST; VDEND=DEND
+	IF(NUM_BNDS .EQ. 3)THEN
+	  VDST=MAX(1,DST-1)
+	  VDEND=MIN(DEND+1,ND)
+	END IF
+	DO I=0,NTHREAD-1
+	  IF(I .EQ. 0 .AND. I .EQ. MYPE)THEN
+	    WRITE(6,'(/,1X,A)')'Setting VDST and VDEN in SET_VAR_OPAC_J'
+	    WRITE(6,'(4(2X,A5))')' VDST','  DST',' DEND','VDEND'
+	  END IF
+	  IF(I .EQ. MYPE)THEN
+	     WRITE(6,'(4I7)')VDST,DST,DEND,VDEND
+	  END IF
+	  FLUSH(UNIT=6)
+	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	END DO
+!
+	ALLOCATE(VCHI(NT,VDST:VDEND),STAT=IOS) 	 !Variation of CHI array.
+	IF(IOS .EQ. 0)ALLOCATE(VETA(NT,VDST:VDEND),STAT=IOS)	 !Variation of ETA array.
+	IF(IOS .EQ. 0)ALLOCATE(VCHI_SAV(NT,VDST:VDEND),STAT=IOS)
+	IF(IOS .EQ. 0)ALLOCATE(VETA_SAV(NT,VDST:VDEND),STAT=IOS)
+	IF(IOS .EQ. 0)ALLOCATE(VCHI_ALL(NT,VDST:VDEND),STAT=IOS)
+	IF(IOS .EQ. 0)ALLOCATE(VCHI_ALL_SAV(NT,VDST:VDEND),STAT=IOS)
+	IF(IOS .EQ. 0)ALLOCATE(VETA_ALL(NT,VDST:VDEND),STAT=IOS)
+	IF(IOS .EQ. 0)ALLOCATE(VETA_ALL_SAV(NT,VDST:VDEND),STAT=IOS)
+	IF(IOS .NE. 0)THEN
+	  WRITE(LUER,*)'Error in mod_var_opac_j.f / set_var_opac_j'
+	  WRITE(LUER,*)'Unable to allocate requested memory[VCHI]'
+	  STOP
+	END IF
+!
+! Variation line arrays
+!
+	IOS=0
+	IF(IOS .EQ. 0)ALLOCATE( TX(ND,VDST:VDEND,NM),STAT=IOS)
+	IF(IOS .EQ. 0)ALLOCATE( TVX(ND-1,VDST:VDEND,NM),STAT=IOS)
+	IF(IOS .NE. 0)THEN
+	  WRITE(LUER,*)'Error in mod_var_opac_j.f / set_var_opac_j'
+	  WRITE(LUER,*)'Unable to allocate requested memory[TX]'
+	  STOP
+	END IF
+!
+! We make TX_EXT and TVX_EXT allocatable as they are accessed directly
+! in VARCONT and thus must have the correct dimensions.
+!
+!	IF(ACCURATE)THEN
+!	  IF(IOS .EQ. 0)ALLOCATE( TX_EXT(NDEXT,VDST:VDEND,NM), STAT=IOS)
+!	  IF(IOS .EQ. 0)ALLOCATE( TVX_EXT(NDEXT-1,VDST:VDEND,NM), STAT=IOS)
+!	END IF
+!
+!
+! KI is assumed to be of dimension:
+!                         (ND,3,NM_KI) in VAR_FORMSOL (NM >= 4)
+!                         (ND,ND,NM_KI) in VAR_MOMHAM (NM >= 4)
+!                         (ND,ND,NM_KI) in VAR_MOM_J_CMF_V6 (NM >= 2)
+!
+	IOS=0
+        IF(IOS .EQ. 0)ALLOCATE( dJ_LOC(NM,NUM_BNDS,DST:DEND), STAT=IOS)
+        IF(IOS .EQ. 0)ALLOCATE( VJ(NT,NUM_BNDS,DST:DEND), STAT=IOS)
+        IF(IOS .EQ. 0)ALLOCATE( dZ(NM,NUM_BNDS,DST:DEND,MAX_SIM), STAT=IOS)
+        IF(IOS .EQ. 0)ALLOCATE( dZ_POPS(NT,NUM_BNDS,DST:DEND), STAT=IOS)
+	IF(IOS .NE. 0)THEN
+	  WRITE(LUER,*)'Error in mod_var_opac_j.f / set_var_opac_j'
+	  WRITE(LUER,*)'Unable to allocate requested memory[dJ]'
+	  STOP
+	END IF
+!
+	RETURN
+	END
