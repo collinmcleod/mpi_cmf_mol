@@ -29,21 +29,23 @@
 ! JNU and r^2 HNU.
 !
 	SUBROUTINE VAR_MOM_J_CMF_MPI_V1(ETA,CHI,ESEC,THETA,V,SIGMA,R,
-	1               TX,TVX,TX_DIF_d_T,TX_DIF_d_dTdR,
+	1               TX_DIF_d_T,TX_DIF_d_dTdR,
 	1               TVX_DIF_d_T,TVX_DIF_d_dTdR,
-	1               KI,WORKMAT,RHS_dHdCHI,
-	1               INIT,dLOG_NU,
+	1               WORKMAT,INIT,dLOG_NU,
 	1               INNER_BND_METH,dTdR,DBB,dDBBdT,IC,IB_STAB_FACTOR,
 	1               FREQ,H_CHK_OPTION,OUT_BC_TYPE,
-	1               DO_THIS_TX_MATRIX,METHOD,ND,NM,NM_KI)
+	1               DO_THIS_TX_MATRIX,METHOD,
+	1               DST,DEND,ND,NM,NM_KI)
 	USE SET_KIND_MODULE
 	USE MOD_RAY_MOM_STORE
-	USE MOD_VAR_MOM_J_CMF
+	USE MOD_VAR_MOM_J_CMF_MPI_V1
+	USE MOD_VAR_OPAC_J, ONLY : TX, TVX, KI, RHS_dHdCHI, VDST, VDEND
+	USE MPI
 	IMPLICIT NONE
 !
 ! Created:   27-Sep-1995 : Diffusion approximation not tested yet.
 !
-	INTEGER ND
+	INTEGER DST,DEND,ND
 	INTEGER NM
 	INTEGER NM_KI
 	REAL(KIND=LDP) ETA(ND),CHI(ND),ESEC(ND),THETA(ND)
@@ -51,9 +53,7 @@
 !
 ! Variation arrays and vectors.
 !
-	REAL(KIND=LDP) TX(ND,DST:DEND,NM),TVX(ND-1,DDT:DEND,NM)
-	REAL(KIND=LDP) KI(ND,DST:DEND,NM_KI)
-	REAL(KIND=LDP) WORKMAT(ND,ND),RHS_dHdCHI(ND-1,ND)
+	REAL(KIND=LDP) WORKMAT(ND,ND)
 	REAL(KIND=LDP) TX_DIF_d_T(ND),TX_DIF_d_dTdR(ND)
 	REAL(KIND=LDP) TVX_DIF_d_T(ND),TVX_DIF_d_dTdR(ND)
 !
@@ -81,21 +81,28 @@
 !
 ! Local variables.
 !
-	INTEGER I
+	INTEGER I,IERR
+	INTEGER MOD_DS T
 	REAL(KIND=LDP) AV_SIGMA
 	REAL(KIND=LDP) LOCAL_DBB
 	LOGICAL DIF_OR_ZF
 !
 ! 
 !
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Entered VR_MOM_J_CMF_MPI_V1'; FLUSH(UNIT=6)
+	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+
+!
 ! This call allocates the vectors, and initialzes vectors such as TA etc.
 ! It only allocates TA, if it is not already allocated.
 !
-	CALL MOD_VAR_MOM_ALLOC(ND)
+	CALL MOD_VAR_MOM_ALLOC_MPI_V1(ND)
 !
 	IF(INIT)THEN
 	  TX=0.0_LDP; TVX=0.0_LDP
-	  IF(ALLOCATED(TA))THEN
+	  IF(ALLOCATED(TRI_VECS))THEN
 	    IF(ND .NE. VEC_LENGTH)THEN
 	      I=ERROR_LU()
 	      WRITE(I,*)'Problem in VAR_MOM_J_CMF_V9'
@@ -136,6 +143,10 @@
 	DO I=2,ND
 	  RSQ_DTAUONQ(I)=0.5_LDP*R(I)*R(I)*(DTAU(I)+DTAU(I-1))/Q(I)
 	END DO
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Done TAU in VR_MOM_J_CMF_MPI_V1'; FLUSH(UNIT=6)
+	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! 
 !
@@ -187,7 +198,7 @@
 !
 ! Compute the TRIDIAGONAL operators, and the RHS source vector.
 !
-	DO I=DST,MIN(DENX,ND-1)
+	DO I=DST,MIN(DEND,ND-1)
 	  TA(I)=-HL(I-1)-EPS_A(I-1)
 	  TC(I)=-HU(I)+EPS_B(I)
 	  TB(I)=RSQ_DTAUONQ(I)*(1.0_LDP-THETA(I)) + PSI(I) +HU(I-1) +HL(I)
@@ -199,7 +210,7 @@
 !
 ! Evaluate TA,TB,TC for boundary conditions
 !
-	IF(MYPE .EQ. 0)THEN
+	IF(DST .EQ. 1)THEN
 	  IF(OUT_BC_TYPE .LE. 1)THEN
 	    PSI(1)=R(1)*R(1)*GAM(1)*( HBC+NBC*SIGMA(1) )
 	    PSIPREV(1)=R(1)*R(1)*GAM(1)*( HBC_PREV+NBC_PREV*SIGMA(1) )
@@ -265,12 +276,20 @@
 	1          + ( EPS_PREV_B(I)*JNUM1(I+1) - EPS_PREV_A(I-1)*JNUM1(I-1) )
 	END DO
 	IF(DEND .EQ. ND)XM(ND)=XM(ND) + PSIPREV_MOD(ND)*JNUM1(ND)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Ready for THOMAS in VR_MOM_J_CMF_MPI_V1'; FLUSH(UNIT=6)
+	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Solve for the radiation field along ray for this frequency.
 !
 	I=4*ND
-	CALL MPI_ALLREDUCE(TR_WRKI,I,MPI_DOUBLE_PRECISION,IERR)
+	CALL MPI_ALLREDUCE(TRI_VECS,I,MPI_DOUBLE_PRECISION,IERR)
 	CALL THOMAS(TA,TB,TC,XM,ND,1)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Done THOMAS in VR_MOM_J_CMF_MPI_V1'; FLUSH(UNIT=6)
+	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 	DO I=1,ND
 	  JNU(I)=XM(I)
@@ -311,15 +330,19 @@
 !
 ! Compute d{non-radiation field}/dchi matrix.
 !
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Calling ED_J_VAR in VR_MOM_J_CMF_MPI_V1'; FLUSH(UNIT=6)
+	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	CALL TUNE(1,'MOM_EDD')
-	CALL EDD_J_VAR_V6(KI,RHS_dHdCHI,WORKMAT,
+	CALL EDD_J_VAR_MPI_V1(
 	1           SOURCE,CHI,ESEC,THETA,DTAU,R,SIGMA,
 	1           K_ON_J,Q,HU,HL,HS,RSQ_DTAUONQ,
 	1           W,WPREV,PSI,PSIPREV,
 	1           EPS_A,EPS_B,EPS_PREV_A,EPS_PREV_B,
 	1           JNU,JNUM1,RSQ_HNUM1,
 	1           LOCAL_DBB,DIF_OR_ZF,HBC,OUT_BC_TYPE,
-	1           ND,NM_KI)
+	1           DST,DEND,ND,NM_KI)
 	CALL TUNE(2,'MOM_EDD')
 !
 ! Evaluate the intensity variations.
@@ -329,13 +352,18 @@
 ! WORKMAT is dimension (ND,ND) is is used to temporarily save TX( , ,K) for
 ! each K.
 !
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Calling UP_TX in VR_MOM_J_CMF_MPI_V1'; FLUSH(UNIT=6)
+	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	CALL TUNE(1,'UP_TX')
-	CALL UP_TX_TVX_V2(TX,TVX,KI,TA,TB,TC,PSIPREV_MOD,
-	1                       VB,VC,HU,HL,HS,RHS_dHdCHI,
-	1                       EPS_A,EPS_B,EPS_PREV_A,EPS_PREV_B,
-	1                       WORKMAT,ND,NM,NM_KI,
-	1                       DTAU_BND,OUT_BC_TYPE,
-	1                       INIT,DO_THIS_TX_MATRIX)
+	CALL UP_TX_TVX_MPI_V1(
+	1            TA,TB,TC,PSIPREV_MOD,
+	1            VB,VC,HU,HL,HS,
+	1            EPS_A,EPS_B,EPS_PREV_A,EPS_PREV_B,
+	1            ND,NM,NM_KI,
+	1            DTAU_BND,OUT_BC_TYPE,
+	1            INIT,DO_THIS_TX_MATRIX)
 	CALL TUNE(2,'UP_TX')
 !
 ! 

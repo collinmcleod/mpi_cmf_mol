@@ -71,6 +71,7 @@
 	REAL(KIND=LDP) CONT_FREQ			!frequency at which opacity was evaluated.
 !
 	CHARACTER(LEN=*) SECTION
+	LOGICAL, SAVE :: FIRST_TIME=.TRUE.
 	LOGICAL FIRST_FREQ
 	LOGICAL NAN_PRES
 !
@@ -110,15 +111,14 @@
 	INTEGER BNDST
 	INTEGER BNDEND
 !
-        BNDST(K)=MAX( (NUM_BNDS/ND)*(K-DIAG_INDX)+1+DIAG_INDX-K, 1 )
-        BNDEND(K)=MIN( (NUM_BNDS/ND)*(K-DIAG_INDX)+ND+DIAG_INDX-K,NUM_BNDS )
+! We now longer allow for the case NUM_BNDS_ND, and hence these expressions have been simplified.
 !
-! This function takes a band-index and converts it the equivalent index
-! in the full matrix. L=BND_TO_FULL(J,K) is equivalent to the statements:
-!     IF(NUM_BNDS .EQ. ND)THEN L=J ELSE L=K+J-DIAG_INDX END IF
-! The second indice is the equation depth.
+        BNDST(K)=MAX( 1+DIAG_INDX-K, 1 )
+        BNDEND(K)=MIN( ND+DIAG_INDX-K,NUM_BNDS )
 !
-        BND_TO_FULL(J,K)=(NUM_BNDS/ND)*(DIAG_INDX-K)+K+J-DIAG_INDX
+! This function takes a band-index and converts it the equivalent index  in the full matrix. 
+!
+        BND_TO_FULL(J,K)=K+J-DIAG_INDX
 !
 !**************************************************************************
 !
@@ -220,7 +220,7 @@
 	    FL_OLD=FL
 	  ELSE
 	    RAT_TOO_BIG=.FALSE.
-	    DO L=1,ND
+	    DO L=VDST,VDEND
 	      TA(L)=CHI_NOSCAT_PREV(L)/CHI_NOSCAT(L)
 	      IF(ETA_CONT(L) .EQ. 0.0_LDP)THEN
                 TB(L)=1.0_LDP
@@ -233,7 +233,7 @@
 !	      IF(TA(L) .GT. 1.5)RAT_TOO_BIG=.TRUE.
 	    END DO
 	    IF(RAT_TOO_BIG)THEN
-	      DO L=1,ND
+	      DO L=VDST,VDEND
 	        TA(L)=0.0_LDP
 	        TB(L)=0.0_LDP
 	      END DO
@@ -264,7 +264,8 @@
 	    END IF
 	  END DO
 !
-! Use TA as temporary storage for the emissivity.
+! Use TA as temporary storage for the emissivity. These need to be defined over
+! the full grid ranges since the transfer routines compute J over the  full range. 
 !
 	  IF(COHERENT_ES)THEN
 	    TA(1:ND)=ETA_CLUMP(1:ND)
@@ -352,15 +353,20 @@
 	1           INNER_BND_METH,OUTER_BND_METH,
 	1           ND,NM,NM_KI)
 	  ELSE
-	    CALL VAR_MOM_J_CMF_V12(TA,CHI_CLUMP,CHI_SCAT_CLUMP,
+	    IF(FIRST_TIME .AND. MYPE .EQ. 0)THEN
+	      WRITE(6,*)'Calling VAR_MOM_J_CMF_MPI_V1'; FLUSH(UNIT=6)
+	      FIRST_TIME=.FALSE.
+	    END IF 
+	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	    CALL VAR_MOM_J_CMF_MPI_V1(TA,CHI_CLUMP,CHI_SCAT_CLUMP,
 	1           ES_COH_VEC,V,SIGMA,R,
-	1           TX,TVX,dJ_DIF_d_T,dJ_DIF_d_dTdR,
+	1           dJ_DIF_d_T,dJ_DIF_d_dTdR,
 	1           dRSQH_DIF_d_T,dRSQH_DIF_d_dTdR,
-	1           KI,WM,RHS_dHdCHI,
-	1           FIRST_FREQ,dLOG_NU,
+	1           WM,FIRST_FREQ,dLOG_NU,
 	1           INNER_BND_METH,dTdR,DBB,dDBBdT,IC,IB_STAB_FACTOR,
-	1           FL,H_CHK_OPTION,OUT_BC_TYPE,DO_THIS_TX_MATRIX,
-	1           METHOD,ND,NM,NM_KI)
+	1           FL,H_CHK_OPTION,OUT_BC_TYPE,
+	1           DO_THIS_TX_MATRIX,METHOD,
+	1           DST,DEND,ND,NM,NM_KI)
 	  END IF
 	  CALL TUNE(2,'VAR_MOM_J')
 !
@@ -403,9 +409,13 @@
 ! Its value depends on whether we have coherent or incoherent e.s.
 !
 	  IF(COHERENT_ES)THEN
-	    TB(1:ND)=RJ(1:ND)
+	    DO J=VDST,VDEND
+	      TB(J)=RJ(J)
+	    END DO
 	  ELSE
-	    TB(1:ND)=RJ_ES(1:ND)
+	    DO J=VDST,VDEND
+	      TB(J)=RJ_ES(J)
+	    END DO
 	  END IF
 !
 	  DO J=VDST,VDEND
@@ -434,12 +444,11 @@
 ! For simplicity we have ignored the T dependance of L_STAR_RATIO and
 ! U_STAR_RATIO.
 !
-! NB: We paralleize over the second loop, rather than SIM_INDX, as the
-!     variables LOW and UP may be the same for different SIM_INDX values.
+! NB: We only need to loop from DST to DEND as we combine all the data
+! into one array with ALL_REDUCE when NUM_BNDS > 1.
 !
 	  FAC_MATS=0.0_LDP
 	  DO SIM_INDX=1,MAX_SIM
-	    LOW=LOW_POINTER(SIM_INDX);    UP=UP_POINTER(SIM_INDX)
 	    IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
 	      DO J=DST,DEND
 	        OPAC_FAC=LINE_OPAC_CON(SIM_INDX)*LINE_PROF_SIM(J,SIM_INDX)*NEG_OPAC_FAC(J)
@@ -609,9 +618,13 @@
 ! Its value depends on whether we have coherent or incoherent e.s.
 !
 	    IF(COHERENT_ES)THEN
-	      TB(1:ND)=RJ(1:ND)
+	      DO J=VDST,VDEND
+	        TB(J)=RJ(J)
+	      END DO
 	    ELSE
-	      TB(1:ND)=RJ_ES(1:ND)
+	      DO J=VDST,VDEND
+	        TB(J)=RJ_ES(J)
+	      END DO
 	    END IF
 	    DO J=VDST,VDEND
 	      DO K=1,NDEXT
@@ -809,8 +822,6 @@
 	            L=BND_TO_FULL(J,K)
 	            IF((VDEND-L)*(L-VDST) .GE. 0)THEN
 	              dJ_LOC(X_INDX,J,K)=TX(K,L,X_INDX)
-	            ELSE
-	              
 	            END IF
 	          END DO
 	        END DO
@@ -904,16 +915,7 @@
 !             compilations errors when NUM_BNDS .NE. ND
 !             (only in first clause)
 !
-	  IF(DIF .AND. ND .EQ. NUM_BNDS)THEN
-	    T1=DBB/DTDR
-	    DO K=DST,DEND
-	      DO I=1,NT-1
-	        VJ(I,NUM_BNDS,K)=VJ(I,NUM_BNDS,K)+FA(K)*T1*DIFFW(I)
-	      END DO
-	      VJ(NT,NUM_BNDS,K)=VJ(NT,NUM_BNDS,K)+
-	1                       FA(K)*(DDBBDT+T1*DIFFW(NT))
-	    END DO
-	  ELSE IF(DIF)THEN
+	  IF(DIF)THEN
 	    T1=DBB/DTDR
 	    DO J=DIAG_INDX,NUM_BNDS
 	      K=ND+DIAG_INDX-J

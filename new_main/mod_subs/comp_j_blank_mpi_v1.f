@@ -647,7 +647,7 @@ C
 	1                  INNER_BND_METH,DBB,IC,
 	1                  VDOP_VEC,DELV_FRAC_FG,REXT_FAC,
 	1                  METHOD,FG_SOL_OPTIONS,TRAPFORJ,THK_CONT,
-	1                  FIRST_FREQ,NEW_FREQ,NC,NP,ND,MYPE)
+	1                  FIRST_FREQ,NEW_FREQ,NC,NP,ND)
 !
 	     END IF
 	     CALL TUNE(ITWO,'FG_J_CMF')

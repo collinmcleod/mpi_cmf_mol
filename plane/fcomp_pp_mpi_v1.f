@@ -113,7 +113,7 @@
 !
 	    IF(THK)THEN
 	      TOR=CHI(1)*(R(1)-R(3))/LOG(CHI(3)/CHI(1))
-	      IF(TOR .LT. 0)TOR=0.0_LDP
+	      IF(TOR .LT. 0.0_LDP)TOR=0.0_LDP
 	      IBOUND=SOURCE(1)*(1.0_LDP-EXP(-TOR/MU(LS)))
 	    ELSE
 	      IBOUND=0.0_LDP

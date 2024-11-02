@@ -14,7 +14,9 @@ LIB_MOD=$(LIB_DIR)libmod.a
 #
 
 MOD=  $(LIB)(mod_ray_mom_store.o)\
+      $(LIB)(mod_var_mom_j_cmf_mpi_v1.o)\
       $(LIB)(mod_var_mom_j_cmf.o)\
+      $(LIB)(mod_var_mom_j_cmf_mpi_v1.o)\
       $(LIB)(mod_var_jrel_v2.o)\
       $(LIB)(mod_space_grid_v2.o)\
       $(LIB)(mod_space_grid_v2_gam.o)
@@ -38,6 +40,7 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(expn.o)\
       $(LIB)(edd_j_hub_var_v3.o)\
       $(LIB)(edd_jrel_var_v3.o)\
+      $(LIB)(edd_j_var_mpi_v1.o)\
       $(LIB)(fcomp_pp_v2.o)\
       $(LIB)(fcomp_pp_mpi_v1.o)\
       $(LIB)(fgrey_norel_v1.o)\
@@ -79,12 +82,14 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(solve_cmf_formal_v2.o)\
       $(LIB)(solve_cmf_formal_v3.o)\
       $(LIB)(solve_cmf_formal_v3_gam.o)\
+      $(LIB)(up_tx_tvx_mpi_v1.o)\
       $(LIB)(var_jrel_v5.o)\
       $(LIB)(var_mom_j_ddt_v6.o)\
       $(LIB)(var_mom_pp_v1.o)\
       $(LIB)(var_mom_pp_mpi_v1.o)\
       $(LIB)(var_mom_j_cmf_v9.o)\
       $(LIB)(var_mom_j_cmf_v12.o)\
+      $(LIB)(var_mom_j_cmf_mpi_v1.o)\
       $(LIB)(var_mom_jext_cmf_v3.o)\
       $(LIB)(velocity_law.o)
 

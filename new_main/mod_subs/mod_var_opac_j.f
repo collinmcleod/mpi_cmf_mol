@@ -13,8 +13,9 @@
 	REAL(KIND=LDP), ALLOCATABLE :: VETA_SAV(:,:)
 	REAL(KIND=LDP), ALLOCATABLE :: VETA_ALL_SAV(:,:)
 !
-	REAL(KIND=LDP), ALLOCATABLE :: TX(:,:,:)        !ND,ND,NM -
-	REAL(KIND=LDP), ALLOCATABLE :: TVX(:,:,:)       !ND-1,ND,NM -
+	REAL(KIND=LDP), ALLOCATABLE :: TX(:,:,:)        !
+	REAL(KIND=LDP), ALLOCATABLE :: TVX(:,:,:)       ! -
+	REAL(KIND=LDP), ALLOCATABLE :: RHS_dHdCHI(:,:)  !
 !
 ! We make TX_EXT and TVX_EXT allocatable as they are accessed directly
 ! in VARCONT and thus must have the correct dimensions.
@@ -80,6 +81,8 @@
 	IOS=0
 	IF(IOS .EQ. 0)ALLOCATE( TX(ND,VDST:VDEND,NM),STAT=IOS)
 	IF(IOS .EQ. 0)ALLOCATE( TVX(ND-1,VDST:VDEND,NM),STAT=IOS)
+	IF(IOS .EQ. 0)ALLOCATE( RHS_dHdCHI(ND-1,VDST:VDEND),STAT=IOS)
+        IF(IOS .EQ. 0)ALLOCATE( KI(ND,VDST:VDEND,NM_KI), STAT=IOS)
 	IF(IOS .NE. 0)THEN
 	  WRITE(LUER,*)'Error in mod_var_opac_j.f / set_var_opac_j'
 	  WRITE(LUER,*)'Unable to allocate requested memory[TX]'
@@ -99,6 +102,7 @@
 !                         (ND,3,NM_KI) in VAR_FORMSOL (NM >= 4)
 !                         (ND,ND,NM_KI) in VAR_MOMHAM (NM >= 4)
 !                         (ND,ND,NM_KI) in VAR_MOM_J_CMF_V6 (NM >= 2)
+!
 !
 	IOS=0
         IF(IOS .EQ. 0)ALLOCATE( dJ_LOC(NM,NUM_BNDS,DST:DEND), STAT=IOS)

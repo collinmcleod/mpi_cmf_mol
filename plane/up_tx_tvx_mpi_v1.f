@@ -19,14 +19,16 @@
 !
 ! In general K=1 denotes dCHI and K=2 denotes dETA.
 !
-	SUBROUTINE UP_TX_TVX_MPI_V1(TX,TVX,KI,
+	SUBROUTINE UP_TX_TVX_MPI_V1(
 	1                 TA,TB,TC,PSIPREV_MOD,
-	1                 VB,VC,HU,HL,HS,RHS_dHdCHI,
+	1                 VB,VC,HU,HL,HS,
 	1                 EPS_A,EPS_B,EPS_PREV_A,EPS_PREV_B,
-	1                 OLD_TX,ND,NM_TX,NM_KI,
+	1                 ND,NM_TX,NM_KI,
 	1                 DTAU_BND,OUT_BC_TYPE,
 	1                 INIT,DO_THIS_TX_MATRIX)
 	USE SET_KIND_MODULE
+	USE MPI
+	USE MOD_VAR_OPAC_J, ONLY : TX, TVX, RHS_dHdCHI, KI, VDST, VDEND
 	IMPLICIT NONE
 !
 ! Altered 28-May-1996 : Calls to DP_ZERO removed.
@@ -40,14 +42,9 @@
 !
 	INTEGER ND,NM_TX,NM_KI
 !
-	REAL(KIND=LDP) TX(ND,DST:DEND,NM_TX)
-	REAL(KIND=LDP) TVX(ND-1,DST:DEND,NM_TX)
-	REAL(KIND=LDP) KI(ND,DST:DEND,NM_KI)
-!
 	REAL(KIND=LDP) TA(ND),TB(ND),TC(ND)
 	REAL(KIND=LDP) PSIPREV_MOD(ND),VB(ND),VC(ND)
 	REAL(KIND=LDP) HU(ND),HL(ND),HS(ND)
-	REAL(KIND=LDP) RHS_dHdCHI(ND-1,ND)
 !
 ! NB: _A denotes that EPS(I) multiples RJ(I)
 !     _B denotes that EPS(I) multiples RJ(I+1)
@@ -60,7 +57,7 @@
 !
 ! Work Array.
 !
-	REAL(KIND=LDP) OLD_TX(ND,DST:DEND)
+	REAL(KIND=LDP) OLD_TX(ND,VDST:VDEND)
 !
 	INTEGER ERROR_LU
 	EXTERNAL ERROR_LU
@@ -108,17 +105,17 @@
 	    IF(USE_EPS .AND. .NOT. INIT)THEN
 	      OLD_TX(:,:)=TX(:,:,K)
 	      IF(OUT_BC_TYPE .LE. 1)THEN
-	        DO J=DST,DEND
+	        DO J=VDST,VDEND
 	          TX(1,J,K)=PSIPREV_MOD(1)*OLD_TX(1,J) + VC(1)*TVX(1,J,K)
 	        END DO
 	      ELSE
-	        DO J=DST,DEND
+	        DO J=VDST,VDEND
 	          TX(1,J,K)=-PSIPREV_MOD(1)*OLD_TX(1,J) - HS(1)*TVX(1,J,K)/DTAU_BND -
 	1             (EPS_PREV_A(1)*OLD_TX(1,J)+EPS_PREV_B(1)*OLD_TX(2,J))/DTAU_BND
 	        END DO
 	      END IF
 !
-	      DO J=DST,DEND
+	      DO J=VDST,VDEND
 	        DO I=2,ND-1
  	          TX(I,J,K)=PSIPREV_MOD(I)*OLD_TX(I,J)
 	1                 + VB(I)*TVX(I-1,J,K) + VC(I)*TVX(I,J,K)
@@ -128,7 +125,7 @@
  	        TX(ND,J,K)= PSIPREV_MOD(ND)*OLD_TX(ND,J) + VB(ND)*TVX(ND-1,J,K)
 	      END DO
 	    ELSE IF(.NOT. INIT)THEN
-	      DO J=DST,DEND
+	      DO J=VDST,VDEND
 	        TX(1,J,K)=PSIPREV_MOD(1)*TX(1,J,K) + VC(1)*TVX(1,J,K)
 	        DO I=2,ND-1
  	          TX(I,J,K)=PSIPREV_MOD(I)*TX(I,J,K) + VB(I)*TVX(I-1,J,K) + VC(I)*TVX(I,J,K)
@@ -146,7 +143,7 @@
 	    CALL SIMPTH(TA,TB,TC,TX(1,1,K),ND,ND)
 !
 	    IF(USE_EPS)THEN
-	      DO J=DST,DEND
+	      DO J=VDST,VDEND
 	        DO I=1,ND-1
 	           TVX(I,J,K)= HU(I)*TX(I+1,J,K) - HL(I)*TX(I,J,K)
 	1               + HS(I)*TVX(I,J,K) +
@@ -155,7 +152,7 @@
 	        END DO
 	      END DO
 	    ELSE
-	      DO J=DST,DEND
+	      DO J=VDST,VDEND
 	        DO I=1,ND-1
 	           TVX(I,J,K)= HU(I)*TX(I+1,J,K) - HL(I)*TX(I,J,K)
 	1               + HS(I)*TVX(I,J,K)
@@ -164,7 +161,7 @@
 	    END IF
 !
 	    IF(K .EQ. 1)THEN
-	      DO J=DST,DEND
+	      DO J=VDST,VDEND
 	        DO I=1,ND-1
 	          TVX(I,J,K)=TVX(I,J,K)+RHS_dHdCHI(I,J)
 	        END DO

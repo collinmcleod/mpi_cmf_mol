@@ -3,19 +3,22 @@
 ! the case with lines. Also computes the matrix dRHS_dCHI which
 ! multiply's %KI in the V equation. X is the line profile. It is assumed
 ! that :-
-!				VK( , ,1)=dCHI
-!				VK( , ,2)=dETA
+!				KI( , ,1)=dCHI
+!				KI( , ,2)=dETA
 !
 !  				dRHS_dCHI( , ,)=dCHI
 !
-	SUBROUTINE EDD_J_VAR_MPI_V1(VK,RHS_dHdCHI,dTAUdCHI,
+	SUBROUTINE EDD_J_VAR_MPI_V1(
 	1                  SOURCE,CHI,ESEC,ES_COH_VEC,DTAU,R,SIGMA,
 	1                  MIDF,Q,HU,HL,HS,RSQ_DTAUONQ,
 	1                  W,WPREV,PSI,PSIPREV,
 	1                  EPS_A,EPS_B,EPS_PREV_A,EPS_PREV_B,
 	1                  JNU,JNUM1,RSQ_HNUM1,
-	1                  DBB,DIF,HBC,OUT_BC_TYPE,ND,NM)
+	1                  DBB,DIF,HBC,OUT_BC_TYPE,
+	1                  DST,DEND,ND,NM)
 	USE SET_KIND_MODULE
+	USE MOD_VAR_OPAC_J, ONLY : KI, RHS_dHdCHI, VDST, VDEND
+	USE MPI
 	IMPLICIT NONE
 !
 ! Altered 12-Mar-2003 : Evaluation of terms rewritten for better numerical accuracy.
@@ -30,11 +33,8 @@
 !                       CALL to DP_ZERO replaced.
 ! Created 16-Sep-1994 : Based on EDDLINE_VAR
 !
+	INTEGER DST,DEND
 	INTEGER ND,NM
-	REAL(KIND=LDP) VK(ND,DST:DEND,NM)
-!
-	REAL(KIND=LDP) RHS_dHdCHI(ND-1,ND)
-	REAL(KIND=LDP) dTAUdCHI(ND,ND)
 	REAL(KIND=LDP) SOURCE(ND),CHI(ND),ESEC(ND),ES_COH_VEC(ND)
 	REAL(KIND=LDP) DTAU(ND),R(ND),SIGMA(ND)
 	REAL(KIND=LDP) MIDF(ND),Q(ND),HU(ND),HL(ND),HS(ND),RSQ_DTAUONQ(ND)
@@ -49,6 +49,8 @@
 !
 ! Local variables.
 !
+	REAL(KIND=LDP) WRK_MAT(ND,ND)
+	REAL(KIND=LDP) dTAUdCHI(ND,ND)
 	REAL(KIND=LDP) dHUdCHI(ND),dHLdCHI(ND),dHSdCHI(ND)
 	REAL(KIND=LDP) dHUdTAU(ND),dHLdTAU(ND),EPS_FAC(ND)
 	REAL(KIND=LDP) dRHSdI(ND),dRHSdJ(ND)
@@ -56,7 +58,7 @@
 	INTEGER ERROR_LU
 	EXTERNAL ERROR_LU
 !
-	INTEGER I,J,K,L
+	INTEGER I,J,K,L,IERR
 	REAL(KIND=LDP) T1,T2,T3
 	REAL(KIND=LDP) dUdCHI
 	REAL(KIND=LDP) dTAdCHI_J,dTAdCHI_I
@@ -72,7 +74,8 @@
 	  WRITE(I,*)'NM_KI='
 	  STOP
 	END IF
-	VK(:,:,:)=0.0_LDP
+	WRK_MAT=0.0_LDP
+	KI(:,:,:)=0.0_LDP
 	RHS_dHdCHI(:,:)=0.0_LDP
 !
 ! Compute the dTAUdCHI matrix.
@@ -100,7 +103,7 @@
 ! To improve rounding error, we note that dTBdCHI needs to be added to
 ! both dTBdCHI_I and dTBdCHI_J.
 !
-	DO I=2,ND-1
+	DO I=MAX(2,DST),MAX(DEND,ND-1)
 	  J=I-1
 	  K=I+1
 	  dTAdCHI_J=-dHLdTAU(J)
@@ -125,16 +128,16 @@
 !
 	END DO
 !
-	DO I=2,ND-1
+	DO I=MAX(DST,2),MIN(DEND,ND-1)
 	  J=I-1
 	  K=I+1
 	  DO L=1,ND
-	    VK(I,L,1)=VK(I,L,1)+dRHSdJ(I)*dTAUdCHI(J,L)
-	    VK(I,L,1)=VK(I,L,1)+dRHSdI(I)*dTAUdCHI(I,L)
+	    WRK_MAT(I,K)=WRK_MAT(I,K)+dRHSdJ(I)*dTAUdCHI(J,L)
+	    WRK_MAT(I,K)=WRK_MAT(I,K)+dRHSdI(I)*dTAUdCHI(I,L)
 	  END DO
 	END DO
 !
-! Can now update VK for direct opacity variation.
+! Can now update KI for direct opacity variation.
 !
 	DO I=2,ND-1
 	  J=I-1
@@ -161,38 +164,38 @@
 !
 ! NB  :  VB(I)=-HS(J) and VC(I)=HS(I)
 !
-	  VK(I,J,1)=VK(I,J,1)
+	  WRK_MAT(I,J)=WRK_MAT(I,J)
 	1             - (dTAdCHI_J*JNU(J)+dTBdCHI_J*JNU(I))
 	1             - dHSDCHI(J)*RSQ_HNUM1(J)
 	1             + dXM_EPS_J
 !
-	  VK(I,K,1)=VK(I,K,1)
+	  WRK_MAT(I,K)=WRK_MAT(I,K)
 	1             - (dTCdCHI_K*JNU(K)+dTBdCHI_K*JNU(I))
 	1             + dHSDCHI(I)*RSQ_HNUM1(I)
 	1             + dXM_EPS_K
 !
 	  T1=T1*(DTAU(J)+DTAU(I))/CHI(I)
-	  VK(I,I,1)=VK(I,I,1)
+	  WRK_MAT(I,I)=WRK_MAT(I,I)
 	1             - (dTAdCHI_I*JNU(J)+dTCdCHI_I*JNU(K)+dTBdCHI_I*JNU(I))
 	1             + (dUdCHI*JNUM1(I)-dTBdCHI*JNU(I))
 	1             + (dHSDCHI(I)*RSQ_HNUM1(I)-dHSDCHI(J)*RSQ_HNUM1(J))
 	1             - T1*SOURCE(I)
 	1             + dXM_EPS_I
 !
-	  VK(I,I,2)=T1
+	  KI(I,I,2)=T1
 	END DO
 !
 ! Now do the boundary conditions.
 !
-	IF(OUT_BC_TYPE .LE. 1)THEN
+	IF(OUT_BC_TYPE .LE. 1 .AND. DST .EQ. 1)THEN
 	  T1=  ( MIDF(1)*Q(1)*JNU(1)*R(1)*R(1)
 	1        - MIDF(2)*Q(2)*JNU(2)*R(2)*R(2) )/DTAU(1)/DTAU(1)
 	  DO L=1,ND
-	    VK(1,L,1)=VK(1,L,1)+T1*dTAUdCHI(1,L)
+	    WRK_MAT(1,L)=WRK_MAT(1,L)+T1*dTAUdCHI(1,L)
 	  END DO
-	  VK(1,1,1)=VK(1,1,1) +
+	  WRK_MAT(1,1)=WRK_MAT(1,1) +
 	1          ( PSI(1)*JNU(1)- PSIPREV(1)*JNUM1(1) )/CHI(1)
-	ELSE
+	ELSE IF(DST .EQ. 1)THEN
 !
 ! First do the variation with respect to CHI arising from the 0.5*dR*(CHI(1)+CHI(2)) term.
 !
@@ -201,52 +204,58 @@
 	  T3=( HS(1)*RSQ_HNUM1(1) + (HU(1)*JNU(2)-(HL(1)-HBC*R(1)*R(1))*JNU(1)) +
 	1       EPS_A(1)*(JNUM1(1)-JNU(1)) +
 	1       EPS_B(1)*(JNUM1(2)-JNU(2)) )*T1/T2/T2
-	  VK(1,1,1)=VK(1,1,1) + T3
-	  VK(1,2,1)=VK(1,1,1) + T3
+	  WRK_MAT(1,1)=WRK_MAT(1,1) + T3
+	  WRK_MAT(1,2)=WRK_MAT(1,1) + T3
 !
 ! We now do the variation arising from DTAU(1) (which contains a q factor)
 !
 	  T3= -(dHUdTAU(1)*JNU(2)-dHLdTAU(1)*JNU(1))/T2
-	  VK(1,1,1)=VK(1,1,1) + T3*dTAUdCHI(1,1)
-	  VK(1,2,1)=VK(1,2,1) + T3*dTAUdCHI(1,2)
-	  VK(1,3,1)=VK(1,3,1) + T3*dTAUdCHI(1,3)
+	  WRK_MAT(1,1)=WRK_MAT(1,1) + T3*dTAUdCHI(1,1)
+	  WRK_MAT(1,2)=WRK_MAT(1,2) + T3*dTAUdCHI(1,2)
+	  WRK_MAT(1,3)=WRK_MAT(1,3) + T3*dTAUdCHI(1,3)
 !
 ! Now do the variation arising directly from terms containing 1/CHI(1).
 !
 	  T3= R(1)*R(1)*(SOURCE(1)+ES_COH_VEC(1)*JNU(1))/CHI(1) +
 	1           (PSIPREV(1)*JNUM1(1)-PSI(1)*JNU(1))/CHI(1)
-	  VK(1,1,1)=VK(1,1,1) + T3
+	  WRK_MAT(1,1)=WRK_MAT(1,1) + T3
 !
 ! Now do terms containing 1/(CHI(1)+CHI(2))
 !
 	  T3=(dHLdCHI(1)*JNU(1)- dHUdCHI(1)*JNU(2)-dHSdCHI(1)*RSQ_HNUM1(1))/T2
 	1       + ( EPS_A(1)*(JNU(1)-JNUM1(1))+EPS_B(1)*(JNU(2)-JNUM1(2)) )*EPS_FAC(1)/T2
-	  VK(1,1,1)=VK(1,1,1) + T3
-	  VK(1,2,1)=VK(1,2,1) + T3
+	  WRK_MAT(1,1)=WRK_MAT(1,1) + T3
+	  WRK_MAT(1,2)=WRK_MAT(1,2) + T3
 !
 ! Now for the variation with ETA.
 !
-	  VK(1,1,2)=-R(1)*R(1)/CHI(1)
+	  KI(1,1,2)=-R(1)*R(1)/CHI(1)
 !
 	END IF
 !
-	IF(DIF)THEN
+	IF(DIF .AND. DEND .EQ. ND)THEN
 	  T1= ( R(ND)*R(ND)*MIDF(ND)*JNU(ND) -
 	1          R(ND-1)*R(ND-1)*MIDF(ND-1)*Q(ND-1)*JNU(ND-1) )
 	1           / DTAU(ND-1)/DTAU(ND-1)
 	  DO L=1,ND
-	    VK(ND,L,1)=VK(ND,L,1)+T1*dTAUdCHI(ND-1,L)
+	    WRK_MAT(ND,L)=WRK_MAT(ND,L)+T1*dTAUdCHI(ND-1,L)
 	  END DO
-	  VK(ND,ND,1)=VK(ND,ND,1)-
+	  WRK_MAT(ND,ND)=WRK_MAT(ND,ND)-
 	1               DBB*R(ND)*R(ND)/3.0_LDP/CHI(ND)/CHI(ND)
-	ELSE
+	ELSE IF(DEND .EQ. ND)THEN
 	  T1= ( R(ND)*R(ND)*MIDF(ND)*JNU(ND) -
 	1           R(ND-1)*R(ND-1)*MIDF(ND-1)*Q(ND-1)*JNU(ND-1) )
 	1           / DTAU(ND-1)/DTAU(ND-1)
 	  DO L=1,ND
-	    VK(ND,L,1)=VK(ND,L,1)+T1*dTAUdCHI(ND-1,L)
+	    WRK_MAT(ND,L)=WRK_MAT(ND,L)+T1*dTAUdCHI(ND-1,L)
 	  END DO
 	END IF
+!
+	I=ND*ND
+	CALL MPI_ALLREDUCE(MPI_IN_PLACE,WRK_MAT,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+        DO J=VDST,VDEND
+          KI(:,J,1)=WRK_MAT(:,J)
+        END DO
 !
 ! 
 !
@@ -255,7 +264,7 @@
 ! we would the require two matrices. Note that HU(I), HL(I) and
 ! HS(I) depend directly on CHI(I) and CHI(I+1).
 !
-	DO I=1,ND-1
+	DO I=DST,MIN(DEND,ND-1)
 	  T1=dHUdTAU(I)*JNU(I+1)-dHLdTAU(I)*JNU(I)
 	  DO L=1,ND
 	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)+T1*dTAUdCHI(I,L)
@@ -265,7 +274,7 @@
 	1     EPS_FAC(I)*( EPS_PREV_A(I)*JNUM1(I)-EPS_A(I)*JNU(I) +
 	1                  EPS_PREV_B(I)*JNUM1(I+1)-EPS_B(I)*JNU(I+1) )
 	  RHS_dHdCHI(I,I)=RHS_dHdCHI(I,I) + T1
-	  RHS_dHdCHI(I,I+1)=RHS_dHdCHI(I,I+1) + T1
+	  IF(I+1 .LE. VDEND)RHS_dHdCHI(I,I+1)=RHS_dHdCHI(I,I+1) + T1
 	END DO
 !
 	RETURN

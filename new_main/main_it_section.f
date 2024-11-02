@@ -32,7 +32,7 @@
 ! Read in BA and STEQ arrays. We only attempt this if we have an existing
 ! model.
 !
-	CHK=.FALSE.
+	CHK=.FALSE.; SUCCESS=.FALSE.
 	IF(.NOT. NEWMOD)THEN
           CALL READ_BA_DATA_MPI_V1(LU_BA,NION,NUM_BNDS,CHK,FIXED_T,SUCCESS,'BAMAT')
 	  CALL MPI_ALLREDUCE(MPI_IN_PLACE,SUCCESS,IONE,MPI_LOGICAL,MPI_LAND,MPI_COMM_WORLD,IERR)
@@ -151,15 +151,15 @@
 	FLUSH(LUER)
 	DO I=0,NTHREAD-1
 	  IF(MYPE .EQ. 0 .AND. I .EQ. MYPE)THEN
-	    WRITE(LUER,*)' Start of GIT loop -- MYPE =',MYPE
-	    WRITE(LUER,'(A)')' Variable summary in each threadfollows:'
-	    WRITE(LUER,'(A)')' '
+	    WRITE(LUER,'(/,A,I4)')' Start of GIT loop -- MYPE =',MYPE
+	    WRITE(LUER,'(A,/)')' Variable summary for each thread follows:'
 	    WRITE(LUER,'(8A10)')'MYPE','IT_COUNT','RD_LAM','LAMBDA','FIXED_T',
 	1                       'COMP._BA','COH._ES','SN_MODEL'
 	  END IF
 	  IF(MYPE .EQ. I)THEN
 	    WRITE(LUER,'(2I10,6(9X,L1))')MYPE,MAIN_COUNTER,RD_LAMBDA,LAMBDA_ITERATION,FIXED_T,
 	1                   COMPUTE_BA,COHERENT_ES,SN_MODEL
+	    IF(MYPE .EQ. NTHREAD-1)WRITE(LUER,*)' '
 	  END IF
 	  FLUSH(LUER)
 	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
@@ -888,7 +888,7 @@
 	    WRITE(6,'(4A12)')'MYPE','EDDINGTON','ACCESS_F','COMP_F'
 	    WRITE(6,'(9X,I3,11X,L1,10X,I2,11X,L1)')MYPE,EDDINGTON,ACCESS_F,COMPUTE_EDDFAC	
 	    FLUSH(UNIT=6)
-	  ELSE 
+	  ELSE IF(MYPE .EQ. 0)THEN
 	    WRITE(6,'(9X,I3,11X,L1,10X,I2,11X,L1)')MYPE,EDDINGTON,ACCESS_F,COMPUTE_EDDFAC	
 	    FLUSH(UNIT=6)
 	  END IF
@@ -2898,5 +2898,8 @@
 	  WRITE(LUER,*)'Predicted changes are too large. '
 	  WRITE(LUER,*)'New populations written to SCRTEMP file.'
 	  WRITE(LUER,*)'Edit POINT1 file to recover older populations.'
+	  WRITE(LUER,*)'MYPE, MAXCH, MAX_CHNG_LIM=',MYPE,MAXCH,MAX_CHNG_LIM
+	  CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
+	  CALL MPI_FINALIZE(IERR)
 	  STOP
 	END IF
