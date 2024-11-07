@@ -476,7 +476,7 @@
 ! distribution and the population levels. TA is a working vector. The
 ! Rosseland opacity is given in ROSSMEAN.
 !
-	IF(MYPE .EQ. 0)WRITE(6,*)'Stopping befor T iterate)'
+	IF(MYPE .EQ. 0)WRITE(6,*)'Executoing barrier statement before T iterate)'
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	CALL TUNE(1,'T_ITERATE')
 	MAIN_COUNTER=1

@@ -14,7 +14,6 @@ LIB_MOD=$(LIB_DIR)libmod.a
 #
 
 MOD=  $(LIB)(mod_ray_mom_store.o)\
-      $(LIB)(mod_var_mom_j_cmf_mpi_v1.o)\
       $(LIB)(mod_var_mom_j_cmf.o)\
       $(LIB)(mod_var_mom_j_cmf_mpi_v1.o)\
       $(LIB)(mod_var_jrel_v2.o)\
@@ -189,6 +188,10 @@ $(LIB)(optdepth_v2_gam.o) : optdepth_v2_gam.f $(LIB)(mod_space_grid_v2_gam.o)
 $(LIB)(solve_cmf_formal_v2.o) : solve_cmf_formal_v2.f $(LIB)(mod_space_grid_v2.o)
 	$(F90) -c $(OPTION) solve_cmf_formal_v2.f
 	ar $(AR_OPTION) $(LIB) solve_cmf_formal_v2.o
+
+$(LIB)(var_mom_j_cmf_mpi_v1.o) : var_mom_j_cmf_mpi_v1.f $(LIB)(mod_ray_mom_store.o) $(LIB)(mod_var_mom_j_cmf_mpi_v1.o)
+	$(F90) -c $(OPTION) var_mom_j_cmf_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) var_mom_j_cmf_mpi_v1.o
 
 $(LIB)(var_mom_j_cmf_v9.o) : var_mom_j_cmf_v9.f $(LIB)(mod_ray_mom_store.o) $(LIB)(mod_var_mom_j_cmf.o)
 	$(F90) -c $(OPTION) var_mom_j_cmf_v9.f

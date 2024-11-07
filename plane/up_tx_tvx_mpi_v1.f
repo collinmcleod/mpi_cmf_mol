@@ -66,6 +66,8 @@
 !
 	INTEGER I,J,K
 	LOGICAL USE_EPS
+	LOGICAL NAN_PRES
+	CHARACTER(LEN=80) TMP_STR
 !
 ! Determine whether we are using the G eddington factor to describe N
 ! (in terms of H) or whether N is also being described interms of J.
@@ -90,6 +92,7 @@
 ! INIT will be true for the very first frequency. We initialize all storage
 ! locations, even those not in use.
 !
+!	WRITE(6,*)'Init in UP_TX_TVS is',INIT
 	IF(INIT)THEN
 	  TX=0.0_LDP
 	  TVX=0_LDP
@@ -140,7 +143,8 @@
 !
 ! Solve the simultaneous equations.
 !
-	    CALL SIMPTH(TA,TB,TC,TX(1,1,K),ND,ND)
+	    I=VDEND-VDST+1
+	    CALL SIMPTH(TA,TB,TC,TX(:,:,K),ND,I)
 !
 	    IF(USE_EPS)THEN
 	      DO J=VDST,VDEND
@@ -159,6 +163,9 @@
 	        END DO
 	      END DO
 	    END IF
+!	    J=(ND-1)*(VDEND-VDST+1)
+!	    WRITE(TMP_STR,*)K; TMP_STR=TMP_STR(1:)//'V'//TMP_STR(2:)
+!	    CALL CHECK_VEC_NAN(TVX(:,:,K),J,'TVX -- 1 -- update ',NAN_PRES)
 !
 	    IF(K .EQ. 1)THEN
 	      DO J=VDST,VDEND
@@ -167,6 +174,12 @@
 	        END DO
 	      END DO
 	    END IF
+!	    J=ND*(VDEND-VDST+1)
+!	    WRITE(TMP_STR,*)K; TMP_STR='TX -- update '//ADJUSTL(TMP_STR)
+!	    CALL CHECK_VEC_NAN(TX(:,:,K),J,TMP_STR,NAN_PRES)
+!	    J=(ND-1)*(VDEND-VDST+1)
+!	    WRITE(TMP_STR,*)K; TMP_STR=TMP_STR(1:)//'V'//TMP_STR(2:)
+!	    CALL CHECK_VEC_NAN(TVX(:,:,K),J,'TVX -- update ',NAN_PRES)
 !
 	  END IF	!DO_THIS_MATRIX
 	END DO		!K

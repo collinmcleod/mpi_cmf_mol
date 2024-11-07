@@ -357,7 +357,6 @@
 	      WRITE(6,*)'Calling VAR_MOM_J_CMF_MPI_V1'; FLUSH(UNIT=6)
 	      FIRST_TIME=.FALSE.
 	    END IF 
-	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	    CALL VAR_MOM_J_CMF_MPI_V1(TA,CHI_CLUMP,CHI_SCAT_CLUMP,
 	1           ES_COH_VEC,V,SIGMA,R,
 	1           dJ_DIF_d_T,dJ_DIF_d_dTdR,
@@ -807,6 +806,8 @@
 !	  IF(FIRST_FREQ)WRITE(6,*)'ERROR REMOVED dVCHI in DO_VAR_CONT'
 !	  DO X_INDX=4,NM
 !
+	  I=ND*(VDEND-VDST+1)*NM
+	  CALL CHECK_VEC_NAN(TX,I,'TX',NAN_PRES)
 	  dJ_LOC=0.0_LDP
 	  IF(NUM_BNDS .EQ. 1)THEN
 	    DO X_INDX=3,NM
@@ -830,6 +831,9 @@
 	  END IF
 	  I=NM*NUM_BNDS*(DEND-DST+1)
 	  CALL CHECK_VEC_NAN(dJ_LOC,I,'dJ_LOC_FIRST(STOP)',NAN_PRES)
+	  I=NT*(VDEND-VDST+1)
+	  CALL CHECK_VEC_NAN(VCHI,I,'VCHI(STOP)',NAN_PRES)
+	  CALL CHECK_VEC_NAN(VETA,I,'CETA(STOP)',NAN_PRES)
 !
 ! Compute VJ which gives the variation of J with respect to the atomic
 ! populations. NB: Electron scattering cross-section (6.65D-15) was replaced
@@ -884,6 +888,8 @@
 ! Update VJ for perturbations in diffusion approximation. The case ND=NUM_BNDS
 ! is no longer treated.
 !
+	  CALL CHECK_VEC_NAN(dJ_DIF_d_dTdR,ND,'dJ_DIF_d_dTdR(STOP)',NAN_PRES)
+	  CALL CHECK_VEC_NAN(dJ_DIF_d_T,ND,'dJ_DIF_d_T(STOP)',NAN_PRES)
 	  IF(DIF)THEN
 	    T1=DBB/DTDR
 	    DO J=DIAG_INDX,NUM_BNDS
@@ -914,6 +920,8 @@
 ! 18-Dec-1991 replaced ND in VJ( ,ND,K) by VJ( ,NUM_BNDS,K) to avoid
 !             compilations errors when NUM_BNDS .NE. ND
 !             (only in first clause)
+	I=NT*NUM_BNDS*(DEND-DST+1)
+	CALL CHECK_VEC_NAN(VJ,I,'VJ_CHECK_BEF_DEP(STOP)',NAN_PRES)
 !
 	  IF(DIF)THEN
 	    T1=DBB/DTDR
@@ -934,5 +942,6 @@
 	CALL CHECK_VEC_NAN(dJ_LOC,I,'dJ_LOC_CHECK(STOP)',NAN_PRES)
 !
 	FL_OLD=FL
+	IF(MYPE .EQ. 0)WRITE(6,*)'Exiting DO_VAR_CONT_MPI_V1'
 	RETURN
 	END

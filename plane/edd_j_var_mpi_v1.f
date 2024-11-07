@@ -65,6 +65,7 @@
 	REAL(KIND=LDP) dTCdCHI_I,dTCdCHI_K
 	REAL(KIND=LDP) dTBdCHI_J,dTBdCHI_I,dTBdCHI_K,dTBdCHI
 	REAL(KIND=LDP) dXM_EPS_J,dXM_EPS_I,dXM_EPS_K
+	LOGICAL NAN_PRES
 !
 ! 
 !
@@ -84,7 +85,7 @@
 !
 ! The following derivatives are valid for all ML.
 !
-	DO I=1,ND-1
+	DO I=1,ND-1                                 !VDST,MIN(VDEND,ND-1)
 	  T1=(1.0_LDP+W(I))*(CHI(I)+CHI(I+1))
 	  dHUdCHI(I)=HU(I)*W(I)/T1
 	  dHUdTAU(I)=-HU(I)/DTAU(I)
@@ -103,7 +104,7 @@
 ! To improve rounding error, we note that dTBdCHI needs to be added to
 ! both dTBdCHI_I and dTBdCHI_J.
 !
-	DO I=MAX(2,DST),MAX(DEND,ND-1)
+	DO I=MAX(2,DST),MIN(DEND,ND-1)
 	  J=I-1
 	  K=I+1
 	  dTAdCHI_J=-dHLdTAU(J)
@@ -139,7 +140,7 @@
 !
 ! Can now update KI for direct opacity variation.
 !
-	DO I=2,ND-1
+	DO I=MAX(2,DST),MIN(DEND,ND-1)
 	  J=I-1
 	  K=I+1
 	  T1=0.5_LDP*R(I)*R(I)/Q(I)
@@ -182,7 +183,11 @@
 	1             - T1*SOURCE(I)
 	1             + dXM_EPS_I
 !
-	  KI(I,I,2)=T1
+	END DO
+!
+	DO I=MAX(DST,2),MIN(DEND,ND-1)
+	   T1=T1*(DTAU(J)+DTAU(I))/CHI(I)
+	   KI(I,I,2)=T1
 	END DO
 !
 ! Now do the boundary conditions.
@@ -237,7 +242,7 @@
 	  T1= ( R(ND)*R(ND)*MIDF(ND)*JNU(ND) -
 	1          R(ND-1)*R(ND-1)*MIDF(ND-1)*Q(ND-1)*JNU(ND-1) )
 	1           / DTAU(ND-1)/DTAU(ND-1)
-	  DO L=1,ND
+	  DO L=VDST,VDEND
 	    WRK_MAT(ND,L)=WRK_MAT(ND,L)+T1*dTAUdCHI(ND-1,L)
 	  END DO
 	  WRK_MAT(ND,ND)=WRK_MAT(ND,ND)-
@@ -246,7 +251,7 @@
 	  T1= ( R(ND)*R(ND)*MIDF(ND)*JNU(ND) -
 	1           R(ND-1)*R(ND-1)*MIDF(ND-1)*Q(ND-1)*JNU(ND-1) )
 	1           / DTAU(ND-1)/DTAU(ND-1)
-	  DO L=1,ND
+	  DO L=VDST,VDEND
 	    WRK_MAT(ND,L)=WRK_MAT(ND,L)+T1*dTAUdCHI(ND-1,L)
 	  END DO
 	END IF
@@ -264,18 +269,33 @@
 ! we would the require two matrices. Note that HU(I), HL(I) and
 ! HS(I) depend directly on CHI(I) and CHI(I+1).
 !
-	DO I=DST,MIN(DEND,ND-1)
+	DO I=1,ND-1
 	  T1=dHUdTAU(I)*JNU(I+1)-dHLdTAU(I)*JNU(I)
-	  DO L=1,ND
+	  DO L=VDST,VDEND
 	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)+T1*dTAUdCHI(I,L)
 	  END DO
+	END DO
+!	I=ND*ND; CALL CHECK_VEC_NAN(dTAUdCHI,I,'dTAUdCHI(STOP)',NAN_PRES)!
+!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	I=ND; CALL CHECK_VEC_NAN(JNU,I,'JNU(STOP)',NAN_PRES)!
+!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	I=MIN(ND-1,VDEND)-VDST+1; CALL CHECK_VEC_NAN(dHUdTAU(VDST:),I,'dHUdTAU(STOP)',NAN_PRES)!
+!	CALL CHECK_VEC_NAN(dHLdTAU(VDST:),I,'dHUdTAU(STOP)',NAN_PRES)!
+!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	I=(ND-1)*(MIN(ND,VDEND)-VDST+1)
+!	CALL CHECK_VEC_NAN(RHS_dHdCHI,I,'RHSTdCHI-0(STOP)',NAN_PRES)!
+!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!
+	DO I=DST,MIN(DEND,ND-1)
 	  T1=dHUdCHI(I)*JNU(I+1) - dHLdCHI(I)*JNU(I)
-	1                       + dHSdCHI(I)*RSQ_HNUM1(I) +
-	1     EPS_FAC(I)*( EPS_PREV_A(I)*JNUM1(I)-EPS_A(I)*JNU(I) +
+	1                        + dHSdCHI(I)*RSQ_HNUM1(I) +
+	1 EPS_FAC(I)*( EPS_PREV_A(I)*JNUM1(I)-EPS_A(I)*JNU(I) +
 	1                  EPS_PREV_B(I)*JNUM1(I+1)-EPS_B(I)*JNU(I+1) )
 	  RHS_dHdCHI(I,I)=RHS_dHdCHI(I,I) + T1
 	  IF(I+1 .LE. VDEND)RHS_dHdCHI(I,I+1)=RHS_dHdCHI(I,I+1) + T1
 	END DO
+!	I=(ND-1)*(VDEND-VDST+1)
+!	CALL CHECK_VEC_NAN(RHS_dHdCHI,I,'RHSTdCHI(STOP)',NAN_PRES)!
 !
 	RETURN
 	END

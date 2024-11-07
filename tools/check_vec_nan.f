@@ -6,11 +6,13 @@
 	LOGICAL NAN_PRES
 	CHARACTER(LEN=*) DESC
 !
+	RETURN
 	DO I=1,ND
 	  IF(VEC(I) .NE. VEC(I))THEN
-	    WRITE(6,*)'Error - NaN present for ',TRIM(DESC)
-	    WRITE(6,'(5ES14.4)')VEC
-	    FLUSH(UNIT=6)
+	    WRITE(700+MYPE,*)'Error - NaN present for processor:',MYPE,ND,TRIM(DESC)
+	    FLUSH(UNIT=700+MYPE)
+	    WRITE(700+MYPE,'(5ES14.4)')VEC
+	    FLUSH(UNIT=700+MYPE)
 	    IF(INDEX(DESC,'(STOP)') .NE. 0)STOP
 	    NAN_PRES=.TRUE.
 	    RETURN
