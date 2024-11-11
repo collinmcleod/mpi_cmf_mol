@@ -670,6 +670,15 @@
 	  END IF
 	END IF
 !
+!	IF(MYPE .EQ. 0)THEN
+!	  DO I=1,ND
+!	    J=MAX(1,I-1)
+!	    K=MIN(ND,I+1)
+!	    WRITE(275,'(I5,9ES16.8)')I,FREQ,TA(I)*R(J)*R(J),TB(I)*R(I)*R(I),TC(I)*R(K)*R(K),XM(I)
+!	  END DO
+!	  FLUSH(UNIT=275)
+!	END IF
+!
 ! Solve for the radiation field along ray for this frequency.
 !
 	XM_SAVE=XM
@@ -794,6 +803,10 @@
 	HBC_SAVE=HBC
 	IN_HBC_SAVE=IN_HBC
 	NBC_SAVE=NBC
+!	IF(MYPE .EQ. 0)THEN
+!	  WRITE(721,'(10ES16.6)')FREQ,JNU(1),JNU(ND-2:ND),ETA(ND)/CHI(ND),DBB,RSQHNU(1),RSQHNU(ND-1)
+!	  FLUSH(UNIT=721)
+!	END IF
 !
 	RETURN
 	END

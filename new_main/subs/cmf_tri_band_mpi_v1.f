@@ -413,6 +413,9 @@
 	    WRITE(6,'(1X,A,I4,A,F10.5,2X,ES14.4)')'Maximum error and correction on CM_TRI_BAND iteration',
 	1                       IT_COUNTER,' is (in %): ',200.0_LDP*MAXVAL(ERR_EST),MAXVAL(OLD_EST)
 	  END IF
+	  IF(MYPE .EQ. 0)THEN
+	    CALL WR2D_V2(OLD_EST,N,ND,'STEQ_ARRAY','*',L_TRUE,450)
+	  END IF
 !
 ! Update RHS for off block diaginal elements and then reiterate.
 !

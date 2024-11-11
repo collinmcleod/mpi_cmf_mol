@@ -95,7 +95,7 @@
 !	WRITE(6,*)'Init in UP_TX_TVS is',INIT
 	IF(INIT)THEN
 	  TX=0.0_LDP
-	  TVX=0_LDP
+	  TVX=0.0_LDP
 	  OLD_TX=0.0_LDP
 	END IF
 !
@@ -163,9 +163,6 @@
 	        END DO
 	      END DO
 	    END IF
-!	    J=(ND-1)*(VDEND-VDST+1)
-!	    WRITE(TMP_STR,*)K; TMP_STR=TMP_STR(1:)//'V'//TMP_STR(2:)
-!	    CALL CHECK_VEC_NAN(TVX(:,:,K),J,'TVX -- 1 -- update ',NAN_PRES)
 !
 	    IF(K .EQ. 1)THEN
 	      DO J=VDST,VDEND
@@ -174,12 +171,6 @@
 	        END DO
 	      END DO
 	    END IF
-!	    J=ND*(VDEND-VDST+1)
-!	    WRITE(TMP_STR,*)K; TMP_STR='TX -- update '//ADJUSTL(TMP_STR)
-!	    CALL CHECK_VEC_NAN(TX(:,:,K),J,TMP_STR,NAN_PRES)
-!	    J=(ND-1)*(VDEND-VDST+1)
-!	    WRITE(TMP_STR,*)K; TMP_STR=TMP_STR(1:)//'V'//TMP_STR(2:)
-!	    CALL CHECK_VEC_NAN(TVX(:,:,K),J,'TVX -- update ',NAN_PRES)
 !
 	  END IF	!DO_THIS_MATRIX
 	END DO		!K

@@ -49,6 +49,7 @@
 !
 ! Local variables.
 !
+	REAL(KIND=LDP) WRK_RHS(ND-1,ND)
 	REAL(KIND=LDP) WRK_MAT(ND,ND)
 	REAL(KIND=LDP) dTAUdCHI(ND,ND)
 	REAL(KIND=LDP) dHUdCHI(ND),dHLdCHI(ND),dHSdCHI(ND)
@@ -75,8 +76,9 @@
 	  WRITE(I,*)'NM_KI='
 	  STOP
 	END IF
+	WRK_RHS=0.0_LDP
 	WRK_MAT=0.0_LDP
-	KI(:,:,:)=0.0_LDP
+	KI(:,:,1:2)=0.0_LDP
 	RHS_dHdCHI(:,:)=0.0_LDP
 !
 ! Compute the dTAUdCHI matrix.
@@ -133,8 +135,8 @@
 	  J=I-1
 	  K=I+1
 	  DO L=1,ND
-	    WRK_MAT(I,K)=WRK_MAT(I,K)+dRHSdJ(I)*dTAUdCHI(J,L)
-	    WRK_MAT(I,K)=WRK_MAT(I,K)+dRHSdI(I)*dTAUdCHI(I,L)
+	    WRK_MAT(I,L)=WRK_MAT(I,L)+dRHSdJ(I)*dTAUdCHI(J,L)
+	    WRK_MAT(I,L)=WRK_MAT(I,L)+dRHSdI(I)*dTAUdCHI(I,L)
 	  END DO
 	END DO
 !
@@ -186,8 +188,8 @@
 	END DO
 !
 	DO I=MAX(DST,2),MIN(DEND,ND-1)
-	   T1=T1*(DTAU(J)+DTAU(I))/CHI(I)
-	   KI(I,I,2)=T1
+	  T1=0.5_LDP*R(I)*R(I)*(DTAU(I-1)+DTAU(I))/CHI(I)/Q(I)
+	  KI(I,I,2)=T1
 	END DO
 !
 ! Now do the boundary conditions.
@@ -242,7 +244,7 @@
 	  T1= ( R(ND)*R(ND)*MIDF(ND)*JNU(ND) -
 	1          R(ND-1)*R(ND-1)*MIDF(ND-1)*Q(ND-1)*JNU(ND-1) )
 	1           / DTAU(ND-1)/DTAU(ND-1)
-	  DO L=VDST,VDEND
+	  DO L=1,ND						!VDST,VDEND
 	    WRK_MAT(ND,L)=WRK_MAT(ND,L)+T1*dTAUdCHI(ND-1,L)
 	  END DO
 	  WRK_MAT(ND,ND)=WRK_MAT(ND,ND)-
@@ -251,7 +253,7 @@
 	  T1= ( R(ND)*R(ND)*MIDF(ND)*JNU(ND) -
 	1           R(ND-1)*R(ND-1)*MIDF(ND-1)*Q(ND-1)*JNU(ND-1) )
 	1           / DTAU(ND-1)/DTAU(ND-1)
-	  DO L=VDST,VDEND
+	  DO L=1,ND      					!VDST,VDEND
 	    WRK_MAT(ND,L)=WRK_MAT(ND,L)+T1*dTAUdCHI(ND-1,L)
 	  END DO
 	END IF
@@ -269,33 +271,41 @@
 ! we would the require two matrices. Note that HU(I), HL(I) and
 ! HS(I) depend directly on CHI(I) and CHI(I+1).
 !
-	DO I=1,ND-1
-	  T1=dHUdTAU(I)*JNU(I+1)-dHLdTAU(I)*JNU(I)
-	  DO L=VDST,VDEND
-	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)+T1*dTAUdCHI(I,L)
-	  END DO
-	END DO
-!	I=ND*ND; CALL CHECK_VEC_NAN(dTAUdCHI,I,'dTAUdCHI(STOP)',NAN_PRES)!
-!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-!	I=ND; CALL CHECK_VEC_NAN(JNU,I,'JNU(STOP)',NAN_PRES)!
-!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-!	I=MIN(ND-1,VDEND)-VDST+1; CALL CHECK_VEC_NAN(dHUdTAU(VDST:),I,'dHUdTAU(STOP)',NAN_PRES)!
-!	CALL CHECK_VEC_NAN(dHLdTAU(VDST:),I,'dHUdTAU(STOP)',NAN_PRES)!
-!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-!	I=(ND-1)*(MIN(ND,VDEND)-VDST+1)
-!	CALL CHECK_VEC_NAN(RHS_dHdCHI,I,'RHSTdCHI-0(STOP)',NAN_PRES)!
-!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-!
 	DO I=DST,MIN(DEND,ND-1)
+	  T1=dHUdTAU(I)*JNU(I+1)-dHLdTAU(I)*JNU(I)
+	  DO L=1,ND
+	    WRK_RHS(I,L)=WRK_RHS(I,L)+T1*dTAUdCHI(I,L)
+	  END DO
 	  T1=dHUdCHI(I)*JNU(I+1) - dHLdCHI(I)*JNU(I)
 	1                        + dHSdCHI(I)*RSQ_HNUM1(I) +
 	1 EPS_FAC(I)*( EPS_PREV_A(I)*JNUM1(I)-EPS_A(I)*JNU(I) +
 	1                  EPS_PREV_B(I)*JNUM1(I+1)-EPS_B(I)*JNU(I+1) )
-	  RHS_dHdCHI(I,I)=RHS_dHdCHI(I,I) + T1
-	  IF(I+1 .LE. VDEND)RHS_dHdCHI(I,I+1)=RHS_dHdCHI(I,I+1) + T1
+	  WRK_RHS(I,I)=WRK_RHS(I,I) + T1
+	  WRK_RHS(I,I+1)=WRK_RHS(I,I+1) + T1
 	END DO
-!	I=(ND-1)*(VDEND-VDST+1)
-!	CALL CHECK_VEC_NAN(RHS_dHdCHI,I,'RHSTdCHI(STOP)',NAN_PRES)!
+!
+	I=(ND-1)*ND
+	CALL MPI_ALLREDUCE(MPI_IN_PLACE,WRK_RHS,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+        DO J=VDST,VDEND
+          RHS_dHdCHI(:,J)=WRK_RHS(:,J)
+        END DO
 !
 	RETURN
 	END
+!
+!	DO I=1,ND-1
+!	  T1=dHUdTAU(I)*JNU(I+1)-dHLdTAU(I)*JNU(I)
+!	  DO L=VDST,VDEND
+!	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)+T1*dTAUdCHI(I,L)
+!	  END DO
+!	END DO
+!!
+!	DO I=DST,MIN(DEND,ND-1)
+!	  T1=dHUdCHI(I)*JNU(I+1) - dHLdCHI(I)*JNU(I)
+!	1                        + dHSdCHI(I)*RSQ_HNUM1(I) +
+!	1 EPS_FAC(I)*( EPS_PREV_A(I)*JNUM1(I)-EPS_A(I)*JNU(I) +
+!	1                  EPS_PREV_B(I)*JNUM1(I+1)-EPS_B(I)*JNU(I+1) )
+!	  RHS_dHdCHI(I,I)=RHS_dHdCHI(I,I) + T1
+!	  IF(I+1 .LE. VDEND)RHS_dHdCHI(I,I+1)=RHS_dHdCHI(I,I+1) + T1
+!	END DO
+!
