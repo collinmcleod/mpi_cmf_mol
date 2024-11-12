@@ -210,6 +210,7 @@
 ! 
 !
 	ELSE IF(CONT_VEL .AND. .NOT. ACCURATE)THEN
+	  CALL TUNE(1,'CONTV_NA')
 	  IF(FIRST_FREQ)THEN
 	    TX(:,:,:)=0.0_LDP
 	    TVX(:,:,:)=0.0_LDP
@@ -371,6 +372,7 @@
 !
 ! Correcting for clumping this way does it for both the continuum and lines.
 !
+	  CALL TUNE(1,'INIT_TX_SECT')
 	  IF(DO_CLUMP_MODEL)THEN
 	    DO J=VDST,VDEND
 	      DO K=1,ND
@@ -434,6 +436,7 @@
 	      END DO
 	    END DO
 	  END IF
+	  CALL TUNE(2,'INIT_TX_SECT')
 !
 ! Update line variation matrices. Note that the matrices now refer to the
 ! variation with respect to levels (e.g. the lower and upper level) and
@@ -446,7 +449,10 @@
 ! NB: We only need to loop from DST to DEND as we combine all the data
 ! into one array with ALL_REDUCE when NUM_BNDS > 1.
 !
+	  CALL TUNE(1,'ZERO_FAC_MATS')
 	  FAC_MATS=0.0_LDP
+	  CALL TUNE(2,'ZERO_FAC_MATS')
+	  CALL TUNE(1,'FAC_MATS')
 	  DO SIM_INDX=1,MAX_SIM
 	    IF(.NOT. WEAK_LINE(SIM_INDX) .AND. RESONANCE_ZONE(SIM_INDX))THEN
 	      DO J=DST,DEND
@@ -461,6 +467,7 @@
 	    K=3*ND*MAX_SIM
 	    CALL MPI_ALLREDUCE(MPI_IN_PLACE,FAC_MATS,K,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	  END IF
+	  CALL TUNE(2,'FAC_MATS')
 !  
 	  CALL TUNE(1,'TX_TVX_VC')
 	  DO SIM_INDX=1,MAX_SIM
@@ -535,6 +542,7 @@
 !
 	  TX(:,:,1:2)=0.0_LDP
 	  TVX(:,:,1:2)=0.0_LDP
+	  CALL TUNE(2,'CONTV_NA')
 !
 ! 
 !
@@ -787,6 +795,7 @@
 !
 	VJ=0.0_LDP
 	IF(CONT_VEL)THEN
+	   CALL TUNE(1,'CONT_VELF')
 !
 ! NB: We no longer include the variation ESEC variation with CHI, but treat it
 ! separately. this correction has now been specifically included in VAROPAC.
@@ -904,6 +913,7 @@
 	      END IF 
 	    END DO
 	  END IF
+	  CALL TUNE(2,'CONT_VELF')
 !
 	ELSE
 !
@@ -922,8 +932,8 @@
 ! 18-Dec-1991 replaced ND in VJ( ,ND,K) by VJ( ,NUM_BNDS,K) to avoid
 !             compilations errors when NUM_BNDS .NE. ND
 !             (only in first clause)
-	I=NT*NUM_BNDS*(DEND-DST+1)
-	CALL CHECK_VEC_NAN(VJ,I,'VJ_CHECK_BEF_DEP(STOP)',NAN_PRES)
+	  I=NT*NUM_BNDS*(DEND-DST+1)
+	  CALL CHECK_VEC_NAN(VJ,I,'VJ_CHECK_BEF_DEP(STOP)',NAN_PRES)
 !
 	  IF(DIF)THEN
 	    T1=DBB/DTDR

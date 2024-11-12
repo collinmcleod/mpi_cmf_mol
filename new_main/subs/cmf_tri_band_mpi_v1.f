@@ -417,6 +417,10 @@
 	    CALL WR2D_V2(OLD_EST,N,ND,'STEQ_ARRAY','*',L_TRUE,450)
 	  END IF
 !
+!	  PREV_EST(:,:,2:4)=PREV_EST(:,:,1:3)
+!	  PREV_EST(:,:,1)=NEW_EST(:,:,1)
+!	  CALL ACCEL_IT(OLD_EST,PREV_EST,DST,DEND,ND,NT)
+!
 ! Update RHS for off block diaginal elements and then reiterate.
 !
 	  DO K=DST,DEND
