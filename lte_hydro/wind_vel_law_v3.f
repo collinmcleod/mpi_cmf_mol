@@ -64,14 +64,16 @@
 ! Decide where diagnostic information will be written. HYDRO_ITERATION_INFO wil be open
 ! if this routine is called form DO_CMF_HYDRO_V2.
 !
-	LU_DIAG=6
-	INQUIRE(FILE='HYDRO_ITERATION_INFO',NUMBER=I,OPENED=FILE_OPENED)
-	IF(FILE_OPENED)LU_DIAG=I
-	CALL GET_VERBOSE_INFO(VERBOSE)
-	IF(VERBOSE)THEN
-	  WRITE(LU_DIAG,*)' '
-	  WRITE(LU_DIAG,*)'Called WIND_VEL_LAW_2 to set up the wind velocity'
-	  WRITE(LU_DIAG,*)' '
+	IF(MYPE .EQ. 0)THEN
+	  LU_DIAG=6
+	  INQUIRE(FILE='HYDRO_ITERATION_INFO',NUMBER=I,OPENED=FILE_OPENED)
+	  IF(FILE_OPENED)LU_DIAG=I
+	  CALL GET_VERBOSE_INFO(VERBOSE)
+	  IF(VERBOSE)THEN
+	    WRITE(LU_DIAG,*)' '
+	    WRITE(LU_DIAG,*)'Called WIND_VEL_LAW_3 to set up the wind velocity'
+	    WRITE(LU_DIAG,*)' '
+	  END IF
 	END IF
 !
 	OUT_BOUNDARY=.FALSE.
@@ -85,10 +87,12 @@
 	  T1= R_TRANS * dVdR_TRANS / V_TRANS
 	  SCALE_HEIGHT =  0.5_LDP*R_TRANS / (T1 - BETA*RO/(R_TRANS-RO) )
 !
-	  WRITE(LU_DIAG,*)'  Transition radius is',R_TRANS
-	  WRITE(LU_DIAG,*)'Transition velocity is',V_TRANS
-	  WRITE(LU_DIAG,*)'                 R0 is',RO
-	  WRITE(LU_DIAG,*)'       Scale height is',SCALE_HEIGHT
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LU_DIAG,*)'  Transition radius is',R_TRANS
+	    WRITE(LU_DIAG,*)'Transition velocity is',V_TRANS
+	    WRITE(LU_DIAG,*)'                 R0 is',RO
+	    WRITE(LU_DIAG,*)'       Scale height is',SCALE_HEIGHT
+	  END IF
 !
 	  I=1
 	  R(I)=R_TRANS
@@ -136,7 +140,7 @@
 	  END DO
 !
 	ELSE IF(VEL_TYPE .EQ. 2 .OR. VEL_TYPE .EQ. 3)THEN
-	  IF(VERBOSE)THEN
+	  IF(MYPE .EQ. 0 .AND. VERBOSE)THEN
 	    WRITE(LU_DIAG,'(4X,A1,9(8X,A6))')'I','  R(I)','    T1','    T2','    T3',
 	1                   'V(top)','V(bot)','dTOPdR','  dVdR','     V',' Sigma'
 	  END IF
@@ -148,11 +152,13 @@
 	  ALPHA=2.0_LDP
 	  IF(VEL_TYPE .EQ. 3)ALPHA=3.0_LDP
 !
-	  WRITE(LU_DIAG,*)'     Transition radius is',R_TRANS
-	  WRITE(LU_DIAG,*)'   Transition velocity is',V_TRANS
-	  WRITE(LU_DIAG,*)'                  dVdR is',dVdR_TRANS
-	  WRITE(LU_DIAG,*)'                 SIGMA is',SIGMA(1)
-	  WRITE(LU_DIAG,*)' Modified scale height is',SCALE_HEIGHT
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LU_DIAG,*)'     Transition radius is',R_TRANS
+	    WRITE(LU_DIAG,*)'   Transition velocity is',V_TRANS
+	    WRITE(LU_DIAG,*)'                  dVdR is',dVdR_TRANS
+	    WRITE(LU_DIAG,*)'                 SIGMA is',SIGMA(1)
+	    WRITE(LU_DIAG,*)' Modified scale height is',SCALE_HEIGHT
+	  END IF
 !
 	  DO WHILE (R(I) .LT. RMAX)
 	    I=I+1
@@ -197,7 +203,7 @@
 	    dVdR = dTOPdR / BOT  + TOP*dBOTdR/BOT/BOT
 	    V(I) = TOP/BOT
             SIGMA(I)=R(I)*dVdR/V(I)-1.0_LDP
-	    IF(VERBOSE)THEN
+	    IF(VERBOSE .AND. MYPE .EQ. 0)THEN
 	      WRITE(LU_DIAG,'(I5,10ES14.4)')I,R(I),T1,T2,T3,TOP,BOT,dTOPdR,dVdR,V(I),SIGMA(I)
 	    END IF
 	  END DO
@@ -209,10 +215,12 @@
 	  T1 = R_TRANS * dVdR_TRANS / V_TRANS
 	  SCALE_HEIGHT =  0.5_LDP*R_TRANS / (T1 - BETA*RO/(R_TRANS-RO) )
 !
-	  WRITE(LU_DIAG,*)'  Transition radius is',R_TRANS
-	  WRITE(LU_DIAG,*)'Transition velocity is',V_TRANS
-	  WRITE(LU_DIAG,*)'                 R0 is',RO
-	  WRITE(LU_DIAG,*)'       Scale height is',SCALE_HEIGHT
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LU_DIAG,*)'  Transition radius is',R_TRANS
+	    WRITE(LU_DIAG,*)'Transition velocity is',V_TRANS
+	    WRITE(LU_DIAG,*)'                 R0 is',RO
+	    WRITE(LU_DIAG,*)'       Scale height is',SCALE_HEIGHT
+	 END IF
 !
 	  I=1
 	  R(I)=R_TRANS

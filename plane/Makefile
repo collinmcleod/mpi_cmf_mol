@@ -62,6 +62,7 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(n_weight.o)\
       $(LIB)(mom_j_cmf_v8.o)\
       $(LIB)(mom_j_cmf_v11.o)\
+      $(LIB)(mom_j_cmf_mpi_v1.o)\
       $(LIB)(mom_j_ddt_v6.o)\
       $(LIB)(mom_j_pp_v1.o)\
       $(LIB)(mom_j_pp_mpi_v1.o)\

@@ -14,9 +14,10 @@ LIB_MOD=$(LIB_DIR)libmod.a
 #      $(LIB)(ba_ehb_ff_update_v1.o)\
 
 OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
+      $(LIB)(accel_tri_sol.o)\
       $(LIB)(adjust_cmat_to_lte.o)\
       $(LIB)(adjust_sn_r_grid.o)\
-      $(LIB)(adjust_pops.o)\
+      $(LIB)(adjust_pops_mpi_v1.o)\
       $(LIB)(allocate_wse_arrays_mpi_v1.o)\
       $(LIB)(auto_clump_rev.o)\
       $(LIB)(auto_add_ion.o)\
@@ -34,7 +35,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(determine_nse.o)\
       $(LIB)(det_lte_ed.o)\
       $(LIB)(ddt_work.o)\
-      $(LIB)(do_cmf_hydro_v2.o)\
+      $(LIB)(do_cmf_hydro_mpi_v1.o)\
       $(LIB)(do_species_decays_v2.o)\
       $(LIB)(do_full_r_grid_v1.o)\
       $(LIB)(do_vel_regrid_v2.o)\
@@ -141,9 +142,9 @@ $(LIB)(%.o) : %.f  $(STEQ) $(MOD) $(CONT)
 # Specific dependency of source files which uses external 
 # fortran moudles. (The order of compilation matters.)
 
-$(LIB)(adjust_pops.o) : adjust_pops.f $(LIB)(old_grid_module.o) $(MOD) $(CONT)
-	$(F90) -c $(OPTION) adjust_pops.f
-	ar $(AR_OPTION) $(LIB) adjust_pops.o
+$(LIB)(adjust_pops_mpi_v1.o) : adjust_pops_mpi_v1.f $(LIB)(old_grid_module.o) $(MOD) $(CONT)
+	$(F90) -c $(OPTION) adjust_pops_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) adjust_pops_mpi_v1.o
 
 $(LIB)(determine_nse.o) : determine_nse.f $(STEQ) $(CHG) $(MOD)
 	$(F90) -c $(OPTION) determine_nse.f

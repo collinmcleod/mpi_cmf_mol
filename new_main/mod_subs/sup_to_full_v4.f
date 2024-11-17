@@ -67,14 +67,14 @@
 	1       ATM(ID+1)%XzV_PRES,   T,ED, DST, DEND, ND)
 	  END DO
 50	  CONTINUE
-	  IF(DST .EQ. 1)THEN
+	  IF(MYPE .EQ. 0)THEN
 	    DO ID=1,NUM_IONS-1
 	      CALL SUP_TO_FULL_V3b(
-	1         ROOT(ID)%XzV_F,       ROOT(ID)%XzVLTE_F,    ROOT(ID)%LOG_XzVLTE_F, ROOT(ID)%XzVLTE_F_ON_S,
-	1         ROOT(ID)%W_XzV_F,     ATM(ID)%EDGEXzV_F,   ATM(ID)%GXzV_F,       ATM(ID)%F_TO_S_XzV,
-	1         ATM(ID)%INT_SEQ_XzV,  ATM(ID)%NXzV_F,     ROOT(ID)%DXzV_F,
-	1         ATM(ID)%GIONXzV_F,   ROOT(ID)%XzV,        ROOT(ID)%XzVLTE,       ROOT(ID)%LOG_XzVLTE,
-	1         ATM(ID)%NXzV,        ROOT(ID)%DXzV,        ATM(ID)%ZXzV,         ATM(ID)%XzV_PRES,
+	1         ROOT(ID)%XzV_F,       ROOT(ID)%XzVLTE_F,   ROOT(ID)%LOG_XzVLTE_F, ROOT(ID)%XzVLTE_F_ON_S,
+	1         ROOT(ID)%W_XzV_F,     ATM(ID)%EDGEXzV_F,   ATM(ID)%GXzV_F,        ATM(ID)%F_TO_S_XzV,
+	1         ATM(ID)%INT_SEQ_XzV,  ATM(ID)%NXzV_F,      ROOT(ID)%DXzV_F,
+	1         ATM(ID)%GIONXzV_F,    ROOT(ID)%XzV,        ROOT(ID)%XzVLTE,       ROOT(ID)%LOG_XzVLTE,
+	1         ATM(ID)%NXzV,         ROOT(ID)%DXzV,       ATM(ID)%ZXzV,          ATM(ID)%XzV_PRES,
 	1         ATM(ID+1)%EDGEXzV_F,  ATM(ID+1)%GXzV_F,
 	1         ATM(ID+1)%F_TO_S_XzV, ATM(ID+1)%NXzV_F,
 	1         ATM(ID+1)%XzV_PRES,   T,ED, IONE, ND, ND)
