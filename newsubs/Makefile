@@ -23,6 +23,7 @@ OBJ= $(LIB)(ave_level_energy.o)\
      $(LIB)(genopaeta_mpi_v1.o)\
      $(LIB)(genosc_v8.o)\
      $(LIB)(genosc_v9.o)\
+     $(LIB)(get_phot_cross_sections_v1.o)\
      $(LIB)(get_num_phot_routes_v1.o)\
      $(LIB)(get_scl_xray_fluxes_v1.o)\
      $(LIB)(newpertjd.o)\
@@ -44,6 +45,7 @@ OBJ= $(LIB)(ave_level_energy.o)\
      $(LIB)(subcol_multi_v4.o)\
      $(LIB)(subcol_multi_v6.o)\
      $(LIB)(sub_phot_gen.o)\
+     $(LIB)(sub_phot_gen_mpi_v1.o)\
      $(LIB)(xcross_v2.o)\
      $(LIB)(xray_data_mod.o)\
      $(LIB)(var_op_v6.o)

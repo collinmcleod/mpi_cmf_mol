@@ -130,6 +130,7 @@
 	INTEGER MNL,MNUP
 	INTEGER MAIN_COUNTER
 !
+	LOGICAL TMP_LOGICAL
 	LOGICAL LST_DEPTH_ONLY
 	LOGICAL FIRST
 	LOGICAL COMPUTED
@@ -476,7 +477,7 @@
 ! distribution and the population levels. TA is a working vector. The
 ! Rosseland opacity is given in ROSSMEAN.
 !
-	IF(MYPE .EQ. 0)WRITE(6,*)'Executoing barrier statement before T iterate)'
+	IF(MYPE .EQ. 0)WRITE(6,*)'Executing barrier statement before T iterate)'
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	CALL TUNE(1,'T_ITERATE')
 	MAIN_COUNTER=1
@@ -527,6 +528,7 @@
 	    CALL DP_ZERO(PLANCKMEAN,ND)
 	    TSTAR=T(ND)			!Required for IC in OPACITIES
 	    CONT_FREQ=0.0_LDP
+	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	    DO ML=1,NCF
 	      FREQ_INDX=ML
 	      FL=NU(ML)
@@ -578,6 +580,7 @@
 	        PLANCKMEAN(I)=PLANCKMEAN(I) + T2*CHI_NOSCAT(I)*EMHNUKT(I)/(1.0_LDP-EMHNUKT(I))
 	        ROSSMEAN(I)=ROSSMEAN(I) + T3*EMHNUKT(I)/CHI(I)/(1.0_LDP-EMHNUKT(I))**2
 	      END DO
+	      CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	    END DO
 !
 ! Compute CHI, and then optical depth scale.
@@ -882,7 +885,6 @@
 !
 	END DO	
 	CALL TUNE(2,'T_ITERATE')
-	WRITE(6,*)'Done iterate',MYPE; FLUSH(UNIT=6)
 !
 	IF(ALLOCATED(U_PAR_FN))THEN
 	  DEALLOCATE (U_PAR_FN,STAT=IOS)

@@ -301,7 +301,6 @@
 	  DIFFW(1:NT)=0.0_LDP
 	ELSE 
 	  IF(MYPE .EQ. 0)WRITE(6,*)'Starting DTDR calculation: MYPE =', MYPE; FLUSH(UNIT=6)
-	  IF(DEND .EQ. ND)THEN
 !
 ! We only need to compute the opacity at the innermost depth, but to save
 ! programing we will compute it at all depths. As this is only done once
@@ -310,44 +309,47 @@
 ! Setting LST_DEPTH_ONLY to true limits the computation of CHI, ETA, and
 ! dCHI and dETA to the inner boundary only (in some cases).
 !
-	    LST_DEPTH_ONLY=.TRUE.
+	  LST_DEPTH_ONLY=.TRUE.
 !
 ! RJ is used in VARCONT to compute the varaition of ETA. In this section
 ! we only want the variation of CHI, so we initialize its value to zero.
 ! This prevents a floating point exception.
 !
-	    RJ(1:ND)=0.0_LDP
-	    CONT_FREQ=0.0_LDP
-	    FL=NU(1)
-	    DO ML=1,NCF
-	      FREQ_INDX=ML
+	  RJ(1:ND)=0.0_LDP
+	  CONT_FREQ=0.0_LDP
+	  FL=NU(1)
+	  DO ML=1,NCF
+	    FREQ_INDX=ML
 !
-	      FL_OLD=FL
-	      FL=NU(ML)
-	      IF(NU_EVAL_CONT(ML) .NE. CONT_FREQ)THEN
-	        COMPUTE_NEW_CROSS=.TRUE.
-	        CONT_FREQ=NU_EVAL_CONT(ML)
-	      ELSE
-	        COMPUTE_NEW_CROSS=.FALSE.
-	      END IF
 !
-	      CALL TUNE(IONE,'DTDR_OPAC')
-	      CALL COMP_OPAC(POPS,NU_EVAL_CONT,FQW,
+	    FL_OLD=FL
+	    FL=NU(ML)
+	    IF(NU_EVAL_CONT(ML) .NE. CONT_FREQ)THEN
+	      COMPUTE_NEW_CROSS=.TRUE.
+	      CONT_FREQ=NU_EVAL_CONT(ML)
+	    ELSE
+	      COMPUTE_NEW_CROSS=.FALSE.
+	    END IF
+!
+	    CALL TUNE(IONE,'DTDR_OPAC')
+	    CALL COMP_OPAC(POPS,NU_EVAL_CONT,FQW,
 	1                FL,CONT_FREQ,FREQ_INDX,NCF,
 	1                SECTION,ND,NT,LST_DEPTH_ONLY)
-	      CALL TUNE(ITWO,'DTDR_OPAC')
+	    CALL TUNE(ITWO,'DTDR_OPAC')
 !
 ! 
 !
 ! Compute variation of opacity/emissivity. Store in VCHI and VETA.
 !
-	      IF(.NOT. LAMBDA_ITERATION .AND. COMPUTE_BA)THEN
-	        CALL TUNE(IONE,'DTDR_VOPAC')
-	         CALL COMP_VAR_OPAC_MPI_V1(POPS,RJ,FL,CONT_FREQ,FREQ_INDX,
-	1                  SECTION,NUM_BNDS,ND,NT,LST_DEPTH_ONLY)
-	        CALL TUNE(ITWO,'DTDR_VOPAC')
-	      END IF
+	    IF(.NOT. LAMBDA_ITERATION .AND. COMPUTE_BA)THEN
+	      CALL TUNE(IONE,'DTDR_VOPAC')
+	       CALL COMP_VAR_OPAC_MPI_V1(POPS,RJ,FL,CONT_FREQ,FREQ_INDX,
+	1                SECTION,NUM_BNDS,ND,NT,LST_DEPTH_ONLY)
+	      CALL TUNE(ITWO,'DTDR_VOPAC')
+	    END IF
+!
 ! 
+	    IF(DEND .EQ. ND)THEN
 !
 ! Compute contribution to CHI and VCHI by lines.
 !
@@ -413,12 +415,17 @@
 	      END IF
 	      CALL TUNE(ITWO,'DTDR_VEC')
 	      WRITE(STRING,*)ML; STRING='ML='//ADJUSTL(TRIM(STRING))
+	    END IF
 !
-	    END DO
+! Keep frequencies in sync.
+!
+	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	  END DO
 !
 ! The luminosity of the Sun is 3.826D+33 ergs/sec. For convenience
 ! DTDR will have the units  (D+04K)/(D+10cm) .
 !
+	  IF(LST_DEPTH_ONLY)THEN
 	    T1=LUM*7.2685E+11_LDP/R(ND)/R(ND)
 	    DTDR=T1/DTDR
 	    IF(LAMBDA_ITERATION .OR. .NOT. COMPUTE_BA)THEN

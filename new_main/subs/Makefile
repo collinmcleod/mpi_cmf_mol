@@ -24,6 +24,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(ba_update_mpi_v1.o)\
       $(LIB)(check_hydro_def.o)\
       $(LIB)(check_ions_present.o)\
+      $(LIB)(check_mpi_equality.o)\
       $(LIB)(check_tmin.o)\
       $(LIB)(chk_cool_rates_consist.o)\
       $(LIB)(cmf_blkband_mpi_v1.o)\
@@ -150,9 +151,9 @@ $(LIB)(determine_nse.o) : determine_nse.f $(STEQ) $(CHG) $(MOD)
 	$(F90) -c $(OPTION) determine_nse.f
 	ar $(AR_OPTION) $(LIB) determine_nse.o
 
-$(LIB)(do_cmf_hydro_v2.o) : do_cmf_hydro_v2.f $(LIB)(old_grid_module.o) $(LIB)(cmf_hydro_module.o)
-	$(F90) -c $(OPTION) do_cmf_hydro_v2.f
-	ar $(AR_OPTION) $(LIB) do_cmf_hydro_v2.o
+$(LIB)(do_cmf_hydro_mpi_v1.o) : do_cmf_hydro_mpi_v1.f $(LIB)(old_grid_module.o) $(LIB)(cmf_hydro_module.o)
+	$(F90) -c $(OPTION) do_cmf_hydro_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) do_cmf_hydro_mpi_v1.o
 
 # Optimizaton seems not to work with PGF95 compiler for next routine
 

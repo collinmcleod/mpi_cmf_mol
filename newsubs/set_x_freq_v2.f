@@ -81,7 +81,7 @@
 	          K=LUER
 	          FIRST=.FALSE.
 	        END IF
-	        IF(K .NE. 0)THEN
+	        IF(K .NE. 0 .AND. MYPE .EQ. 0)THEN
 	          WRITE(K,*)' '
 	          WRITE(K,*)'*************** Warning -- Warning -- Warning ****************'
 	          WRITE(K,*)'Max. cont. freq may be too small in in SET_X_FREQ_V2'
@@ -92,7 +92,8 @@
 	          WRITE(K,*)'ionization routes follows:'
 	          WRITE(K,*)
 	        END IF
-	        IF(IZ .GT. 20 .AND. I .EQ. 1)THEN
+	        IF(MYPE .NE. 0)THEN 
+	        ELSE IF(IZ .GT. 20 .AND. I .EQ. 1)THEN
 	          WRITE(LUWARN,'(1X,4(A4,I2,3X),3X,A,ES10.2)')' IZ=',IZ,' NE=',NE,'PQN=',I,
 	1                     'ANG=',J,'Edge Freq(10^15 Hz)=',FREQ(NCF)
                 ELSE

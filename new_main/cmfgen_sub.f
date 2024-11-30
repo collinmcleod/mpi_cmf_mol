@@ -1119,7 +1119,6 @@
 	1               NCF,NCF_MAX,N_LINE_FREQ,ND,
 	1               OBS_FREQ,OBS,N_OBS,LUIN,IMPURITY_CODE)
 !
-!
 ! 
 !
 	IF(ACCURATE)THEN

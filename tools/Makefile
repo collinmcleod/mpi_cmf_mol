@@ -11,6 +11,7 @@ LIB=$(LIB_DIR)libsubs.a
 #
 OBJ = $(LIB)(usr_option.o)\
       $(LIB)(usr_list_opt.o)\
+      $(LIB)(allocate_shared_mpi_mem.o)\
       $(LIB)(chk_little_endian.o)\
       $(LIB)(chk_string.o)\
       $(LIB)(check_vec_nan.o)\

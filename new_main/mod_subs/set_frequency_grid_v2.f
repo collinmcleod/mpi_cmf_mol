@@ -228,6 +228,8 @@
 	CALL SORTCHAR(N_LINE_FREQ,VEC_TRANS_TYPE,VEC_INDX,VEC_CHAR_WRK)
 	CALL SORTCHAR(N_LINE_FREQ,PROF_TYPE,VEC_INDX,VEC_CHAR_WRK)
 !
+	CALL CHECK_MPI_EQUALITY(VEC_FREQ,N_LINE_FREQ,'Line frequencies and ordering')
+!
 ! Output all lines to TRANS_INFO. Usefule for diagnostic purposes.
 !
 	IF(VERBOSE_OUTPUT)THEN
@@ -287,6 +289,8 @@
 	CALL SORTCHAR(N_LINE_FREQ,VEC_SPEC,VEC_INDX,VEC_CHAR_WRK)
 	CALL SORTCHAR(N_LINE_FREQ,VEC_TRANS_TYPE,VEC_INDX,VEC_CHAR_WRK)
 	CALL SORTCHAR(N_LINE_FREQ,PROF_TYPE,VEC_INDX,VEC_CHAR_WRK)
+!
+	CALL CHECK_MPI_EQUALITY(VEC_STRT_FREQ,N_LINE_FREQ,'Line start frequencies and ordering')
 !
 ! 
 !
@@ -379,6 +383,8 @@
 	1            ATM(ID)%EDGEXzV_F, ATM(ID)%NXzV_F, ATM(ID)%XzV_PRES,
 	1            ATM(ID)%F_TO_S_XzV, ATM(ID)%NXzV, ATM(ID)%N_XzV_PHOT)
 	  END DO
+	WRITE(6,*)'Doing edges and o'
+	CALL CHECK_MPI_EQUALITY(OBS,NCF,'Edge frequencies and ordering')
 !
 	  IF(XRAYS)THEN
 	    DO ID=1,NUM_IONS-1
@@ -387,6 +393,8 @@
 	1             ATM(ID)%XzV_PRES, ATM(ID+1)%XzV_PRES)
 	    END DO
 	  END IF
+	WRITE(6,*)'Doing X-ray edges and o'
+	CALL CHECK_MPI_EQUALITY(OBS,NCF,'X-ray Edge frequencies and ordering')
 !
 ! Now insert addition points into frequency array. WSCI is used as a
 ! work array - okay since of length NCF_MAX, and zeroed in QUADSE.
@@ -425,6 +433,7 @@
 	1                        DELV_CONT,DELV_XRAY,NU_XRAY_END,
 	1                        J,NCF,NCF_MAX,LUIN)
 	  END IF
+	  CALL CHECK_MPI_EQUALITY(OBS,NCF,'ALl cont frequencies')
 !
 	END IF              !End set continuum if
 !
@@ -444,6 +453,8 @@
 	1                 N_LINE_FREQ,FQW,NCF,FRAC_DOP,VINF,
 	1                 dV_CMF_PROF,dV_CMF_WING,
 	1                 ES_WING_EXT,R_CMF_WING_EXT,L_FALSE )
+!
+	 CALL CHECK_MPI_EQUALITY(NU,NCF,'Lines are added to cont frequencies')
 !
 	K=NCF		!# of continuum frequencies: Need for DET_MAIN...
 	NCF=I		!Revised

@@ -142,7 +142,7 @@ C
 !
 	HNUONK=HDKT*NU
 	EQION=GS_ION_EQ+(ION_LEV-1)
-	IF(LST_DEPTH_ONLY .AND. DEND .NE. ND)RETURN
+!	IF(LST_DEPTH_ONLY .AND. DEND .NE. ND)RETURN
 !
 ! If EQION is not important, all free-free and bound-free processes
 ! are added to the IMP variation.

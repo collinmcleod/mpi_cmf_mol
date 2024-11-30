@@ -61,18 +61,20 @@ C
 	  NEW_ID=100+PHOT_ID
 	  CALL SUB_PHOT_GEN(ID,PHOT_CROSS,ZERO,EDGEHI_F,NHI_F,
 	1                 NEW_ID,RET_EDGE_CROSS)
+!
+	  CALL CHECK_MPI_EQUALITY(PHOT_CROSS,NHI_F,'In set edge_freq')
 C
 	  DO J=1,NHI_F
 	    IS=F_TO_S_HI(J)
 	    T1=PHOT_CROSS(J)
-	    IF( T1 .GT. 0)THEN
+	    IF(T1 .GT. 0.0_LDP)THEN
 	       IF(.NOT. DONE(IS))THEN
 	         NCF=NCF+1
 	         IF(NCF .GT. NCF_MAX)GOTO 9999
 	         FREQ(NCF)=EDGE_FREQ(J)
 	         DONE(IS)=.TRUE.
 	       END IF
-	    ELSE IF(T1 .LT. 0)THEN
+	    ELSE IF(T1 .LT. 0.0_LDP)THEN
 	       LUER=ERROR_LU()
 	       WRITE(LUER,*)'Error in SET_EDGE_FREQ - cross section negative'
 	       WRITE(LUER,*)'ID=',ID

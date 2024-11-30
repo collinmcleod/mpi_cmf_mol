@@ -94,21 +94,27 @@
 ! Get edge frequencies.
 !
 	DO IP=1,NPHOT
+!
+	  CALL TUNE(1,'SUB_PH1')
 	  T1=0.0D0; J=-IP; PHOT_ID=IP
 	  CALL SUB_PHOT_GEN(ID,EDGE,T1,EDGE_F,N_F,J,L_TRUE)
+	  CALL TUNE(2,'SUB_PH1')
 !
 ! Get photoionization cross-sections for all levels. The first call returns
 ! the threshold cross-section when NU < EDGE.
 !
+	  CALL TUNE(1,'SUB_PH2')
 	  IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
 	    CALL SUB_PHOT_GEN(ID,ALPHA_VEC,NU_CONT,EDGE_F,N_F,PHOT_ID,L_TRUE)
 	  ELSE
 	    CALL SUB_PHOT_GEN(ID,ALPHA_VEC,NU_CONT,EDGE_F,N_F,PHOT_ID,L_FALSE)
 	  END IF
+	  CALL TUNE(2,'SUB_PH2')
 !
 ! DIS_CONST is the constant K appearing in the expression for level dissolution.
 ! A negative value f_CONST implies that the cross-section is zero.
 !
+	  CALL TUNE(1,'SUB_DIS')
 	  DIS_CONST(1:N_F)=-1.0_LDP
 	  IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
 	    ZION_CUBED=ZION*ZION*ZION
@@ -122,6 +128,7 @@
 	      END IF
 	    END DO
 	  END IF
+	  CALL TUNE(2,'SUB_DIS')
 !
 	  DO_ALL=.FALSE.
 	  IF(COMPUTE_BA)DO_ALL=.TRUE.
