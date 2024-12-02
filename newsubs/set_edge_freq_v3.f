@@ -52,14 +52,14 @@ C
 C Get the ionization edges. These are returned in PHOT_CROSS.
 C
 	  NEW_ID=-PHOT_ID
-	  CALL SUB_PHOT_GEN(ID,PHOT_CROSS,ZERO,EDGEHI_F,NHI_F,
+	  CALL SUB_PHOT_GEN_MPI_V2(ID,PHOT_CROSS,ZERO,EDGEHI_F,NHI_F,
 	1                 NEW_ID,RET_EDGE_CROSS)
 	  EDGE_FREQ(1:NHI_F)=PHOT_CROSS(1:NHI_F)
 C
 C Now get the photoionzation crossections at the edge-frequency.
 C
 	  NEW_ID=100+PHOT_ID
-	  CALL SUB_PHOT_GEN(ID,PHOT_CROSS,ZERO,EDGEHI_F,NHI_F,
+	  CALL SUB_PHOT_GEN_MPI_V2(ID,PHOT_CROSS,ZERO,EDGEHI_F,NHI_F,
 	1                 NEW_ID,RET_EDGE_CROSS)
 !
 	  CALL CHECK_MPI_EQUALITY(PHOT_CROSS,NHI_F,'In set edge_freq')

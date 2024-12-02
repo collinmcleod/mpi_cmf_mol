@@ -40,12 +40,12 @@ $(info Creating CRC compiler definitions)
 
  F90 = mpif90 -fopenmp -m64
  F90nomp = mpif90 -m64
-# FG  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -ffpe-trap=invalid -I$(MOD_DIR) 
+ FG  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -ffpe-trap=invalid -I$(MOD_DIR) 
  FH  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -I$(MOD_DIR) 
- FG  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments  -fbacktrace -I$(MOD_DIR) 
+# FG  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments  -fbacktrace -I$(MOD_DIR) 
  FD  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments   -fbacktrace -I$(MOD_DIR) 
-# FFREE  = -O -fno-backslash -I$(MOD_DIR) -J$(MOD_DIR)
- FFREE  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
+ FFREE  = -O -fno-backslash -I$(MOD_DIR) -J$(MOD_DIR)
+# FFREE  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
  FFRED  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
 
  BLAS=

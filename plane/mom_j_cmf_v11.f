@@ -196,7 +196,7 @@
 	    IF(LOG(R_SM(I)) .NE. LOG_R_SM(I))THEN
 	      NEW_R_GRID=.TRUE.
 	      LUER=ERROR_LU()
-	      WRITE(LUER,*)'Updating RGRID in MOM_J_CMF_V11'
+	      IF(MYPE .EQ. 0)WRITE(LUER,*)'Updating RGRID in MOM_J_CMF_V11'
 	      EXIT
 	    END IF
 	  END DO

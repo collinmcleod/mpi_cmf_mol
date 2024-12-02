@@ -181,7 +181,7 @@
 	  END DO
 	  STRING=ADJUSTL(STRING)
 	  OSCDATE(1:11)=STRING(1:11)
-	  IF(TRIM(FORMAT_DATE) .EQ. 'OLD')THEN
+	  IF(TRIM(FORMAT_DATE) .EQ. 'OLD' .AND. MYPE .EQ. 0)THEN
 	    WRITE(LUWARN,*)'Warning -- FORMAT Date not found in oscilator file:',TRIM(FILNAME)
 	  END IF
 !
@@ -454,7 +454,7 @@
 	    END DO
 	  END DO
 !
-	  IF(CUT_CNT .NE. 0)THEN
+	  IF(CUT_CNT .NE. 0 .AND. MYPE .EQ. 0)THEN
 	    WRITE(LUWARN,'(1X,A,I5,A,A)')'***Warning**** --- ',CUT_CNT,
 	1     ' weak transitions cut in GENOSC_V9 --- ',TRIM(FILNAME)
  	  END IF
@@ -473,7 +473,7 @@
 	      END IF
 	    END DO
 	  END DO
-	  IF(CUT_CNT .NE. 0)THEN
+	  IF(CUT_CNT .NE. 0 .AND. MYPE .EQ. 0)THEN
 	     WRITE(LUWARN,'(1X,A,I5,A,A)')'***Warning**** --- ',CUT_CNT,
 	1     ' unobserved transitions cut in GENOSC_V9 --- ',TRIM(FILNAME)
  	  END IF
@@ -489,7 +489,7 @@
 	      END IF
 	    END DO
 	  END DO
-	  IF(CUT_CNT .NE. 0)THEN
+	  IF(CUT_CNT .NE. 0 .AND. MYPE .EQ. 0)THEN
 	     WRITE(LUWARN,'(1X,A,I5,A,A)')'***Warning**** --- ',CUT_CNT,
 	1     ' observed transitions cut in GENOSC_V9 --- ',TRIM(FILNAME)
  	  END IF
@@ -506,7 +506,7 @@
 !
 	DO J=2,N
 	  DO I=1,J-1
-	    IF(EINA(I,J) .GT. 10.0_LDP)THEN
+	    IF(EINA(I,J) .GT. 10.0_LDP .AND. MYPE .EQ. 0)THEN
 	      IF(FIRST_ERROR)THEN
 	         WRITE(LUER,'(/,A)')' Warning in GENOSC_V9 -- bad oscillator strengths?'
 	         WRITE(LUER,*)'Reading data from file '//TRIM(FILNAME)

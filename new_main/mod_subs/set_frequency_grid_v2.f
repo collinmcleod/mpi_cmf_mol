@@ -383,7 +383,6 @@
 	1            ATM(ID)%EDGEXzV_F, ATM(ID)%NXzV_F, ATM(ID)%XzV_PRES,
 	1            ATM(ID)%F_TO_S_XzV, ATM(ID)%NXzV, ATM(ID)%N_XzV_PHOT)
 	  END DO
-	WRITE(6,*)'Doing edges and o'
 	CALL CHECK_MPI_EQUALITY(OBS,NCF,'Edge frequencies and ordering')
 !
 	  IF(XRAYS)THEN
@@ -526,5 +525,8 @@
 	1               T3,dV_OBS_PROF,dV_OBS_WING,dV_OBS_BIG,
 	1               OBS_PRO_EXT_RAT,ES_WING_EXT,T2)
 !
+	CALL CHECK_MPI_EQUALITY(NU,NCF,'Continuum frequencies and ordering')
+	CALL CHECK_MPI_EQUALITY(NU_EVAL_CONT,NCF,'Evaluation continuum frequencies')
+
 	RETURN
 	END
