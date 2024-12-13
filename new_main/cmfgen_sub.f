@@ -968,13 +968,24 @@
 ! use older iterations) when computing the hyrostatic structure.
 !
 	  IF(.NOT. SN_HYDRO_MODEL .AND. (RP .NE. R(ND) .OR. R(1) .NE. RMAX))THEN
-	    WRITE(LUER,*)'Warning: updating RP and RMAX in CMFGEN to make them consistent'
-	    WRITE(LUER,*)'with values in SCRTEMP. This inconsistency should only have occured'
-            WRITE(LUER,*)'if you have rewound (changd POINT1) a model with DO_HYDRO=T'
-            WRITE(LUER,*)'  RP=',RP,  ' R(ND)=',R(ND)
-            WRITE(LUER,*)'RMAX=',RMAX,'  R(1)=',R(1)
-	    RP=R(ND)
-	    RMAX=R(1)
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(LUER,*)'Warning: RP and RMAX in CMFGEN are consistent'
+	      WRITE(LUER,*)'with values in SCRTEMP. This inconsistency should only have occured'
+              WRITE(LUER,*)'if you have rewound (changd POINT1) a model with DO_HYDRO=T'
+              WRITE(LUER,*)'  RP=',RP,  ' R(ND)=',R(ND)
+              WRITE(LUER,*)'RMAX=',RMAX,'  R(1)=',R(1)
+	      WRITE(LUER,*)'Please revise VADAT (or rewind SCRTEMP) to set consistency'
+	      T1=ABS(R(ND)/RP-1.0_LDP)/(R(ND-1)-R(ND))
+	      T2=ABS(R(1)/R(2)-1.0_LDP)/(R(1)-R(2))
+	      IF(T1 .GT. 1.0E-03_LDP .OR. T2 .GT. 1.0E-03_LDP)THEN
+	        WRITE(6,*)'ABS(R(ND)/RP-1.0_LDP)/(R(ND-1)-R(ND))',T1
+	        WRITE(6,*)'ABS(R(1)/R(2)-1.0_LDP)/(R(1)-R(2))',T2
+	        WRITE(6,*)'RMAX/RP=',R(1)/R(ND)
+	        CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
+	        STOP
+	      END IF
+	      RP=R(ND); RMAX=R(1)
+	    END IF
 	  END IF
 	END IF
 !
@@ -1231,7 +1242,7 @@
         dE_XRAY_TOT=0.0_LDP
 	DEP_RAD_EQ=0.0_LDP
 !
-	IF(MYPE .EQ. 0)WRITE(6,*)' About to start main iteration section'
+	IF(MYPE .EQ. 0)WRITE(6,*)'About to start main iteration section'
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	INCLUDE 'main_it_section.f'
 ! 

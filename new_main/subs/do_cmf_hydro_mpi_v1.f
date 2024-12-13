@@ -284,15 +284,15 @@
 	CALL RD_STORE_DBLE(RP2_ON_CON_RAD,'RP2_ON_RT',L_FALSE,'Ration of RP2 to transition radius')
 	IF(VEL_LAW .EQ. 5)THEN
 	  IF(BETA2 .EQ. 0.0_LDP)THEN
-	    WRITE(LU_ERR,*)'Error in DO_CMF_HYDRO_V2 -- BETA2 cannot be zero for VEL_LAW 5'
+	    WRITE(LU_ERR,*)'Error in DO_CMF_HYDRO_MPI_V1 -- BETA2 cannot be zero for VEL_LAW 5'
 	    CALL MPI_ERR_CHECK(1,'Shuting down CMFGEN')
 	  END IF
 	  IF(VEXT .LT. 0.0_LDP)THEN
-	    WRITE(LU_ERR,*)'Error in DO_CMF_HYDRO_V2 -- VEXT cannot be less than zero for VEL_LAW 5'
+	    WRITE(LU_ERR,*)'Error in DO_CMF_HYDRO_MPI_V1 -- VEXT cannot be less than zero for VEL_LAW 5'
 	    CALL MPI_ERR_CHECK(1,'Shuting down CMFGEN')
 	  END IF
 	  IF(RP2_ON_CON_RAD .LT. 0.0_LDP)THEN
-	    WRITE(LU_ERR,*)'Error in DO_CMF_HYDRO_V2 -- RP2_ON_CON_RAD cannot be less than zero for VEL_LAW 5'
+	    WRITE(LU_ERR,*)'Error in DO_CMF_HYDRO_MPI_V1 -- RP2_ON_CON_RAD cannot be less than zero for VEL_LAW 5'
 	    CALL MPI_ERR_CHECK(1,'Shuting down CMFGEN')
 	  END IF
 	END IF
@@ -316,7 +316,9 @@
 	END IF
 	IF(TAU_REF .GT. 0.668_LDP .AND. HYDRO_OPT .EQ. 'DEFAULT')THEN
 	  HYDRO_OPT='FIXED_R_REF' 
-	  WRITE(6,*)'As TAU_REF > 2/3 HYDRO_DEFAULT is being set to FIXED_R_REF in DO_CMF_HYDRO_V2'
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(6,*)'As TAU_REF > 2/3 HYDRO_DEFAULT is being set to FIXED_R_REF in DO_CMF_HYDRO_MPI_V1'
+	  END IF
 	END IF
 	CALL CLEAN_RD_STORE()
 !
@@ -352,7 +354,7 @@
 ! To preserve the specifed effective temperature, the luminosity is
 ! updated.
 !
-	  IF(MYPE .EQ. 0)WRITE(6,'(A)')' Using FIXED_R_REF option in DO_CMF_HYDRO_V2'
+	  IF(MYPE .EQ. 0)WRITE(6,'(A)')' Using FIXED_R_REF option in DO_CMF_HYDRO_MPI_V1'
 	  CHI_ROSS(1:MOD_ND)=OLD_CLUMP_FAC(1:MOD_ND)*OLD_ROSS_MEAN(1:MOD_ND)
 	  I=7			!Use CHI(1) and CHI(I) to computed exponent.
 	  CALL TORSCL_V3(TA,CHI_ROSS,OLD_R,TB,TC,MOD_ND,'LOGMON','PCOMP',I,L_FALSE)
@@ -369,14 +371,14 @@
 	  IF(MYPE .EQ. 0)THEN
 	    CALL UPDATE_KEYWORD(MOD_LUM,'[LSTAR]','VADAT',L_TRUE,L_TRUE,LUIN)
 	    CALL UPDATE_KEYWORD('DEFAULT','[HYDRO_OPT]','HYDRO_DEFAULTS',L_TRUE,L_TRUE,LUIN)
-	    WRITE(6,'(A)')' DO_CMF_HYDRO_V2 has adjusted LSTAR in VADAT'
+	    WRITE(6,'(A)')' DO_CMF_HYDRO_MPI_V1 has adjusted LSTAR in VADAT'
 	  END IF
 !
 ! This option is useful for WR models where the key variable controlling the observed
 ! spectrum is the luminosity.
 !
 	ELSE IF(HYDRO_OPT .EQ. 'FIXED_LUM')THEN
-	  IF(MYPE .EQ. 0)WRITE(6,'(A)')' Using FIXED_LUM option in DO_CMF_HYDRO_V2'
+	  IF(MYPE .EQ. 0)WRITE(6,'(A)')' Using FIXED_LUM option in DO_CMF_HYDRO_MPI_V1'
 	  CHI_ROSS(1:MOD_ND)=OLD_CLUMP_FAC(1:MOD_ND)*OLD_ROSS_MEAN(1:MOD_ND)
 	  I=7			!Use CHI(1) and CHI(I) to computed exponent.
 	  CALL TORSCL_V3(TA,CHI_ROSS,OLD_R,TB,TC,MOD_ND,'LOGMON','PCOMP',I,L_FALSE)
@@ -394,13 +396,13 @@
 	  TEFF=(MOD_LUM*LUM_SUN()/T1)**0.25_LDP
 	  IF(MYPE .EQ. 0)THEN
 	    CALL UPDATE_KEYWORD(TEFF,'[TEFF]','VADAT',L_TRUE,L_TRUE,LUIN)
-	    WRITE(6,'(A,ES14.4)')' DO_CMF_HYDRO_V2 has adjusted TEFF in VADAT: Teff=',TEFF
+	    WRITE(6,'(A,ES14.4)')' DO_CMF_HYDRO_MPI_V1 has adjusted TEFF in VADAT: Teff=',TEFF
 	  END IF
 !
 ! This option (useful for O stars) attempts to preserve the V =-band flux.
 !
 	ELSE IF(HYDRO_OPT .EQ. 'FIXED_V_FLUX')THEN
-	  IF(MYPE .EQ. 0)WRITE(6,'(A)')' Using FIXED_V_FLUX option in DO_CMF_HYDRO_V2'
+	  IF(MYPE .EQ. 0)WRITE(6,'(A)')' Using FIXED_V_FLUX option in DO_CMF_HYDRO_MPI_V1'
 	  I=7	!Use CHI(1) and CHI(I) to computed exponent.
 	  CHI_ROSS(1:MOD_ND)=OLD_CLUMP_FAC(1:MOD_ND)*OLD_ROSS_MEAN(1:MOD_ND)
 	  CALL TORSCL_V3(TA,CHI_ROSS,OLD_R,TB,TC,MOD_ND,'LOGMON','PCOMP',I,L_FALSE)
@@ -420,7 +422,7 @@
 	    CALL UPDATE_KEYWORD(MOD_LUM,'[LSTAR]','VADAT',L_TRUE,L_TRUE,LUIN)
 	    CALL UPDATE_KEYWORD('DEFAULT','[HYDRO_OPT]','HYDRO_DEFAULTS',L_TRUE,L_FALSE,LUIN)
 	    CALL UPDATE_KEYWORD(TEFF,'[OLD_TEFF]','HYDRO_DEFAULTS',L_FALSE,L_TRUE,LUIN)
-	    WRITE(6,'(A)')' DO_CMF_HYDRO_V2 has adjusted LSTAR in VADAT'
+	    WRITE(6,'(A)')' DO_CMF_HYDRO_MPI_V1 has adjusted LSTAR in VADAT'
 	  END IF
 !
 	ELSE IF(HYDRO_OPT .EQ. 'DEFAULT')THEN
@@ -546,7 +548,7 @@
 	END DO
 	GAM_EDD=1.0E+06_LDP*SIGMA_TH*STEFAN_BC*(TEFF**4)/MU_ATOM/C_CMS/(10**LOGG)/AMU
 	IF(GAM_EDD*MAX_ED_ON_NA .GT. 1.0_LDP)THEN
-	  WRITE(LU_ERR,*)'An invalid Eddington parameter has been computed in DO_CMF_HYDRO_V2'
+	  WRITE(LU_ERR,*)'An invalid Eddington parameter has been computed in DO_CMF_HYDRO_MPI_V1'
 	  WRITE(LU_ERR,*)'Check the validity of Teff and Log G'
 	  WRITE(LU_ERR,*)'The computed (maximum) Eddington parameter is ',GAM_EDD*MAX_ED_ON_NA
 	  WRITE(LU_ERR,*)'                            Teff(K)/1.0+04 is',TEFF
@@ -843,7 +845,7 @@
 !
 	  ALLOCATE(COEF(ND,4),STAT=IOS)
 	  IF(IOS .NE. 0)THEN
-	    WRITE(6,*)'Error allocating COEF DO_CMF_HYDRO_V2'
+	    WRITE(6,*)'Error allocating COEF DO_CMF_HYDRO_MPI_V1'
 	    WRITE(6,*)'ND=',ND
 	    STOP
 	  END IF
@@ -922,7 +924,7 @@
 	  END IF
 !
 	  IF(ITERATION_COUNTER .GE. 100)THEN
-	    WRITE(LU_ERR,*)'Exceed iteration count in DO_CMF_HYDRO_V2.'
+	    WRITE(LU_ERR,*)'Exceed iteration count in DO_CMF_HYDRO_MPI_V1.'
 	    WRITE(LU_ERR,*)'Aborting update of the hydro structure.'
 	    WRITE(LU_ERR,*)'Iteration conunt =',ITERATION_COUNTER
 	    IF(MYPE .EQ. 0 .AND. VERBOSE_OUTPUT)CLOSE(UNIT=LUV)

@@ -116,7 +116,7 @@
 	    THK_CONT=.FALSE.
 	  END IF
 	  C_KMS=SPEED_OF_LIGHT(I)
-	  IF(FIRST_FREQ)WRITE(LUER,*)' '
+	  IF(FIRST_FREQ .AND. MYPE .EQ. 0)WRITE(LUER,*)' '
 !
 ! Option only avaialble for non-reativistic soultion, and no additinal
 ! points inserted.

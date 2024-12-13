@@ -195,14 +195,11 @@
 	NEW_R_GRID=.FALSE.
 	IF(INIT .AND. ALLOCATED(R))THEN
 	  DO I=1,ND_SM
-	    IF(LOG(R_SM(I)) .NE. LOG_R_SM(I))THEN
+	    IF( ABS(LOG(R_SM(I))-LOG_R_SM(I)) .GT. 1.0E-14_LDP)THEN
 	      NEW_R_GRID=.TRUE.
 	      LUER=ERROR_LU()
 	      IF(MYPE .EQ. 0)THEN
 	        WRITE(LUER,*)'Updating RGRID in MOM_J_CMF_V11'
-	        DO J=1,ND
-	          WRITE(6,*)J,LOG_R_SM(J),LOG(R_SM(J))-LOG_R_SM(J)
-	        END DO
 	      END IF
 	      EXIT
 	    END IF

@@ -6,7 +6,6 @@
 	LOGICAL NAN_PRES
 	CHARACTER(LEN=*) DESC
 !
-	RETURN
 	DO I=1,ND
 	  IF(VEC(I) .NE. VEC(I))THEN
 	    WRITE(700+MYPE,*)'Error - NaN present for processor:',MYPE,ND,TRIM(DESC)

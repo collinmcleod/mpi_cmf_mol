@@ -67,7 +67,7 @@
 ! we now onl determine how many points we are adding to the outer boundary.
 !
 	LUER=ERROR_LU()
-	WRITE(6,*)'OUT_BND_OPT=',OUT_BND_OPT
+	IF(MYPE .EQ. 0)WRITE(6,*)'OUT_BND_OPT=',OUT_BND_OPT
 	N_BND_PNTS=0
 	IF(OUT_BND_OPT .EQ. 'POW')THEN
 	  IF(NUM_OBND_PARAMS .NE. 2)THEN

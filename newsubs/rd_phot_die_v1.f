@@ -131,7 +131,7 @@
 	IF(DO_AUTO)THEN
 	  DO I=1,PD(ID)%MAX_TERMS
 	    L1=PD(ID)%CROSS_TYPE(I,1)
-	    IF(L1 .EQ. 20 .OR. L1 .EQ. 21)THEN
+	    IF(L1 .EQ. 20 .OR. L1 .EQ. 21 .AND. MYPE .EQ. 0)THEN
 	      WRITE(LUER,'(A)')' '
 	      WRITE(LUER,'(1X,79A)')('*',J=1,79)
 	      WRITE(LUER,'(1X,79A)')('*',J=1,79)

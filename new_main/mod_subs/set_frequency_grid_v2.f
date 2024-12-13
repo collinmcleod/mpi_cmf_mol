@@ -383,7 +383,7 @@
 	1            ATM(ID)%EDGEXzV_F, ATM(ID)%NXzV_F, ATM(ID)%XzV_PRES,
 	1            ATM(ID)%F_TO_S_XzV, ATM(ID)%NXzV, ATM(ID)%N_XzV_PHOT)
 	  END DO
-	CALL CHECK_MPI_EQUALITY(OBS,NCF,'Edge frequencies and ordering')
+	  CALL CHECK_MPI_EQUALITY(OBS,NCF,'Edge frequencies and ordering')
 !
 	  IF(XRAYS)THEN
 	    DO ID=1,NUM_IONS-1
@@ -392,8 +392,7 @@
 	1             ATM(ID)%XzV_PRES, ATM(ID+1)%XzV_PRES)
 	    END DO
 	  END IF
-	WRITE(6,*)'Doing X-ray edges and o'
-	CALL CHECK_MPI_EQUALITY(OBS,NCF,'X-ray Edge frequencies and ordering')
+	  CALL CHECK_MPI_EQUALITY(OBS,NCF,'X-ray Edge frequencies and ordering')
 !
 ! Now insert addition points into frequency array. WSCI is used as a
 ! work array - okay since of length NCF_MAX, and zeroed in QUADSE.

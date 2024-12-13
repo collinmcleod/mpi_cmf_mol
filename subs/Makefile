@@ -66,6 +66,7 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(fqnew.o)\
       $(LIB)(full_to_sup_mpi_v1.o)\
       $(LIB)(gamma.o)\
+      $(LIB)(gather_fac_mats_v1.o)\
       $(LIB)(gather_mat_to_root_mpi_v1.o)\
       $(LIB)(gather_vec_to_root_mpi_v1.o)\
       $(LIB)(root_gatherv_vec_mpi_v1.o)\

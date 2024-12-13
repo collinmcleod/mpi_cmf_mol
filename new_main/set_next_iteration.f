@@ -1,3 +1,4 @@
+	  IF(MYPE .EQ. 0)WRITE(6,*)'Start of end iteration section',MYPE,MAXCH,FIXED_T
 !
 !*****************************************************************************
 !*****************************************************************************
@@ -233,5 +234,6 @@
 	  END IF
 	  CALL TUNE(ITWO,'GIT')
 	  CALL TUNE(ITHREE,' ')
+	  IF(MYPE .EQ. 0)WRITE(6,*)'End of iteration section',MYPE,MAXCH,FIXED_T
 !
 	  GOTO 20000				!Begin another iteration

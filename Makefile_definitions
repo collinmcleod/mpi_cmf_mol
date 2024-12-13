@@ -66,8 +66,8 @@ $(info Creating CRC compiler definitions)
  F90nomp = mpiifort -mkl -pg -traceback   -nbs
 # FG  = -g -O0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR)  
 # FG  = -g -O0  -fpe0  -extend_source  -traceback  -I$(MOD_DIR)  
- FG  = -O  -extend_source  -O2 -I$(MOD_DIR)
- FH  = -O -extend_source   -O2  -I$(MOD_DIR)
+ FG  = -O -traceback  -extend_source -O2 -I$(MOD_DIR)
+ FH  = -O -traceback  -extend_source -O2  -I$(MOD_DIR)
  FD  = -g -O0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR) 
  FFREE  = -O -nbs -check bounds -extend_source -I$(MOD_DIR)
 # FFREE  = -g -nbs -O0 -I$(MOD_DIR) -extend_source  

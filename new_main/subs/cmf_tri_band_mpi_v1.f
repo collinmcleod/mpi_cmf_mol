@@ -180,19 +180,21 @@
 !
 ! Local variables
 !
+        REAL(KIND=LDP), SAVE, ALLOCATABLE :: OLD_EST(:,:)
+!
         REAL(KIND=LDP), ALLOCATABLE :: B_MAT(:,:,:)
         REAL(KIND=LDP), ALLOCATABLE :: C_MAT(:,:,:)
         REAL(KIND=LDP), ALLOCATABLE :: D_MAT(:,:,:)
         REAL(KIND=LDP), ALLOCATABLE :: RUB(:,:)
 !
         REAL(KIND=LDP), ALLOCATABLE :: ORIG_POPS(:,:)
-        REAL(KIND=LDP), ALLOCATABLE :: OLD_EST(:,:)
         REAL(KIND=LDP), ALLOCATABLE :: NEW_EST(:,:)
         REAL(KIND=LDP), ALLOCATABLE :: ROW_SF(:,:)
         REAL(KIND=LDP), ALLOCATABLE :: COL_SF(:,:)
         REAL(KIND=LDP) ROW_CND,COL_CND,MAX_VAL
 	INTEGER, ALLOCATABLE ::  IPIVOT(:,:)
 	REAL(KIND=LDP) ERR_EST(ND)
+	REAL(KIND=LDP) T1
 !
 	INTEGER, PARAMETER :: MAX_NUM_ITS=100
 	LOGICAL, PARAMETER :: L_TRUE=.TRUE.
@@ -203,6 +205,9 @@
 !
 	INTEGER DEPTH_INDX
 	INTEGER BAND_INDX
+!
+	INTEGER LU_IT
+	INTEGER, SAVE :: ENTRY_COUNTER=0
 !
         INTEGER I,J,K,JJ
         INTEGER IOS,IFAIL,IERR
@@ -242,25 +247,36 @@
 	  STOP
         END IF
 !
+        IF(.NOT. ALLOCATED(OLD_EST))THEN
+	  ALLOCATE (OLD_EST(N,ND),STAT=IOS)
+          IF(IOS .NE. 0)THEN
+            WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V1 -- unable to allocate OLD_EST etc'
+            WRITE(LUER,*)'STAT=',IOS
+            STOP
+          END IF
+	  OLD_EST=0.0_LDP
+	END IF
+!
 ! Perform the TRIDIAGONAL solution. If we reach here, we need to redo
 ! the LU decomposition of BA.
 !
-	ALLOCATE (B_MAT(N,N,DST:DEND),STAT=IOS)
-        IF(IOS .EQ. 0)ALLOCATE (C_MAT(N,N,DST:DEND),STAT=IOS)
-        IF(IOS .EQ. 0)ALLOCATE (D_MAT(N,N,DST:DEND),STAT=IOS)
-        IF(IOS .EQ. 0)ALLOCATE (RUB(N,N),STAT=IOS)
-        IF(IOS .EQ. 0)ALLOCATE (COL_SF(N,DST:DEND),STAT=IOS)
-        IF(IOS .EQ. 0)ALLOCATE (ROW_SF(N,DST:DEND),STAT=IOS)
-        IF(IOS .EQ. 0)ALLOCATE (IPIVOT(N,DST:DEND),STAT=IOS)
-        IF(IOS .EQ. 0)ALLOCATE (NEW_EST(N,DST:DEND),STAT=IOS)
-        IF(IOS .EQ. 0)ALLOCATE (OLD_EST(N,ND),STAT=IOS)
-        IF(IOS .NE. 0)THEN
-          WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V1'
-          WRITE(LUER,*)'Unable to allocate D_MAT etc'
-          WRITE(LUER,*)'STAT=',IOS
-          STOP
-        END IF
-	B_MAT=0.0_LDP; C_MAT=0.0_LDP; D_MAT=0.0_LDP
+	CALL TUNE(1,'TRI_ALLOCATION')
+	  ALLOCATE (B_MAT(N,N,DST:DEND),STAT=IOS)
+          IF(IOS .EQ. 0)ALLOCATE (C_MAT(N,N,DST:DEND),STAT=IOS)
+          IF(IOS .EQ. 0)ALLOCATE (D_MAT(N,N,DST:DEND),STAT=IOS)
+          IF(IOS .EQ. 0)ALLOCATE (RUB(N,N),STAT=IOS)
+          IF(IOS .EQ. 0)ALLOCATE (COL_SF(N,DST:DEND),STAT=IOS)
+          IF(IOS .EQ. 0)ALLOCATE (ROW_SF(N,DST:DEND),STAT=IOS)
+          IF(IOS .EQ. 0)ALLOCATE (IPIVOT(N,DST:DEND),STAT=IOS)
+          IF(IOS .EQ. 0)ALLOCATE (NEW_EST(N,DST:DEND),STAT=IOS)
+          IF(IOS .NE. 0)THEN
+            WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V1'
+            WRITE(LUER,*)'Unable to allocate D_MAT etc'
+            WRITE(LUER,*)'STAT=',IOS
+            STOP
+          END IF
+	  B_MAT=0.0_LDP; C_MAT=0.0_LDP; D_MAT=0.0_LDP
+	CALL TUNE(2,'TRI_ALLOCATION')
 !
 	IF(.NOT. BA_COMPUTED .AND. WR_BA_INV)THEN
           ALLOCATE (ORIG_POPS(N,DST:DEND),STAT=IOS)
@@ -278,19 +294,23 @@
 ! Read in LU decompostion of C, and the original BD matrices. This must be done before the
 ! call to GENERATE sice we need REPALCE_EQ and ZERO_STEQ.
 !
+	    CALL TUNE(1,'TRI_RD_BCD')
 	    OUT_TYPE='BCD'
             CALL READ_BCD_MAT(B_MAT(:,:,K),C_MAT(:,:,K),D_MAT(:,:,K),ROW_SF(:,K),COL_SF(:,K),
 	1          IPIVOT(:,K),ORIG_POPS(:,K),REPLACE_EQ(:,K),ZERO_STEQ(:,K),
 	1          N,NION,DEPTH_INDX,OUT_TYPE)
+	    CALL TUNE(2,'TRI_RD_BCD')
 !
 ! Don't need D_MAT -- just the STEQ array.
 !
+	    CALL TUNE(1,'TRI_GEN')
 	    CALL GENERATE_FULL_MATRIX_V3(
 	1         RUB,STEQ(1,K),POPS,REPLACE_EQ(:,K),ZERO_STEQ(:,K),
 	1         N,ND,NION,NUM_BNDS,
 	1         DIAG_INDX,DIAG_INDX,DEPTH_INDX,
 	1         FIRST_MATRIX,LAST_MATRIX,USE_PASSED_REP)
 	     FIRST_MATRIX=.FALSE.
+	    CALL TUNE(2,'TRI_GEN')
 !
 	     STEQ_STORE(:,K)=STEQ(:,K)
 	  END DO
@@ -307,6 +327,8 @@
 	  DO K=DST,DEND
 !
 ! Map the small BA rray onto the full BA array (one depth at a time).
+!    To check for NaNs:
+!	    I=N*N; CALL CHECK_VEC_NAN(C_MAT(:,:,K),I,'CMAT(STOP)',NAN_PRES)
 !
 	    DEPTH_INDX=K
 	    CALL TUNE(1,'TRI_GEN')
@@ -315,7 +337,6 @@
 	1           N,ND,NION,NUM_BNDS,
 	1           DIAG_INDX,DIAG_INDX,DEPTH_INDX,
 	1           FIRST_MATRIX,LAST_MATRIX,USE_PASSED_REP)
-	    I=N*N; CALL CHECK_VEC_NAN(C_MAT(:,:,K),I,'CMAT(STOP)',NAN_PRES)
 	    FIRST_MATRIX=.FALSE.
 	    IF(K .NE. 1)THEN
 	      IF(K .EQ. ND)LAST_MATRIX=.TRUE.
@@ -325,7 +346,6 @@
 	1             N,ND,NION,NUM_BNDS,
 	1             BAND_INDX,DIAG_INDX,DEPTH_INDX,
 	1             FIRST_MATRIX,LAST_MATRIX,USE_PASSED_REP)
-	     I=N*N; CALL CHECK_VEC_NAN(B_MAT(:,:,K),I,'BMAT(STOP)',NAN_PRES)
 	    END IF
 	    IF(K .NE. ND)THEN
 	      BAND_INDX=DIAG_INDX+1
@@ -334,17 +354,15 @@
 	1             N,ND,NION,NUM_BNDS,
 	1             BAND_INDX,DIAG_INDX,DEPTH_INDX,
 	1             FIRST_MATRIX,LAST_MATRIX,USE_PASSED_REP)
-	     I=N*N; CALL CHECK_VEC_NAN(D_MAT(:,:,K),I,'DMAT(STOP)',NAN_PRES)
 	    END IF
 	    STEQ_STORE(:,K)=STEQ(:,K)
 	    CALL TUNE(2,'TRI_GEN')
 !
-! Do LU decompostion of m[k]. We first equilibrilze C_MAT.
+! Do LU decompostion of m[k]. We first equilibrilze C_MAT. DGEEQU takes
+! a minimal amount of time compared to DGETRF.
 !
-	     CALL TUNE(1,'TRI_DGEEQU')
 	     CALL DGEEQU(N,N,C_MAT(:,:,K),N,ROW_SF(:,K),COL_SF(:,K),
 	1               ROW_CND,COL_CND,MAX_VAL,IFAIL)
-	     CALL TUNE(2,'TRI_DGEEQU')
 !
 	     CALL TUNE(1,'TRI_DGETRF')
 	     DO J=1,N
@@ -359,14 +377,66 @@
 	       GOTO 9999
 	     END IF
 !
-	     OUT_TYPE='BCD'
-	     CALL WRITE_BCD_MAT(B_MAT(:,:,K),C_MAT(:,:,K),D_MAT(:,:,K),
-	1            ROW_SF(:,K),COL_SF(:,K),
-	1            IPIVOT(:,K),POPS(:,K),REPLACE_EQ(:,K),ZERO_STEQ(:,K),
-	1            N,NION,DEPTH_INDX,OUT_TYPE)
+	     IF(WR_BA_INV)THEN
+	       CALL TUNE(1,'WR_BA_INV')
+	       OUT_TYPE='BCD'
+	       CALL WRITE_BCD_MAT(B_MAT(:,:,K),C_MAT(:,:,K),D_MAT(:,:,K),
+	1              ROW_SF(:,K),COL_SF(:,K),
+	1              IPIVOT(:,K),POPS(:,K),REPLACE_EQ(:,K),ZERO_STEQ(:,K),
+	1              N,NION,DEPTH_INDX,OUT_TYPE)
+	       CALL TUNE(2,'WR_BA_INV')
+	     END IF
+!
 	  END DO
 	END IF
+	CALL TUNE(1,'TRI_GATH')
 	CALL WR2D_GATH_MPI_V1(STEQ_STORE,N,DST,DEND,ND,'STEQ_ARRAY','*',L_TRUE,16)
+	CALL TUNE(2,'TRI_GATH')
+!
+! If we have not computed BA, we are probably in a regime where we are converging. Since
+! convergence is slow, previous estimates of the solution will generally be very close to
+! the current estimates, so we can use them as a starting guess. We check the maximum 
+! value of OLD_EST to checkl wheteh this model has been restarted (in which case OLD will
+! not be available).
+! 
+	T1=MAXVAL(OLD_EST)
+	IF(.NOT. BA_COMPUTED .AND. T1 .NE. 0.0_LDP)THEN
+	  DO K=DST,DEND
+	    STEQ(:,K)=STEQ_STORE(:,K)
+	    IF(K .EQ. 1)THEN
+	      DO J=1,N
+	        DO I=1,N
+	          STEQ(I,K)=STEQ(I,K)-D_MAT(I,J,K)*OLD_EST(J,K+1)
+	        END DO
+	      END DO  
+	    ELSE IF(K .EQ. ND)THEN
+	      DO J=1,N
+	        DO I=1,N
+	          STEQ(I,K)=STEQ(I,K)-B_MAT(I,J,K)*OLD_EST(J,K-1)
+	        END DO
+	      END DO  
+	    ELSE
+	      DO J=1,N
+	        DO I=1,N
+	          STEQ(I,K)=STEQ(I,K)-B_MAT(I,J,K)*OLD_EST(J,K-1)-
+	1                                   D_MAT(I,J,K)*OLD_EST(J,K+1)
+	        END DO
+	      END DO  
+	    END IF
+	  END DO
+	END IF
+!
+	IF(MYPE .EQ. 0)THEN
+	  CALL GET_LU(LU_IT,'LU for iteration information on CMF_TRI_BAND_MPI_V1')
+	  IF(ENTRY_COUNTER .EQ. 0)THEN
+	    OPEN(LU_IT,FILE='TRI_BAND_IT_INFO',STATUS='UNKNOWN')
+	  ELSE
+	    OPEN(LU_IT,FILE='TRI_BAND_IT_INFO',STATUS='OLD',ACTION='WRITE',POSITION='APPEND')
+	  END IF
+	  ENTRY_COUNTER=ENTRY_COUNTER+1
+	  WRITE(LU_IT,'(/,A,I4)')   ' ENTRY_COUNTER=',ENTRY_COUNTER
+	  WRITE(LU_IT,'(A,3X,L1,/)')'   BA_COMPUTED=',BA_COMPUTED
+	END IF
 !
 	CALL TUNE(1,'IT_COUNTER')
 	DO IT_COUNTER=1,MAX_NUM_ITS
@@ -415,12 +485,12 @@
 	    EXIT
 	  END IF
 	  IF(MYPE .EQ. 0)THEN
-	    WRITE(6,'(1X,A,I4,A,F10.5,2X,ES14.4)')'Maximum error and correction on CM_TRI_BAND iteration',
+	    WRITE(LU_IT,'(1X,A,I4,A,F10.5,2X,ES14.4)')'Maximum error and correction on CM_TRI_BAND iteration',
 	1                       IT_COUNTER,' is (in %): ',200.0_LDP*MAXVAL(ERR_EST),MAXVAL(OLD_EST)
 	  END IF
-	  IF(MYPE .EQ. 0)THEN
-	    CALL WR2D_V2(OLD_EST,N,ND,'STEQ_ARRAY','*',L_TRUE,450)
-	  END IF
+!	  IF(MYPE .EQ. 0)THEN
+!	    CALL WR2D_V2(OLD_EST,N,ND,'STEQ_ARRAY','*',L_TRUE,450)
+!	  END IF
 !
 !	  PREV_EST(:,:,2:4)=PREV_EST(:,:,1:3)
 !	  PREV_EST(:,:,1)=NEW_EST(:,:,1)
@@ -462,8 +532,9 @@
 	FLAG=.TRUE.
 !
 	DEALLOCATE (B_MAT,C_MAT,D_MAT,RUB)
-	DEALLOCATE(OLD_EST,IPIVOT,COL_SF,ROW_SF)
+	DEALLOCATE(IPIVOT,COL_SF,ROW_SF)
 	IF(ALLOCATED(ORIG_POPS))DEALLOCATE (ORIG_POPS)
+	IF(MYPE .EQ. 0)CLOSE(LU_IT)
 !
 	RETURN
 !

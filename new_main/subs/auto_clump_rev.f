@@ -36,9 +36,9 @@
 	INTEGER I,L
 	LOGICAL, PARAMETER :: L_TRUE=.TRUE.
 !
-	OPEN(UNIT=LUIN,FILE='CLUMP_VALUES',IOSTAT=IOS,STATUS='OLD')
+	OPEN(UNIT=LUIN,FILE='CLUMP_VALUES',IOSTAT=IOS,STATUS='OLD',ACTION='READ')
 	  IF(IOS .NE. 0)THEN
-	    WRITE(6,*)'Unable to open fle with clump values'
+	    IF(MYPE .EQ. 0)WRITE(6,*)'Unable to open fle with clump values'
 	    DID_REVISION=.FALSE.
 	    RETURN
 	  END IF

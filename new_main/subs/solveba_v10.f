@@ -333,8 +333,10 @@
 	    MINSCALE=MIN(SCALE,MINSCALE)
 	  END DO
 !
-	  WRITE(LUER,'(A,1PE12.4)')
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LUER,'(A,1PE12.4)')
 	1  ' The minimum value of scale for all species is:',MINSCALE
+	  END IF
 !
 !
 	ELSE IF(SCALE_OPT(1:5) .EQ. 'MAJOR')THEN

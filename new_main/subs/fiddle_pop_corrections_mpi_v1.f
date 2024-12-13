@@ -7,6 +7,7 @@
 	SUBROUTINE FIDDLE_POP_CORRECTIONS_MPI_V1(POPS,STEQ,T_MIN,CHANGE_LIM,MAX_dT_COR,
 	1              SCALE_OPT,LAMBDA_IT,LU_SUM,NT,DST,DEND,ND)
 	USE SET_KIND_MODULE
+	USE MPI
 	IMPLICIT NONE
 !
 ! Altered: 14-Feb-2014 -- Changed to V2 -- added MAX_dT_COR to call.
@@ -55,7 +56,7 @@
 !
 	INTEGER CONSISTENCY_CNT
 	INTEGER IOS
-	INTEGER I,J,IC
+	INTEGER I,J,IC,IERR
 	INTEGER L,L_ST,L_END
 	LOGICAL FILE_OPEN
 	CHARACTER(LEN=20) DC_OPTION
@@ -192,7 +193,11 @@
 	      POPS(J,I)=POPS(J,I)*(1.0_LDP-T1)
 	    END DO
 	  END DO
-	  WRITE(6,'(A,ES12.4)')' The minimum value of scale for Major species is:',MIN_SCALE
+	  T1=MIN_SCALE
+	  CALL MPI_REDUCE(T1,MIN_SCALE,IONE,MPI_DOUBLE_PRECISION,MPI_MAX,IZERO,MPI_COMM_WORLD,IERR)
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(6,'(A,ES12.4)')' The minimum value of scale for Major species is:',MIN_SCALE
+	  END IF
 	END IF
 !
 ! Only adjust populatons at adjacent depths when the corrections are rediculously large

@@ -46,14 +46,14 @@
 	   TOR(1)=CHI(1)*(R(1)-R(INDX))/LOG(CHI(INDX)/CHI(1))
 	  ELSE
 	    TOR(1)=0.00001_LDP
-	    WRITE(LUER,*)'Warning - optical depth at boundary set to 10^{-5} in TORSCL'
+	    IF(MYPE .EQ. 0)WRITE(LUER,*)'Warning - optical depth at boundary set to 10^{-5} in TORSCL'
 	  END IF
 	ELSE IF(TYPE_ATM(1:1) .EQ. 'P')THEN
 	  READ(TYPE_ATM(2:),*)T1
 	  TOR(1)=CHI(1)*R(1)/(T1-1.0_LDP)
 	ELSE
 	  TOR(1)=CHI(1)*R(1)
-	  WRITE(LUER,*)'Warning - opacity assumed to be r**(-2) in TORSCL'
+	  IF(MYPE .EQ. 0)WRITE(LUER,*)'Warning - opacity assumed to be r**(-2) in TORSCL'
 	END IF
 !
 	DO I=2,ND
