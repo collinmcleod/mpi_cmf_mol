@@ -50,7 +50,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(evalse_qwvj_mpi_v1.o)\
       $(LIB)(evalse_lowt_mpi_v1.o)\
       $(LIB)(evalse_x_qwvj_mpi_v1.o)\
-      $(LIB)(eval_temp_ddt_v2.o)\
+      $(LIB)(eval_temp_ddt_mpi_v1.o)\
       $(LIB)(eval_shock_power.o)\
       $(LIB)(fiddle_pop_corrections_mpi_v1.o)\
       $(LIB)(fixpop_in_ba_v2.o)\

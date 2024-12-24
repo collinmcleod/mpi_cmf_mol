@@ -22,7 +22,7 @@ HOST :=$(shell hostname)
 HOST:='CRC'
 
 ifeq ($(HOST),'CRC')
-INSTALL_DIR=$(HOME)/mpi_cmfgen/
+INSTALL_DIR=$(HOME)/mpi_cmf_dev/
 MOD_DIR=$(INSTALL_DIR)/mod
 LIB_DIR=$(INSTALL_DIR)lib/
 EXE_DIR=$(INSTALL_DIR)exe/
@@ -64,15 +64,14 @@ $(info Creating CRC compiler definitions)
 # F90 = /ihome/crc/install/intel/2020.4/compilers_and_libraries/linux/bin/intel64/ifort -qopenmp  -mkl -pg -traceback -nbs
  F90 = mpiifort -mkl -pg -traceback -nbs 
  F90nomp = mpiifort -mkl -pg -traceback   -nbs
-# FG  = -g -O0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR)  
+ FG  = -g -O0 -fpe0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR)  
 # FG  = -g -O0  -fpe0  -extend_source  -traceback  -I$(MOD_DIR)  
- FG  = -O -traceback  -extend_source -O2 -I$(MOD_DIR)
+# FG  = -O -traceback  -extend_source -O2 -I$(MOD_DIR)
  FH  = -O -traceback  -extend_source -O2  -I$(MOD_DIR)
- FD  = -g -O0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR) 
- FFREE  = -O -nbs -check bounds -extend_source -I$(MOD_DIR)
-# FFREE  = -g -nbs -O0 -I$(MOD_DIR) -extend_source  
- FFRED  = -g -nbs -O0 -I$(MOD_DIR) -check bounds  -extend_source -traceback  
-
+ FD  = -g -O0  -fpe0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR) 
+# FFREE  = -O -nbs -traceback -check bounds -extend_source -I$(MOD_DIR)
+ FFREE  = -g --fpe0 nbs -traceback -O0 -I$(MOD_DIR) -extend_source  
+ FFRED  = -g -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend_source -traceback  
 
  BLAS=
  LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \

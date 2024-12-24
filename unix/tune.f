@@ -70,6 +70,7 @@ C
 ! We will only get time for process 0
 !
 	IF(MYPE .NE. 0)RETURN
+	WRITE(277,'(I4,2X,A)')LRUN,TRIM(IDENT); FLUSH(227)
         IF (FIRSTTIME)THEN
           FIRSTTIME=.FALSE.
           DO  I=1,MAX_IDS

@@ -37,12 +37,14 @@
 	1                  INNER_BND_METH,OUTER_BND_METH,IB_STAB_FACTOR,
 	1                  dTdR,DBB,dDBBdT,IC,
 	1	           INCL_ADVEC_TERMS,INCL_REL_TERMS,
-	1                  DO_THIS_TX_MATRIX,METHOD,ND,NM,NM_KI)
+	1                  DO_THIS_TX_MATRIX,METHOD,
+	1                  DST,DEND,ND,NM,NM_KI)
 	USE SET_KIND_MODULE
-	USE MOD_VAR_JREL_V2
+	USE MOD_VAR_JREL_MPI_V1
 	USE MOD_RAY_MOM_STORE
 	USE MOD_TRAP_DERIVATIVES
 	USE MOD_VAR_OPAC_J, ONLY : TX, TVX, KI, RHS_dHdCHI, VDST, VDEND
+	USE MPI
 	IMPLICIT NONE
 !
 ! Altered: 21-Sep-2021 : Fixed bug with J_CHK_OPTION='FORM_VAL' option.
@@ -57,6 +59,7 @@
 ! Created:
 !
 	INTEGER ND
+	INTEGER DST,DEND
 	INTEGER NM
 	INTEGER NM_KI
 !
@@ -104,18 +107,20 @@
 	REAL(KIND=LDP) T1
 	REAL(KIND=LDP) DTAU
 	REAL(KIND=LDP) FREQ
+	REAL(KIND=LDP) dXM_NDM1
         REAL(KIND=LDP) RSQ_JP,RSQ_HP,RSQ_NP
         REAL(KIND=LDP) FMIN,FPLUS,HMIN,NMIN
 	REAL(KIND=LDP) RHS_JNU
 !
 	INTEGER LUER,ERROR_LU
         EXTERNAL ERROR_LU
-	INTEGER I,J
+	INTEGER I,J,IERR
+	INTEGER MDST,MDEND
 	INTEGER ICNT
 	INTEGER IFAIL
 ! 
 !
-	IF(INIT)CALL ALLOC_MOD_VAR_JREL_V2(ND)
+	IF(INIT)CALL ALLOC_MOD_VAR_JREL_MPI_V1(ND)
 !
 ! Zero relevant vectors and matrices.
 !
@@ -365,7 +370,7 @@
 	IF(DST .EQ. 1)THEN
 
 	  PSI(1)=GAM_RSQ(1)*DELTA(1)*( HBC-NBC+(NBC+BETA(1)*K_ON_J(1))*
-	  1             GAM_REL_SQ(1)*(SIGMA(1)+1.0_LDP) )
+	1             GAM_REL_SQ(1)*(SIGMA(1)+1.0_LDP) )
 	  PSIPREV(1)=GAM_RSQ(1)*DELTA(1)*( HBC_PREV-NBC_PREV+(NBC_PREV+
 	1             BETA(1)*K_ON_J_PREV(1))*GAM_REL_SQ(1)*(SIGMA(1)+1.0_LDP) )
 !
@@ -453,7 +458,7 @@
 	  VC(ND)=0.0_LDP
 	  PSIPREV(ND)=0.0_LDP
 	END IF
-	IF( ND-1 .LE. DEND .AND. ND-1 .GE. DST)XM(ND-1)=XM(ND-)+dXM_NDM1
+	IF( ND-1 .LE. DEND .AND. ND-1 .GE. DST)XM(ND-1)=XM(ND-1)+dXM_NDM1
 !
 ! We create PSIPREV_MOD to save multiplications in the UP_TX_TVX routine/
 ! It is only different from PSIPREV when N_ON_J is non zero.
@@ -497,9 +502,13 @@
 ! Solve for the radiation field along ray for this frequency.
 !
 	I=4*VEC_LENGTH
-        CALL CMPI_ALLREDUCE(MPI_IN_PLACE,TRI_VECS,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-	TRI_VEC_SAVE=TRI_VECS
+        CALL MPI_ALLREDUCE(MPI_IN_PLACE,TRI_VECS,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	TRI_VECS_SAVE=TRI_VECS
 	CALL THOMAS(TA,TB,TC,XM,ND,1)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(281,'(6ES14.6)')FREQ,XM(1:2),XM(ND-1:ND)
+	  FLUSH(UNIT=281)
+	END IF
 !
 	DO I=1,ND
 	  IF(XM(I) .GT. 1.0E+20_LDP)THEN
@@ -582,7 +591,7 @@
 	  TC(1:ND)=GAM_RSQ(1:ND)*XM(1:ND)
 	  CALL DERIVCHI(TB,TC,R,ND,'LINMON')
 	  CALL d_DERIVCHI_dCHI(TB,TC,R,ND,'LINMON')
-	  TRI_VECS+TRI_VECS_SAVE
+	  TRI_VECS=TRI_VECS_SAVE
 !
 	  DO I=2,ND-1
 	    TA(I)=TA(I)+GAM_RSQ_DTAUONQ(I)*BETA(I)*A(I)*GAM_RSQ(I-1)/GAM_RSQ(I)/CHI_J(I)
@@ -612,12 +621,18 @@
 ! WORKMAT is dimension (ND,ND) is is used to temporarily save TX( , ,K) for
 ! each K.
 !
+! T1 and I are used as temporary variables  DTAU_BND & OUT_BC_TYPE. These are required 
+! by UP_TX_TVX_MPI_V1 but are not implemented in this  variation routines.
+!
+	I=1; T1=0
+!
 	CALL TUNE(1,'UP_TX')
-	CALL UP_TX_TVX(TX,TVX,KI,TA,TB,TC,PSIPREV_MOD,
-	1                       VB,VC,HU,HL,HS,RHS_dHdCHI,
-	1                       EPS_A,EPS_B,EPS_PREV_A,EPS_PREV_B,
-	1                       WORKMAT,ND,NM,NM_KI,
-	1                       INIT,DO_THIS_TX_MATRIX)
+	CALL UP_TX_TVX_MPI_V1(
+	1               TA,TB,TC,PSIPREV_MOD,
+	1               VB,VC,HU,HL,HS,
+	1               EPS_A,EPS_B,EPS_PREV_A,EPS_PREV_B,
+	1               ND,NM,NM_KI,T1,I,
+	1               INIT,DO_THIS_TX_MATRIX)
 	CALL TUNE(2,'UP_TX')
 !
 ! 

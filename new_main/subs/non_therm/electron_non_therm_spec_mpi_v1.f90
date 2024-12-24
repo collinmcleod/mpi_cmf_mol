@@ -3,6 +3,7 @@
 	USE MOD_NON_THERM
 	USE MOD_CMFGEN
 	USE CONTROL_VARIABLE_MOD
+	USE MPI	
 	IMPLICIT NONE
 !
 ! Altered 30-Oct-2021 : Can now read in electron thermal spectrum. Useful when testing.
@@ -21,22 +22,26 @@
 !                       Set SOURCE to 0 before setting its value: important for CONSTANT and BELL_SHAPE
 !                       Installed NT_SOURCE_TYPE variable.
 !
-!	INTEGER NUM_IONS
 	INTEGER ND
 !
 	REAL(KIND=LDP), SAVE, ALLOCATABLE :: LELEC(:)
 	REAL(KIND=LDP), SAVE, ALLOCATABLE :: SOURCE(:)
 	REAL(KIND=LDP), SAVE, ALLOCATABLE :: RHS(:)
 	REAL(KIND=LDP), SAVE, ALLOCATABLE :: DETAI_DE(:)
-	REAL(KIND=LDP), SAVE, ALLOCATABLE :: MAT(:,:)
-	REAL(KIND=LDP), SAVE, ALLOCATABLE :: Qnn(:)
-	REAL(KIND=LDP), SAVE, ALLOCATABLE :: Qnn_TMP(:)
 	REAL(KIND=LDP), SAVE, ALLOCATABLE :: POP_VEC(:)
 !
 	INTEGER, SAVE, ALLOCATABLE :: INDX(:)
 	LOGICAL, SAVE, ALLOCATABLE :: DO_THIS_ION(:)
 	logical, save, allocatable :: do_and_1st_time(:)
 	integer, save, allocatable :: nlow_maxs(:)
+!
+! These arrays don't need to be saved.
+!
+	REAL(KIND=LDP), ALLOCATABLE :: MOD_YE(:)
+	REAL(KIND=LDP), ALLOCATABLE :: YE_ROOT(:,:)
+	REAL(KIND=LDP), ALLOCATABLE :: MAT(:,:)
+	REAL(KIND=LDP), ALLOCATABLE :: Qnn(:)
+	REAL(KIND=LDP), ALLOCATABLE :: Qnn_TMP(:)
 !
 	REAL(KIND=LDP) ION_SUM(NUM_IONS)
 	REAL(KIND=LDP) SPEC_SUM(NUM_IONS)
@@ -60,6 +65,7 @@
 	REAL(KIND=LDP) SCALER_SPEC_SUM
 	REAL(KIND=LDP) SCALER_ION_SUM
 	REAL(KIND=LDP) dXKT_MIN
+	REAL(KIND=LDP) WRK_VEC(ND)
 !
 	INTEGER GET_INDX_DP
 	REAL(KIND=LDP) INTSIGC
@@ -91,19 +97,22 @@
 	INTEGER NL,NUP
 	INTEGER L
 	INTEGER MAX_LOW_LEV
+	INTEGER REC_STATUS(MPI_STATUS_SIZE)
 !
 	INTEGER, PARAMETER :: LU_ER=6
 	INTEGER, PARAMETER :: LU_TH=8
 	integer, parameter :: LU_BETHE = 100
 	LOGICAL, SAVE :: FIRST_TIME=.TRUE.
 	LOGICAL DO_LOC_CHK
+	LOGICAL VERBOSE
 !
 	LOGICAL INJECT_DIRAC_AT_EMAX
 	CHARACTER(LEN=10) SOURCE_TYPE
-	CHARACTER(LEN=40) TMP_NAME
+	CHARACTER(LEN=40) FILE_NAME
 	CHARACTER(LEN=40) FMT
 !
 !
+	CALL TUNE(1,'NT_TOP')
 	XKT_MIN=NT_EMIN	
 	XKT_MAX=NT_EMAX
 	INJECT_DIRAC_AT_EMAX=.FALSE.
@@ -127,15 +136,32 @@
 	END IF
 	DO_LOC_CHK=.TRUE.
 !
-	WRITE(LU_ER,*)' '
-	WRITE(LU_ER,*)'Entering ELECTRON_NON_THERM_SPEC'
-	OPEN(UNIT=LU_TH,FILE='NON_THERM_SPEC_INFO',STATUS='UNKNOWN')
-	CALL SET_LINE_BUFFERING(LU_TH)
-	WRITE(LU_TH,'(A)')' '
-	WRITE(LU_TH,'(A,I5)')  ' Number of enrgy bins is ',NKT
-	WRITE(LU_TH,'(A,F8.2)')' Emin in eV is',XKT_MIN
-	WRITE(LU_TH,'(A,F8.2)')' Emax in eV is',XKT_MAX
-	WRITE(LU_TH,'(A)')' '
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LU_ER,*)' '
+	  WRITE(LU_ER,*)'Entering ELECTRON_NON_THERM_SPEC'
+	  WRITE(LU_ER,'(A)')' '
+	  WRITE(LU_ER,'(A,I5)')  ' Number of enrgy bins is ',NKT
+	  WRITE(LU_ER,'(A,F8.2)')' Emin in eV is',XKT_MIN
+	  WRITE(LU_ER,'(A,F8.2)')' Emax in eV is',XKT_MAX
+	  WRITE(LU_ER,'(A)')' '
+	END IF
+!
+! At present all diagnostc informations is swithched of. By comnenting/uncommenting one of the 
+! following statement, diagnostic information can be output for all threads, or just thread 0.
+!
+	VERBOSE=.FALSE.
+!	IF(MYPE .EQ. 0)VERBOSE=.TRUE.
+	VERBOSE=.TRUE.
+	IF(VERBOSE)THEN
+	  IF(NTHREAD-1 .LT. 100)THEN
+	    WRITE(FILE_NAME,'(I3.2)')MYPE
+	  ELSE
+	    WRITE(FILE_NAME,'(I4.3)')MYPE
+	  END IF
+	  FILE_NAME='NON_THERM_SPEC_INFO_'//ADJUSTL(FILE_NAME)
+	  OPEN(UNIT=LU_TH,FILE=FILE_NAME,STATUS='UNKNOWN')
+	  CALL SET_LINE_BUFFERING(LU_TH)
+	END IF
 !
 ! Allocate arrays that will be used for each depth:.
 !
@@ -143,7 +169,7 @@
 !
 	IF(.NOT. ALLOCATED(XKT))THEN
 	  NKT=NT_NKT
-	  WRITE(LU_TH,*)'Allocating memory to describe non-thermal electron distribution'
+	  IF(VERBOSE)WRITE(LU_TH,*)'Allocating memory to describe non-thermal electron distribution'
 	  ALLOCATE (XKT(NKT),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (dXKT(NKT),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (dXKT_ON_XKT(NKT),STAT=IOS)
@@ -163,16 +189,13 @@
 ! LELEC : Energy loss through Coulomb interaction
 ! SOURCE : Electron source
 !
-	WRITE(LU_TH,*)'Checking MAT memory allocation'
+	IF(VERBOSE)WRITE(LU_TH,*)'Checking MAT memory allocation'
 	IF(.NOT. ALLOCATED(MAT))THEN
-	  WRITE(LU_TH,*)'Allocating memory in ELECTRON_NON_THERMAL_SPEC'
+	  IF(VERBOSE)WRITE(LU_TH,*)'Allocating memory in ELECTRON_NON_THERMAL_SPEC'
 	  ALLOCATE (LELEC(NKT),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (SOURCE(NKT),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (RHS(NKT),STAT=IOS)
-	  IF(IOS .EQ. 0)ALLOCATE (Qnn(NKT),STAT=IOS)
-	  IF(IOS .EQ. 0)ALLOCATE (Qnn_TMP(NKT),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (dETAI_dE(NKT),STAT=IOS)
-	  IF(IOS .EQ. 0)ALLOCATE (MAT(NKT,NKT),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (POP_VEC(NUM_THD))
 	  IF(IOS .EQ. 0)ALLOCATE (INDX(NUM_THD))
 	  IF(IOS .EQ. 0)ALLOCATE (DO_THIS_ION(NUM_IONS))
@@ -183,13 +206,14 @@
 	    STOP
 	  END IF
 	END IF
+!
 !
 ! Set the energy array. Use a linear scaling since we need to resolve the high-energy source
 ! but also the transition near the ionization/excitation potentials at about 10eV.
 !
 	IF(FIRST_TIME)THEN
 !
-	  WRITE(LU_TH,*)'Setting XKT array'
+	  IF(VERBOSE)WRITE(LU_TH,*)'Setting XKT array'
 	  CALL SET_XKT_ARRAY(XKT_MIN,XKT_MAX,NKT,XKT,dXKT,XKT_METHOD)
 	  dXKT_ON_XKT(1:NKT)=dXKT(1:NKT)/XKT(1:NKT)
 !
@@ -203,21 +227,28 @@
 	      STOP
 	    END IF
 	  END DO
-	  WRITE(LU_TH,*)'Computing cross-sections'
+	  IF(VERBOSE)WRITE(LU_TH,*)'Computing cross-sections'
 	  CALL ARNAUD_CROSS_V3()
 !
 	  I=0
 	  DO IT=1,NUM_THD
 	    IF(THD(IT)%PRES)I=I+1
 	  END DO
-	  WRITE(LU_TH,*)'Number of active species in ELECTRON_NON_TERMAL_SPEC is',I
+	  IF(VERBOSE)WRITE(LU_TH,*)'Number of active species in ELECTRON_NON_TERMAL_SPEC is',I
 	END IF
-!
 	FIRST_TIME=.FALSE.
 !
 	IF(READ_NON_THERM_SPEC)THEN
-	  CALL RD_NON_THERM_ELEC_SPEC_V1(ND,LU_BETHE)
+	  CALL RD_NON_THERM_ELEC_SPEC_MPI_V1(DST,DEND,ND,LU_BETHE)
 	  RETURN
+	END IF
+!
+	ALLOCATE (Qnn(NKT),STAT=IOS)
+	IF(IOS .EQ. 0)ALLOCATE (Qnn_TMP(NKT),STAT=IOS)
+	IF(IOS .EQ. 0)ALLOCATE (MAT(NKT,NKT),STAT=IOS)
+	IF(IOS .NE. 0)THEN
+	  WRITE(LU_ER,*)'Unable ro allocate MAT, Qnn etc.  MYPE,IOS=',MYPE,IOS
+	  STOP
 	END IF
 !
 	FRAC_ELEC_HEATING=0.0_LDP
@@ -231,11 +262,11 @@
 ! depths. We can either inject at EMAX, or use a Bell-shaped curve near EMAX.
 ! E_INIT will be a normalisation constant to yield fractions for ionization etc.
 !
-	WRITE(LU_TH,*)'Constructing SOURCE'
+	IF(VERBOSE)WRITE(LU_TH,*)'Constructing SOURCE'
 	SOURCE=0.0_LDP
 	IF (INJECT_DIRAC_AT_EMAX) THEN ! zero otherwise
 	  E_INIT = XKT_MAX
-	  WRITE(LU_TH,*)'Using Dirac delta function injection'
+	  IF(VERBOSE)WRITE(LU_TH,*)'Using Dirac delta function injection'
 	ELSE
 	  T1 = 0.0_LDP
 	  T2 = DELTA_ENR_SOURCE
@@ -246,7 +277,7 @@
 	        T1 = T1 + SOURCE(IKT)*dXKT(IKT)
               END IF
 	    END DO
-	    WRITE(LU_TH,*)'Using constant for electron injection'
+	    IF(VERBOSE)WRITE(LU_TH,*)'Using constant for electron injection'
 	  ELSE IF(SOURCE_TYPE .EQ. 'BELL_SHAPE')THEN
 	    DO IKT=1,NKT
 	      IF (XKT(IKT) .GE. (XKT_MAX-T2)) THEN
@@ -254,7 +285,7 @@
 	        T1 = T1 + SOURCE(IKT)*dXKT(IKT)
               END IF
 	    END DO
-	    WRITE(LU_TH,*)'Using BELL_SHAPE for electron injection'
+	    IF(VERBOSE)WRITE(LU_TH,*)'Using BELL_SHAPE for electron injection'
           END IF
 	  SOURCE(:) = SOURCE(:) / T1
 !
@@ -269,31 +300,34 @@
 !
 ! Write a summary of IONS, ionization potentials, and thrshold cross-sections.
 !
-	WRITE(LU_TH,'(X,A,T12,3X,A,2X,A,4X,A,2X,A,4X,A)')'Ion ID','IT','IST','SIG(IST)','SIG(IST+1)','Ion Pot.'
-	DO IT=1,NUM_THD
-	  IF(THD(IT)%PRES)THEN
-            XION_POT = THD(IT)%ION_POT
-	    IF(XION_POT .LT. XKT(1))THEN
-	      IST=1
-	      SIG1=THD(IT)%CROSS_SEC(1); SIG2=0.0_LDP
-	    ELSE IF(XION_POT .GT. XKT(NKT))THEN
-	      IST=NKT+1
-	      SIG1=0.0_LDP; SIG2=0.0_LDP
-	    ELSE
-	      IST=GET_INDX_DP(XION_POT,XKT,NKT)
-	      SIG1=THD(IT)%CROSS_SEC(IST); SIG2=THD(IT)%CROSS_SEC(IST+1)
+	IF(VERBOSE)THEN
+	  WRITE(LU_TH,'(X,A,T12,3X,A,2X,A,4X,A,2X,A,4X,A)')'Ion ID','IT','IST','SIG(IST)','SIG(IST+1)','Ion Pot.'
+	  DO IT=1,NUM_THD
+	    IF(THD(IT)%PRES)THEN
+              XION_POT = THD(IT)%ION_POT
+	      IF(XION_POT .LT. XKT(1))THEN
+	        IST=1
+	        SIG1=THD(IT)%CROSS_SEC(1); SIG2=0.0_LDP
+	      ELSE IF(XION_POT .GT. XKT(NKT))THEN
+	        IST=NKT+1
+	        SIG1=0.0_LDP; SIG2=0.0_LDP
+	      ELSE
+	        IST=GET_INDX_DP(XION_POT,XKT,NKT)
+	        SIG1=THD(IT)%CROSS_SEC(IST); SIG2=THD(IT)%CROSS_SEC(IST+1)
+	      END IF
+	      ID=THD(IT)%LNK_TO_ION
+	      WRITE(LU_TH,'(X,A,T12,2I5,2ES12.2,F12.2)')ION_ID(ID),IT,IST,SIG1,SIG2,XION_POT
 	    END IF
-	    ID=THD(IT)%LNK_TO_ION
-	    WRITE(LU_TH,'(X,A,T12,2I5,2ES12.2,F12.2)')ION_ID(ID),IT,IST,SIG1,SIG2,XION_POT
-	  END IF
-	END DO
+	  END DO
+	END IF
+	CALL TUNE(2,'NT_TOP')
 !
 !
-!	open(unit=lu_bethe,file='bethe_cross_chk',status='unknown')
+	CALL TUNE(1,'NT_DPTH_LOOP')
 	do_and_1st_time(:)=l_false
-	DO DPTH_INDX=1,ND
+	DO DPTH_INDX=DST,DEND
 !
-	  WRITE(LU_TH,'(/,X,A,I3)')'Starting depth index: ',DPTH_INDX
+	  IF(VERBOSE)WRITE(LU_TH,'(/,X,A,I3)')'Starting depth index: ',DPTH_INDX
 !
 ! Decide on which species we will handle when computing the electron distribution.
 ! For each route, we sum up over all levels of that term. This approach will
@@ -315,8 +349,8 @@
 !   DO_THIS_ION is used for deciding by ION
 !   DO_THIS_ION_ROUTE is used for deciding by the ionization route.
 !
-	  WRITE(LU_TH,'(X,A)')'Determining the top 10 ionization routes at this depth'
-	  WRITE(LU_TH,'(2X,A,4X,A,7X,A,9X,A)')'IT','ID','Ion','Pop'
+	  IF(VERBOSE)WRITE(LU_TH,'(X,A)')'Determining the top 10 ionization routes at this depth'
+	  IF(VERBOSE)WRITE(LU_TH,'(2X,A,4X,A,7X,A,9X,A)')'IT','ID','Ion','Pop'
 	  CALL INDEXX(NUM_THD,POP_VEC,INDX,L_FALSE)
 	  DO_THIS_ION(:)=L_FALSE
 	  THD(:)%DO_THIS_ION_ROUTE=L_FALSE
@@ -326,22 +360,27 @@
 	    THD(INDX(IT))%DO_THIS_ION_ROUTE=.TRUE.
 	    DO_THIS_ION(ID)=.TRUE.
 	    do_and_1st_time(id)=.true.
-	    WRITE(LU_TH,'(I4,2X,I4,4X,A6,ES12.3)')IT,ID,TRIM(ION_ID(ID)),POP_VEC(INDX(IT))
+	    IF(VERBOSE)WRITE(LU_TH,'(I4,2X,I4,4X,A6,ES12.3)')IT,ID,TRIM(ION_ID(ID)),POP_VEC(INDX(IT))
 	  END DO
 !
 ! Building the upper-diagonal matrix mat(1:nkt,1:nkt)
 !
-	  WRITE(LU_TH,*)'Constructing MAT'
+	  IF(VERBOSE)WRITE(LU_TH,*)'Constructing MAT'
 !
 ! Get the energy losses through Coulomb interaction
 !
-	  WRITE(LU_TH,*)'Electron density=',ED(DPTH_INDX)  !ED(DPTH_INDX)
+	  IF(VERBOSE)WRITE(LU_TH,*)'Electron densit=',ED(DPTH_INDX)  !ED(DPTH_INDX)
 	  CALL GET_LELEC(LELEC,XKT,NKT,ED(DPTH_INDX))  !,ED(DPTH_INDX))
-	  IF(VERBOSE_OUTPUT)THEN
-	    DO IKT=1,NKT
-	      WRITE(100,*)IKT,XKT(IKT),LELEC(IKT)
-	    END DO
+!
+	  IF(VERBOSE)THEN
+	     WRITE(LU_TH,*)'LELEC',LELEC(1:5)
 	  END IF
+!
+!	  IF(VERBOSE_OUTPUT)THEN
+!	    DO IKT=1,NKT
+!	      WRITE(100,*)IKT,XKT(IKT),LELEC(IKT)
+!	    END DO
+!	  END IF
 !
 ! Initialize MAT, and the add Diagonal term for Coulomb interaction with
 ! thermal electrons.
@@ -361,7 +400,7 @@
 	      IF(THD(IT)%PRES .AND. THD(IT)%DO_THIS_ION_ROUTE)THEN
 	        NATOM=THD(IT)%N_ATOM
                 XION_POT = THD(IT)%ION_POT
-	        WRITE(LU_TH,'(A,I3,A,F7.2,A)')' Ionization potential for IT=',IT,' is ',XION_POT,' eV'
+	        IF(VERBOSE)WRITE(LU_TH,'(A,I3,A,F7.2,A)')' Ionization potential for IT=',IT,' is ',XION_POT,' eV'
 !
 	        IF(XION_POT .LT. XKT(1))THEN
 	           IST=1
@@ -371,7 +410,6 @@
 	           IST=GET_INDX_DP(XION_POT,XKT,NKT)
 	        END IF
 !
-!$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(IKT,IKTP,EKT,EKTP,EMIN,EMAX,XCROSS,NA_dX_CROSS)
 	        DO IKTP=IST,NKT
                   XCROSS = THD(IT)%CROSS_SEC(IKTP)
 	          IF(XCROSS .GT. 0.0_LDP)THEN
@@ -394,7 +432,6 @@
 	          END IF
 !
 	        END DO
-!$OMP END PARALLEL DO
 	      END IF    !Species present
 	    END DO	!Looping over ionization stage / shell
 	  END IF
@@ -402,106 +439,104 @@
 !
 ! Collisional excitations.
 !
-	CALL TUNE(1,'MAT_EXCITE')
-	IF (INCLUDE_EXCITATION)THEN
-	  WRITE(LU_TH,*)'Beginning excitation section'
+	  CALL TUNE(1,'MAT_EXCITE')
+	  IF (INCLUDE_EXCITATION)THEN
+	    WRITE(LU_TH,*)'Beginning excitation section'
 !
 ! We only do excitations for ions with a fractional population > NT_OMIT_ION_SCALE.
 ! We exclude the final ion when computing the species and fractional population.
 ! We do at least one ionization stage for each species.
 !
-	  ION_SUM(:)=0.0_LDP
-	  DO_THIS_ION_EXC(:)=.FALSE.
-	  DO ISPEC=1,NUM_SPECIES
-	    T1=0.0_LDP
-	    DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
-	     IF(ATM(ID)%XzV_PRES)ION_SUM(ID)=SUM(ATM(ID)%XzV_F(:,DPTH_INDX))
-	     T1=T1+ION_SUM(ID)
+	    ION_SUM(:)=0.0_LDP
+	    DO_THIS_ION_EXC(:)=.FALSE.
+	    DO ISPEC=1,NUM_SPECIES
+	      T1=0.0_LDP
+	      DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
+	       IF(ATM(ID)%XzV_PRES)ION_SUM(ID)=SUM(ATM(ID)%XzV_F(:,DPTH_INDX))
+	       T1=T1+ION_SUM(ID)
+	      END DO
+	      DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
+	        IF(ION_SUM(ID)/T1 .GT. NT_OMIT_ION_SCALE)DO_THIS_ION_EXC(ID)=.TRUE.
+	        SPEC_SUM(ID)=T1
+	      END DO
 	    END DO
-	    DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
-	      IF(ION_SUM(ID)/T1 .GT. NT_OMIT_ION_SCALE)DO_THIS_ION_EXC(ID)=.TRUE.
-	      SPEC_SUM(ID)=T1
-	    END DO
-	  END DO
 !
-	  DO ID=1,NUM_IONS
-	    IF(ATM(ID)%XzV_PRES .AND. DO_THIS_ION_EXC(ID))THEN
+	    DO ID=1,NUM_IONS
+	     IF(ATM(ID)%XzV_PRES .AND. DO_THIS_ION_EXC(ID))THEN
 !
 ! Determine levels from which excitation will occur.
 !
-	      T1=ION_SUM(ID)
-	      MAX_LOW_LEV=ATM(ID)%NXzV_F
-	      DO I=ATM(ID)%NXzV_F,1,-1
-	        IF(ATM(ID)%XzV_F(I,DPTH_INDX)/SPEC_SUM(ID) .GT. NT_OMIT_LEV_SCALE)EXIT
-	        MAX_LOW_LEV=I
-	      END DO
-	      NLOW_MAXS(ID)=MAX(NLOW_MAXS(ID),MAX_LOW_LEV)
+	       T1=ION_SUM(ID)
+	       MAX_LOW_LEV=ATM(ID)%NXzV_F
+	       DO I=ATM(ID)%NXzV_F,1,-1
+	         IF(ATM(ID)%XzV_F(I,DPTH_INDX)/SPEC_SUM(ID) .GT. NT_OMIT_LEV_SCALE)EXIT
+	         MAX_LOW_LEV=I
+	       END DO
+	       NLOW_MAXS(ID)=MAX(NLOW_MAXS(ID),MAX_LOW_LEV)
 !
-	      DO I=1,MAX_LOW_LEV
-	        NL=I
-	        J=I+1
-	        DO WHILE(J .LE. ATM(ID)%NXzV_F)
-	          NUP=J
+	       DO I=1,MAX_LOW_LEV
+	         NL=I
+	         J=I+1
+	         DO WHILE(J .LE. ATM(ID)%NXzV_F)
+	           NUP=J
 !
 ! Now weight dE by Qnn rather than by AXzV_F(NL,NUP). Avoids division by zero when
 ! oscilator strength is zero.
 !
-	          CALL BETHE_APPROX_V5(Qnn,NL,NUP,XKT,dXKT_ON_XKT,NKT,ID,DPTH_INDX)
-	          IF(Qnn(NKT) .GT. 0.0_LDP)THEN
-	            dE=Qnn(NKT)*Hz_TO_eV*(ATM(ID)%EDGEXZV_F(NL)-ATM(ID)%EDGEXZV_F(J))
-	            QSUM=Qnn(NKT)
-	            K=J
-	            DO WHILE(K+1 .LE. ATM(ID)%NXzV_F)
-	              IF(Hz_TO_eV*(ATM(ID)%EDGEXZV_F(K+1)-ATM(ID)%EDGEXZV_F(J)) .GE. 1.0_LDP)EXIT
-	              K=K+1
-	              NUP=K
-	              CALL BETHE_APPROX_V5(Qnn_TMP,NL,NUP,XKT,dXKT_ON_XKT,NKT,ID,DPTH_INDX)
-	              IF(Qnn_TMP(NKT) .GT. 0.0_LDP)THEN
-	                CALL PAR_VEC_SUM(QNN,Qnn_TMP,NKT)
-	                dE=dE+Qnn_TMP(NKT)*Hz_TO_eV*(ATM(ID)%EDGEXZV_F(NL)-ATM(ID)%EDGEXZV_F(K))
-	                QSUM=QSUM+Qnn_TMP(NKT)
-	              END IF
-	            END DO
-	            dE=dE/QSUM			!Weighted average energy of transition array.
-	            J=K
+	           CALL BETHE_APPROX_V5(Qnn,NL,NUP,XKT,dXKT_ON_XKT,NKT,ID,DPTH_INDX)
+	           IF(Qnn(NKT) .GT. 0.0_LDP)THEN
+	             dE=Qnn(NKT)*Hz_TO_eV*(ATM(ID)%EDGEXZV_F(NL)-ATM(ID)%EDGEXZV_F(J))
+	             QSUM=Qnn(NKT)
+	             K=J
+	             DO WHILE(K+1 .LE. ATM(ID)%NXzV_F)
+	               IF(Hz_TO_eV*(ATM(ID)%EDGEXZV_F(K+1)-ATM(ID)%EDGEXZV_F(J)) .GE. 1.0_LDP)EXIT
+	               K=K+1
+	               NUP=K
+	               CALL BETHE_APPROX_V5(Qnn_TMP,NL,NUP,XKT,dXKT_ON_XKT,NKT,ID,DPTH_INDX)
+	               IF(Qnn_TMP(NKT) .GT. 0.0_LDP)THEN
+	                 CALL PAR_VEC_SUM(QNN,Qnn_TMP,NKT)
+	                 dE=dE+Qnn_TMP(NKT)*Hz_TO_eV*(ATM(ID)%EDGEXZV_F(NL)-ATM(ID)%EDGEXZV_F(K))
+	                 QSUM=QSUM+Qnn_TMP(NKT)
+	                END IF
+	              END DO
+	              dE=dE/QSUM			!Weighted average energy of transition array.
+	              J=K
 !
-!$OMP PARALLEL DO SCHEDULE(DYNAMIC) PRIVATE(IKT,IKT0,IKTP,IKTPN,EKT,EMAX)
-	            DO IKT=1,NKT
-	              EKT = XKT(IKT)
-	              IKT0 = IKT
+	              DO IKT=1,NKT
+	                EKT = XKT(IKT)
+	                IKT0 = IKT
 !
 ! Need to find the upper bound iktpn for which ektp = ekt + Excitation_Energy
 !
-	              EMAX = EKT+dE
-	              IKTPN=IKT0
-	              IF (EMAX .GT. XKT(NKT-1)) then
-	                IKTPN = NKT
-	              ELSE
-	                IF(XKT_METHOD .EQ. 'lin')THEN
-	                  IKTPN=NINT( (EMAX-EKT)/dXKT_MIN+IKT0 )
+	                EMAX = EKT+dE
+	                IKTPN=IKT0
+	                IF (EMAX .GT. XKT(NKT-1)) then
+	                  IKTPN = NKT
 	                ELSE
-	                  DO WHILE (XKT(IKTPN) .LT. EMAX)
-	                    IKTPN = IKTPN + 1
-	                  END DO
+	                  IF(XKT_METHOD .EQ. 'lin')THEN
+	                    IKTPN=NINT( (EMAX-EKT)/dXKT_MIN+IKT0 )
+	                  ELSE
+	                    DO WHILE (XKT(IKTPN) .LT. EMAX)
+	                      IKTPN = IKTPN + 1
+	                    END DO
+	                  END IF
 	                END IF
-	              END IF
 !
-	              DO IKTP=IKT0,IKTPN
-	                MAT(IKT0,IKTP) = MAT(IKT0,IKTP) + Qnn(IKTP)
-	              END DO
+	                DO IKTP=IKT0,IKTPN
+	                  MAT(IKT0,IKTP) = MAT(IKT0,IKTP) + Qnn(IKTP)
+	                END DO
 !
-	            END DO	!Loop over energy
-!$OMP END PARALLEL DO
+	              END DO	!Loop over energy
 !
-	          END IF        !Check if f(i,j)=0
-	          J=J+1
-	        END DO		!Loop over upper level
-	      END DO		!Loop over lower level
-	    END IF		!Ionization stage present
-	  END DO		!Loop over ionization stage
-!	  close(lu_bethe)
-	END IF			!Include excitations?
-	CALL TUNE(2,'MAT_EXCITE')
+	            END IF        !Check if f(i,j)=0
+	            J=J+1
+	          END DO		!Loop over upper level
+	        END DO		!Loop over lower level
+	      END IF		!Ionization stage present
+	    END DO		!Loop over ionization stage
+!	    close(lu_bethe)
+	  END IF			!Include excitations?
+	  CALL TUNE(2,'MAT_EXCITE')
 !
 ! Check no diagonal term of mat is zero
 !
@@ -515,83 +550,85 @@
 ! We now build the right-hand side and the matrix corresponding to
 ! Eq.7 of KF92.
 !
-	 IF (INJECT_DIRAC_AT_EMAX) THEN
-	   RHS(1:NKT) = 1.0_LDP
-	 ELSE
-	   RHS(NKT) = 0.0_LDP
-	   IF (SOURCE_TYPE .EQ. 'CONSTANT') RHS(NKT) = SOURCE(NKT) * dXKT(NKT)
-	   DO IKT=NKT-1,1,-1
-	     RHS(IKT) = RHS(IKT+1) + SOURCE(IKT) * dXKT(IKT)
-	   END DO
-	 END IF
+	   IF (INJECT_DIRAC_AT_EMAX) THEN
+	     RHS(1:NKT) = 1.0_LDP
+	   ELSE
+	     RHS(NKT) = 0.0_LDP
+	     IF (SOURCE_TYPE .EQ. 'CONSTANT') RHS(NKT) = SOURCE(NKT) * dXKT(NKT)
+	     DO IKT=NKT-1,1,-1
+	       RHS(IKT) = RHS(IKT+1) + SOURCE(IKT) * dXKT(IKT)
+	     END DO
+	   END IF
 !
 ! Solve for the degradation function YE
 !
-	 YE(NKT,DPTH_INDX)=0.0_LDP
-	 IF(INJECT_DIRAC_AT_EMAX)YE(NKT,DPTH_INDX)=1.0_LDP/LELEC(NKT)
-	 DO IKT=NKT-1,1,-1
-	   T1 = 0.0_LDP
-	   DO IKTP=IKT+1,NKT
-	      T1 = T1 + MAT(IKT,IKTP)*YE(IKTP,DPTH_INDX)
+	   YE(NKT,DPTH_INDX)=0.0_LDP
+	   IF(INJECT_DIRAC_AT_EMAX)YE(NKT,DPTH_INDX)=1.0_LDP/LELEC(NKT)
+	   DO IKT=NKT-1,1,-1
+	     T1 = 0.0_LDP
+	     DO IKTP=IKT+1,NKT
+	        T1 = T1 + MAT(IKT,IKTP)*YE(IKTP,DPTH_INDX)
+	     END DO
+	     YE(IKT,DPTH_INDX) = (RHS(IKT) - T1) / MAT(IKT,IKT) ! diagonal term is never zero (lelec contrib.)
 	   END DO
-	   YE(IKT,DPTH_INDX) = (RHS(IKT) - T1) / MAT(IKT,IKT) ! diagonal term is never zero (lelec contrib.)
-	 END DO
 !
 ! Compute electron heating
 !
-	    DO IKT=1,NKT
-	      FRAC_ELEC_HEATING(DPTH_INDX)=FRAC_ELEC_HEATING(DPTH_INDX) + YE(IKT,DPTH_INDX)*LELEC(IKT)*dXKT(IKT)
-	    END DO
-	    T1=XKT(1)*LELEC(1)*YE(1,DPTH_INDX)/E_INIT
-	    FRAC_ELEC_HEATING(DPTH_INDX)=FRAC_ELEC_HEATING(DPTH_INDX)/E_INIT
-	    FRAC_ELEC_HEATING(DPTH_INDX)=FRAC_ELEC_HEATING(DPTH_INDX)+T1
-	    WRITE(LU_TH,'(A,2ES12.4)')'(Fraction into electron heating and correction are',FRAC_ELEC_HEATING(DPTH_INDX),T1
+	   DO IKT=1,NKT
+	     FRAC_ELEC_HEATING(DPTH_INDX)=FRAC_ELEC_HEATING(DPTH_INDX) + YE(IKT,DPTH_INDX)*LELEC(IKT)*dXKT(IKT)
+	   END DO
+	   T1=XKT(1)*LELEC(1)*YE(1,DPTH_INDX)/E_INIT
+	   FRAC_ELEC_HEATING(DPTH_INDX)=FRAC_ELEC_HEATING(DPTH_INDX)/E_INIT
+	   FRAC_ELEC_HEATING(DPTH_INDX)=FRAC_ELEC_HEATING(DPTH_INDX)+T1
+	   IF(VERBOSE)WRITE(LU_TH,'(A,2ES12.4)')'Fraction into electron heating and correction are', &
+	                               FRAC_ELEC_HEATING(DPTH_INDX),T1
 !
-!	  END DO		!Depth index
+! Compute the ionization and heating contributions. NB RHS is used below and is depth dependent.
 !
-! Compute the ionization and heating contributions
-!
-	    IF(INCLUDE_IONIZATION .AND. DO_LOC_CHK)THEN
-	      CALL TUNE(1,'CHK_ION')
+	  IF(INCLUDE_IONIZATION .AND. DO_LOC_CHK)THEN
+	    IF(VERBOSE .AND. DPTH_INDX .EQ. DST)THEN
 	      WRITE(LU_TH,*)'Checking ionization energy'
 	      WRITE(LU_TH,'(4X,A,2X,A,4X,A,2X,A,3X,A)')'IT','IST','SIG(IST)','SIG(IST+1)','dE(ION)/E'
-	      DO IT=1,NUM_THD
-	        IF(THD(IT)%PRES .AND. THD(IT)%DO_THIS_ION_ROUTE)THEN
-	          NATOM=THD(IT)%N_ATOM
-                  XION_POT = THD(IT)%ION_POT
+	    END IF
+	    DO IT=1,NUM_THD
+	      IF(THD(IT)%PRES .AND. THD(IT)%DO_THIS_ION_ROUTE)THEN
+	        NATOM=THD(IT)%N_ATOM
+                XION_POT = THD(IT)%ION_POT
 !
-	          IF(XION_POT .LT. XKT(1))THEN
-	             IST=1
-	             SIG1=THD(IT)%CROSS_SEC(1); SIG2=0.0_LDP
-	          ELSE IF(XION_POT .GT. XKT(NKT))THEN
-	             IST=NKT+1
-	             SIG1=0.0_LDP; SIG2=0.0_LDP
-	          ELSE
-	             IST=GET_INDX_DP(XION_POT,XKT,NKT)
-	             SIG1=THD(IT)%CROSS_SEC(IST); SIG2=THD(IT)%CROSS_SEC(IST+1)
-	          END IF
-	          T1 = 0.0_LDP
-	          DO IKTP=IST,NKT
-	            XCROSS = THD(IT)%CROSS_SEC(IKTP)
-	            DETAI_DE(IKTP) = DETAI_DE(IKTP) + &
-	                NATOM * XION_POT / E_INIT * YE(IKTP,DPTH_INDX)*XCROSS
-	            T1 = T1 + YE(IKTP,DPTH_INDX)*dXKT(IKTP)*XCROSS
-	          END DO
-	          WRITE(LU_TH,'(X,2I5,3ES12.2)')IT,IST,SIG1,SIG2,NATOM * XION_POT * T1 / E_INIT
-	          FRAC_ION_HEATING(DPTH_INDX) = FRAC_ION_HEATING(DPTH_INDX) + NATOM * XION_POT * T1 / E_INIT
+	        IF(XION_POT .LT. XKT(1))THEN
+	           IST=1
+	           SIG1=THD(IT)%CROSS_SEC(1); SIG2=0.0_LDP
+	        ELSE IF(XION_POT .GT. XKT(NKT))THEN
+	           IST=NKT+1
+	           SIG1=0.0_LDP; SIG2=0.0_LDP
+	        ELSE
+	           IST=GET_INDX_DP(XION_POT,XKT,NKT)
+	           SIG1=THD(IT)%CROSS_SEC(IST); SIG2=THD(IT)%CROSS_SEC(IST+1)
 	        END IF
-	      END DO		!Ionization route
-	    CALL TUNE(2,'CHK_ION')
-	   END IF
-	END DO		!Depth indx
+	        T1 = 0.0_LDP
+	        DO IKTP=IST,NKT
+	          XCROSS = THD(IT)%CROSS_SEC(IKTP)
+	          DETAI_DE(IKTP) = DETAI_DE(IKTP) + &
+	              NATOM * XION_POT / E_INIT * YE(IKTP,DPTH_INDX)*XCROSS
+	          T1 = T1 + YE(IKTP,DPTH_INDX)*dXKT(IKTP)*XCROSS
+	        END DO
+	        IF(VERBOSE)WRITE(LU_TH,'(X,2I5,3ES12.2)')IT,IST,SIG1,SIG2,NATOM * XION_POT * T1 / E_INIT
+	        FRAC_ION_HEATING(DPTH_INDX) = FRAC_ION_HEATING(DPTH_INDX) + NATOM * XION_POT * T1 / E_INIT
+	      END IF
+	    END DO		          !Ionization route
+	  END IF                          !Include ionization check
+	END DO		                  !Depth indx
+	CALL TUNE(2,'NT_DPTH_LOOP')
 !
 	IF(INCLUDE_EXCITATION .AND. DO_LOC_CHK)THEN
 	  CALL TUNE(1,'CHK_EXCITE')
+	  IF(VERBOSE)THEN
+	    WRITE(LU_TH,*)'Checking excitation energy'
+	  END IF
+	  ALLOCATE(MOD_YE(NKT))
 !
-!$OMP PARALLEL PRIVATE( RATE,dE,T1,SCALER_SPEC_SUM,SCALER_ION_SUM,ISPEC,ID,I,J,NL,NUP,IKT,DPTH_INDX,MAX_LOW_LEV )
-!$OMP DO SCHEDULE(DYNAMIC)
-!
-	  DO DPTH_INDX=1,ND
+	  DO DPTH_INDX=DST,DEND
+	    MOD_YE(:)=YE(:,DPTH_INDX)*dXKT(:)/XKT(:)
 	    DO ISPEC=1,NUM_SPECIES
 	      SCALER_SPEC_SUM=0.0_LDP
 	      DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
@@ -612,7 +649,7 @@
 	          DO I=1,MAX_LOW_LEV
 	            DO J=I+1,ATM(ID)%NXzV_F
 	              NL=I; NUP=J
-	              CALL TOTAL_BETHE_RATE_V3(RATE,NL,NUP,YE,XKT,dXKT,NKT,ID,DPTH_INDX,ND)
+	              CALL TOTAL_BETHE_RATE_MOD_YE_MPI_V1(RATE,NL,NUP,MOD_YE,XKT,NKT,ID)
 	              dE=Hz_TO_eV*(ATM(ID)%EDGEXZV_F(NL)-ATM(ID)%EDGEXZV_F(NUP))
 	              FRAC_EXCITE_HEATING(DPTH_INDX)=FRAC_EXCITE_HEATING(DPTH_INDX)+dE*RATE*ATM(ID)%XzV_F(NL,DPTH_INDX)
 	            END DO
@@ -621,39 +658,51 @@
 	      END DO		!Loop over ionization stage
 	    END DO              !Loop over species
 	    FRAC_EXCITE_HEATING(DPTH_INDX)=FRAC_EXCITE_HEATING(DPTH_INDX)/E_INIT
+!
 	  END DO		!Loop over depth
-!$OMP END DO
-!$OMP END PARALLEL
-	    CALL TUNE(2,'CHK_EXCITE')
-	END IF		!Include excitation and DO_LOC_CHK?
+	  DEALLOCATE(MOD_YE)
+	  CALL TUNE(2,'CHK_EXCITE')
+	END IF		        !Include excitation and DO_LOC_CHK?
 !
 ! Provide a depth dependent summary
 !
-	IF(DO_LOC_CHK)THEN
+	CALL TUNE(1,'NT_SEC_WR')
+	IF(DO_LOC_CHK .AND. VERBOSE)THEN
 	  WRITE(LU_TH,'(/,X,A,/)')'Summary of energy channels'
 	  WRITE(LU_TH,'(A,14X,A,2X,A,4(5X,A))')'Depth','R(I)','V(I)[km/s]', &
 	                 ' dE(ELEC)/E','  dE(ION)/E','  dE(EXC)/E','dE(TOTAL)/E'
-	  DO I=1,ND
+	  DO I=DST,DEND
 	    WRITE(LU_TH,'(I5,ES18.8,ES12.4,4ES16.6)')I,R(I),V(I),  &
 	    FRAC_ELEC_HEATING(I),FRAC_ION_HEATING(I),FRAC_EXCITE_HEATING(I), &
 	    FRAC_ELEC_HEATING(I)+FRAC_ION_HEATING(I)+FRAC_EXCITE_HEATING(I)
 	  END DO
 	END IF
+	CALL TUNE(2,'NT_SEC_WR')
 !
 ! Below we compute the number of non thermal electrons arising from the input of non-thermal energy.
 ! This is the number on electrons per 1eV of energy input.
 !
-	WRITE(LU_TH,*)' '
-	WRITE(LU_TH,*)'Integral of normalized YE as a function of depth'
-	WRITE(LU_TH,'(1X,A,5X,A,10X,A)')'Depth','Int(YE)','Ne'
-	DO DPTH_INDX=1,ND
+	CALL TUNE(1,'NT_THR_WR')
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LU_TH,*)' '
+	  WRITE(LU_TH,*)'Integral of normalized YE as a function of depth'
+	  WRITE(LU_TH,'(1X,A,5X,A,10X,A)')'Depth','Int(YE)','Ne'
+	END IF
+	WRK_VEC=0.0_LDP
+	DO DPTH_INDX=DST,DEND
 	  T1=0.0_LDP
 	  DO IKT=1,NKT
 	   T1=T1+YE(IKT,DPTH_INDX)/SQRT(XKT(IKT))*dXKT(IKT)
 	  END DO
-	  T1=T1*SQRT(9.109389E-28_LDP/2.0_LDP/1.602177E-12_LDP)/E_INIT
-	  WRITE(LU_TH,'(I6,2ES12.3)')DPTH_INDX,T1,ED(DPTH_INDX)
+	  WRK_VEC(DPTH_INDX)=T1*SQRT(9.109389E-28_LDP/2.0_LDP/1.602177E-12_LDP)/E_INIT
 	END DO
+	CALL GATHER_SELF_VEC_MPI_V1(WRK_VEC,DST,DEND,ND)
+	IF(MYPE .EQ. 0)THEN
+	  DO DPTH_INDX=1,ND
+	    WRITE(LU_TH,'(I6,2ES12.3)')DPTH_INDX,WRK_VEC(DPTH_INDX),ED(DPTH_INDX)
+	  END DO
+	END IF
+	CALL TUNE(2,'NT_THR_WR')
 !
 ! Close diagnostic file, forcing all output.
 !
@@ -663,41 +712,62 @@
 !
 	YE=YE/E_INIT
 !
-! Output the degradation spectrum
+! Collect data from all depths so we can output the degradation spectrum
 !
-	FMT='(1x,8ES20.10)'
-	open(unit=lu_bethe,file='NON_THERM_DEGRADATION_SPEC',status='unknown')
-	write(lu_bethe,'(1x,A,I5)')'Number of energy grid: ',NKT
-	write(lu_bethe,'(1x,A,I5)')'Number of depth: ',ND
-	write(lu_bethe,*)''
-	write(lu_bethe,'(A)')'Energy grids (eV)'
-	write(lu_bethe,FMT)(XKT(IKT),IKT=1,NKT)
-	write(lu_bethe,*)''
-	write(lu_bethe,'(A)')'Energy quadrature weights'
-	write(lu_bethe,FMT)(dXKT(IKT),IKT=1,NKT)
-	write(lu_bethe,*)''
-	write(lu_bethe,'(A)')'Source'
-	write(lu_bethe,FMT)(SOURCE(IKT),IKT=1,NKT)
-	write(lu_bethe,*)''
-	write(lu_bethe,'(A)')'Lelec'
-	write(lu_bethe,FMT)(LELEC(IKT),IKT=1,NKT)
-	write(lu_bethe,*)''
-	write(lu_bethe,'(A)')'Fraction electron heating'
-	write(lu_bethe,FMT)(FRAC_ELEC_HEATING(ID),ID=1,ND)
-	write(lu_bethe,*)''
-	write(lu_bethe,'(A)')'Fraction ion heating'
-	write(lu_bethe,FMT)(FRAC_ION_HEATING(ID),ID=1,ND)
-	write(lu_bethe,*)''
-	write(lu_bethe,'(A)')'Fraction excitation heating'
-	write(lu_bethe,FMT)(FRAC_EXCITE_HEATING(ID),ID=1,ND)
-	write(lu_bethe,*)''
-	do dpth_indx=1,nd
-	  write(lu_bethe,'(A,I5)')'Depth: ',dpth_indx
-	  write(lu_bethe,FMT)(YE(IKT,DPTH_INDX),IKT=1,NKT)
-	  write(lu_bethe,*)''
-	end do
-	close(unit=lu_bethe)
+	CALL TUNE(1,'ELEC_NT_GATH')
+	IF(MYPE .EQ. 0)ALLOCATE(YE_ROOT(NKT,ND))
+	CALL GATHER_MAT_TO_ROOT_MPI_V1(YE,DST,DEND,YE_ROOT,NKT,ND)
+	CALL GATHER_SELF_VEC_MPI_V1(FRAC_ELEC_HEATING,DST,DEND,ND)
+	CALL GATHER_SELF_VEC_MPI_V1(FRAC_ION_HEATING,DST,DEND,ND)
+	CALL GATHER_SELF_VEC_MPI_V1(FRAC_EXCITE_HEATING,DST,DEND,ND)
+	CALL TUNE(2,'ELEC_NT_GATH')
 !
+	CALL TUNE(1,'OUT_NT_SPEC')	
+	I=0; J=100
+	IF(MYPE .EQ. NTHREAD-1)CALL MPI_SEND(LELEC,NKT,MPI_DOUBLE_PRECISION,I,J,MPI_COMM_WORLD,IERR)
+	IF(MYPE .EQ. 0)THEN
+	  I=NTHREAD-1
+	  CALL MPI_RECV(LELEC,NKT,MPI_DOUBLE_PRECISION,I,J,MPI_COMM_WORLD,REC_STATUS,IERR)
+	END IF
+	IF(MYPE .EQ. 0)THEN
+	  FMT='(1x,8ES20.10)'
+	  open(unit=lu_bethe,file='NON_THERM_DEGRADATION_SPEC',status='unknown')
+	  WRITE(LU_BETHE,'(1x,A,I5)')'Number of energy grid: ',NKT
+	  WRITE(LU_BETHE,'(1x,A,I5)')'Number of depth: ',ND
+	  WRITE(LU_BETHE,*)''
+	  WRITE(LU_BETHE,'(A)')'Energy grids (eV)'
+	  WRITE(LU_BETHE,FMT)(XKT(IKT),IKT=1,NKT)
+	  WRITE(LU_BETHE,*)''
+	  WRITE(LU_BETHE,'(A)')'Energy quadrature weights'
+	  WRITE(LU_BETHE,FMT)(dXKT(IKT),IKT=1,NKT)
+	  WRITE(LU_BETHE,*)''
+	  WRITE(LU_BETHE,'(A)')'Source'
+	  WRITE(LU_BETHE,FMT)(SOURCE(IKT),IKT=1,NKT)
+	  WRITE(LU_BETHE,*)''
+	  WRITE(LU_BETHE,'(A)')'Lelec'
+	  WRITE(LU_BETHE,FMT)(LELEC(IKT),IKT=1,NKT)
+	  WRITE(LU_BETHE,*)''
+	  WRITE(LU_BETHE,'(A)')'Fraction electron heating'
+	  WRITE(LU_BETHE,FMT)(FRAC_ELEC_HEATING(ID),ID=1,ND)
+	  WRITE(LU_BETHE,*)''
+	  WRITE(LU_BETHE,'(A)')'Fraction ion heating'
+	  WRITE(LU_BETHE,FMT)(FRAC_ION_HEATING(ID),ID=1,ND)
+	  WRITE(LU_BETHE,*)''
+	  WRITE(LU_BETHE,'(A)')'Fraction excitation heating'
+	  WRITE(LU_BETHE,FMT)(FRAC_EXCITE_HEATING(ID),ID=1,ND)
+	  WRITE(LU_BETHE,*)''
+	  DO DPTH_INDX=1,ND
+	    WRITE(LU_BETHE,'(A,I5)')'Depth: ',dpth_indx
+	    WRITE(LU_BETHE,FMT)(YE_ROOT(IKT,DPTH_INDX),IKT=1,NKT)
+	    WRITE(LU_BETHE,*)''
+	  END DO
+	  CLOSE(UNIT=LU_BETHE)
+	  DEALLOCATE(YE_ROOT)
+	END IF
+	CALL TUNE(2,'OUT_NT_SPEC')	
+!
+	DEALLOCATE(MAT,Qnn,Qnn_TMP)
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	WRITE(LU_ER,*)'Exiting ELECTRON_NON_THERM_SPEC'
 !
 	RETURN

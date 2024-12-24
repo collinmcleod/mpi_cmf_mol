@@ -319,10 +319,11 @@
 	    J=LEN_TRIM(TRANS_NAME_SIM(SIM_INDX))
 	    WRITE(LUER,'(1X,A,4(3X,A,I5))')TRANS_NAME_SIM(SIM_INDX)(1:J),
 	1                       'NL=',NL,'NUP=',NUP,'# depths=',ZERO_CNT,'Last depth=',LST_DEPTH
-	    WRITE(LUER,'(1X,2(A,ES14.4,3X))')'OSCIL=',OSCIL(SIM_INDX),'Scale factor',T3
-	    TA(1:ND)=POPS(NL,1:ND); I=4
-	    CALL WRITV_V2(TA,ND,I,'POPS vector',LUER)
-	    CALL WRITV_V2(L_STAR_RATIO(1,SIM_INDX),ND,I,'L_STAR vector',LUER)
+	    WRITE(LUER,'(1X,3(A,ES14.4,3X))')'OSCIL=',OSCIL(SIM_INDX),'Scale factor',T3,
+	1                                    'Frequency',FL_SIM(SIM_INDX)
+	    TA(1:J)=POPS(NL,DST:DEND); I=4; J=DEND-DST+1
+	    CALL WRITV_V2(TA,J,I,'POPS vector',LUER)
+	    CALL WRITV_V2(L_STAR_RATIO(DST:DEND,SIM_INDX),J,I,'L_STAR vector',LUER)
 	  END IF
 !
 	END DO	!Checking whether a new line is being added.

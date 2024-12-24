@@ -48,7 +48,7 @@
 	END IF
 !
 	LUER=ERROR_LU()
-	WRITE(LUER,*)'Beginning to read Charge data'
+	IF(MYPE .EQ. 0)WRITE(LUER,*)'Beginning to read Charge data'
 	CALL GEN_ASCI_OPEN(LUIN,'CHG_EXCH_DATA','OLD',' ','READ',IZERO,IOS)
 	IF(IOS .NE. 0)THEN
 	  WRITE(LUER,*)'Unable to open CHG_EXCH_DATA in RD_CHG_EXCH'
@@ -255,8 +255,8 @@
 !
 	CHG_INCLUDED_RD(:)=.TRUE.
 !
-	WRITE(LUER,*)'Charge data successfully read'
 	CLOSE(LUIN)
+	IF(MYPE .EQ. 0)WRITE(LUER,*)'Charge data successfully read'
 !
 	RETURN
 	END

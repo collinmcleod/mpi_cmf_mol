@@ -228,8 +228,11 @@
 ! We use R as a temporary vector for LOG R, and then LOG TAU.
 !
 	J=ND-N_IB_INS-N_OB_INS
-	WRITE(6,*)'Number of depth points in initial grid',ND_TMP
-	WRITE(6,*)'Number of points required (corrected for boundary insertions)',J
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Number of depth points in initial grid',ND_TMP
+	  WRITE(6,*)'Number of points required (corrected for boundary insertions)',J
+	END IF
+!
 	IF(ND_TMP .NE. J)THEN
 	  DO I=1,ND_TMP; ZN(I)=I; END DO
 	  DO I=1,J

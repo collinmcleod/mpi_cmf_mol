@@ -36,14 +36,14 @@
 ! and direct-ionization cross section used in Arnaud & Rothenflug 1985
 ! These parameters are then used in
 !
-	WRITE(LU_ER,*)'Opening arnaud_rothenflug.dat'
+	IF(MYPE .EQ. 0)WRITE(LU_ER,*)'Opening arnaud_rothenflug.dat'
 	OPEN(UNIT=LU_IN,FILE='arnaud_rothenflug.dat',STATUS='OLD',ACTION='READ',IOSTAT=IOS)
 	  IF(IOS .NE. 0)THEN
 	    WRITE(LU_ER,*)'Unble to open arnaud_rothenflug.dat in READ_ION'
 	    WRITE(LU_ER,*)'IOS=',IOS
 	    STOP
 	  END IF
-	  WRITE(6,*)'Opened arnaud_rothenflug.dat'; FLUSH(UNIT=6)
+	  IF(MYPE .EQ. 0)WRITE(6,*)'Opened arnaud_rothenflug.dat'; FLUSH(UNIT=6)
 !
 ! All names must begin in the same column.
 !
@@ -165,20 +165,22 @@
 	                 THD(IT)%SUM_GION=ATM(ID+1)%GIONXzV_F
 	                 THD(IT)%N_ION_ROUTES=1
 	                 THD(IT)%ION_LEV(THD(IT)%N_ION_ROUTES)=SE(ID)%XRAY_EQ
-	                 WRITE(6,*)'SE(ID)%XRAY_EQ=',SE(ID)%XRAY_EQ,TRIM(ATM(ID_ION)%XZVLEVNAME_F(1))
+	                 IF(MYPE .EQ. 0)WRITE(6,*)'SE(ID)%XRAY_EQ=',SE(ID)%XRAY_EQ,TRIM(ATM(ID_ION)%XZVLEVNAME_F(1))
 	               END IF
 	             END IF
 !
 	             IF(THD(IT)%N_ION_ROUTES .EQ. 0)THEN
-	               WRITE(6,*)'Error in RD_ARNAUD_ION_DATA -- unmatched ion level name'
-	               WRITE(6,*)TRIM(STRING)
-	               WRITE(6,*)'Extracted ion level name is: ',TRIM(TMP_NAME)
+	               IF(MYPE .EQ. 0)THEN
+	                 WRITE(6,*)'Error in RD_ARNAUD_ION_DATA -- unmatched ion level name'
+	                 WRITE(6,*)TRIM(STRING)
+	                 WRITE(6,*)'Extracted ion level name is: ',TRIM(TMP_NAME)
+	               END IF
 	               T1=ATM(ID_ION)%EDGEXzV_F(1)-ATM(ID_ION)%EDGEXzV_F(ATM(ID_ION)%NXzV_F)
 	               T1=ATM(ID)%EDGEXzV_F(1)+T1
 	               T2=ATM(ID)%EDGEXzV_F(1)+ATM(ID_ION)%EDGEXzV_F(1)
-	               WRITE(6,*)THD(IT)%ION_POT,Hz_TO_eV*T1,Hz_TO_eV*T2
+	               IF(MYPE .EQ. 0)WRITE(6,*)THD(IT)%ION_POT,Hz_TO_eV*T1,Hz_TO_eV*T2
 	               IF(THD(IT)%ION_POT .GT. Hz_TO_eV*T1 .AND. THD(IT)%ION_POT .LT. Hz_TO_eV*T2)THEN
-	                 WRITE(6,*)'Continuing execution as level not included'
+	                 IF(MYPE .EQ. 0)WRITE(6,*)'Continuing execution as level not included'
 	                 THD(IT)%NTAB=0
 	                 IT=IT-1
 	               ELSE

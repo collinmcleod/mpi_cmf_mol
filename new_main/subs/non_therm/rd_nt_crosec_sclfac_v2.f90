@@ -1,11 +1,13 @@
 !
-! subroutine to read in nonthermal cross sections scale factor
-! for all ions.
+! Subroutine to read in nonthermal cross sections scale factor for all ions.
 !
 	SUBROUTINE RD_NT_CROSEC_SCLFAC_V2(LU,LUER)
 	USE SET_KIND_MODULE
 	USE MOD_CMFGEN
 	IMPLICIT NONE
+!
+! Altered: 14-DEc-2023 : Added MYPE=0 check to WRITE. Will still work
+! for non MPI version profived MPI declared and set to zero in SET_KIND_MODULE.
 !
 ! Altered: 25-Sep-2011 : LU inserted in call. Moved to NON_THEM directory.
 !                        F90 version, Changed to V2 as call changed.
@@ -37,14 +39,15 @@
 !
 	CLOSE(LU)
 !
-	OPEN(UNIT=LU,FILE='NT_CROSEC_SCLFAC_CHK',STATUS='UNKNOWN',ACTION='WRITE')
-	DO ID=1,NUM_IONS
-	  IF(ATM(ID)%XzV_PRES)THEN
-	    WRITE(LU,'(1PE12.5,5X,3A)')ATM(ID)%CROSEC_NTFAC,'[',TRIM(ION_ID(ID)),']'
-	  END IF
-	END DO
-!
-	CLOSE(LU)
+	IF(MYPE .EQ. 0)THEN
+	  OPEN(UNIT=LU,FILE='NT_CROSEC_SCLFAC_CHK',STATUS='UNKNOWN',ACTION='WRITE')
+	  DO ID=1,NUM_IONS
+	    IF(ATM(ID)%XzV_PRES)THEN
+	      WRITE(LU,'(1PE12.5,5X,3A)')ATM(ID)%CROSEC_NTFAC,'[',TRIM(ION_ID(ID)),']'
+	    END IF
+	  END DO
+	  CLOSE(LU)
+	END IF
 !
 	OPEN(UNIT=LU,FILE='NT_ION_CROSEC_SCLFAC',STATUS='OLD',ACTION='READ')
 !
@@ -65,13 +68,14 @@
 !
 	CLOSE(LU)
 !
-	OPEN(UNIT=LU,FILE='NT_ION_CROSEC_SCLFAC_CHK',STATUS='UNKNOWN',ACTION='WRITE')
-	DO ID=1,NUM_IONS
-	  IF(ATM(ID)%XzV_PRES)THEN
-	    WRITE(LU,'(1PE12.5,5X,3A)')ATM(ID)%ION_CROSEC_NTFAC,'[',TRIM(ION_ID(ID)),']'
-	  END IF
-	END DO
-!
-	CLOSE(LU)
+	IF(MYPE .EQ. 0)THEN
+	  OPEN(UNIT=LU,FILE='NT_ION_CROSEC_SCLFAC_CHK',STATUS='UNKNOWN',ACTION='WRITE')
+	  DO ID=1,NUM_IONS
+	    IF(ATM(ID)%XzV_PRES)THEN
+	      WRITE(LU,'(1PE12.5,5X,3A)')ATM(ID)%ION_CROSEC_NTFAC,'[',TRIM(ION_ID(ID)),']'
+	    END IF
+	  END DO
+	  CLOSE(LU)
+	END IF
 !
 	END

@@ -15,17 +15,16 @@ OBJ = $(LIB)(read_arnaud_ion_data.o)\
       $(LIB)(arnaud_cross_v3.o)\
       $(LIB)(bethe_approx_v5.o)\
       $(LIB)(intsigc.o)\
-      $(LIB)(rd_non_therm_elec_spec_v1.o)\
+      $(LIB)(rd_non_therm_elec_spec_mpi_v1.o)\
       $(LIB)(rd_nt_crosec_sclfac_v2.o)\
       $(LIB)(se_ba_non_therm_mpi_v1.o)\
       $(LIB)(set_xkt_array.o)\
       $(LIB)(get_lelec.o)\
       $(LIB)(read_nt_omega_data.o)\
       $(LIB)(par_vec_sum.o)\
-      $(LIB)(total_bethe_rate_v3.o)\
-      $(LIB)(total_bethe_rate_v4.o)\
+      $(LIB)(total_bethe_rate_mod_ye_mpi_v1.o)\
       $(LIB)(electron_non_therm_spec_mpi_v1.o)\
-      $(LIB)(write_non_therm_v1.o)
+      $(LIB)(write_non_therm_mpi_v1.o)
 
 all : $(LIB)
 	rm -f *.o

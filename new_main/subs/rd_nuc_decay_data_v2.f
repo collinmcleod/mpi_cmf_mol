@@ -4,6 +4,7 @@
 	USE NUC_ISO_MOD
 	IMPLICIT NONE
 !
+! Aleterd 14-Dec-2024 : Added MYPE check to diagnostic messages.
 ! Altered 18-Nov-2919 : Added allocations of NUM_DECAYS and DECAY_LUM (for KDW gammra-ray routines)
 ! Altered 15-Feb-2016 : Changed to V2 - GAMRAY_TRANS added to call. Kinetic energy MUST be present in
 !                           the chain table of the NUCLEAR_DATA file if GAMRAY_TRANS is ABS_TRANS.
@@ -45,7 +46,7 @@
 	DO WHILE(STRING(1:1) .EQ. '!' .OR. STRING .EQ. ' ')
 	  READ(LU,'(A)')STRING
 	END DO
-	WRITE(LUER,*)'Accessing isotope data from NUC_DATA_FILE'
+	IF(MYPE .EQ. 0)WRITE(LUER,*)'Accessing isotope data from NUC_DATA_FILE'
 !
 	LUER=ERROR_LU()
 	NUM_DECAY_PATHS=0
@@ -69,7 +70,7 @@
 	    READ(LU,'(A)')STRING
 	    IF(INDEX(STRING,'!Date') .NE. 0)THEN
 	       STRING=ADJUSTL(STRING); J=INDEX(STRING,'!Date')
-	       WRITE(LUER,*)'Date associated with nuclear data file is',TRIM(STRING(1:J-1))
+	       IF(MYPE .EQ. 0)WRITE(LUER,*)'Date associated with nuclear data file is',TRIM(STRING(1:J-1))
 	    ELSE IF(INDEX(STRING,'Number of species') .NE. 0)THEN
 	    ELSE IF(INDEX(STRING,'!Total number of isotopes') .NE. 0)THEN
 	      READ(STRING,*)NUM_ISOTOPES
@@ -128,11 +129,11 @@
 	    WRITE(LUER,*)'Identifier=',STRING(1:1)
 	    STOP
 	  END IF
-	  IF(VERBOSE)THEN
+	  IF(VERBOSE .AND. MYPE .EQ. 0)THEN
 	    WRITE(LUER,*)IS, ISO(IS)%SPECIES, ISO(IS)%MASS, ISO(IS)%BARYON_NUMBER
 	  END IF
 	END DO
-	WRITE(LUER,*)'Successfully read in isotope data from NUC_DATA_FILE'
+	IF(MYPE .EQ. 0)WRITE(LUER,*)'Successfully read in isotope data from NUC_DATA_FILE'
 !
 ! Determine the link between ISOTOPE and SPECIES (as specified in MOD_CMFGEN).
 !
@@ -240,17 +241,19 @@
 	  IF(NUC(IN)%LNK_TO_ISO .EQ. 0 .OR. NUC(IN)%DAUGHTER_LNK_TO_ISO .EQ. 0)THEN
 	    NUC(IN)%LNK_TO_ISO=0
 	    NUC(IN)%DAUGHTER_LNK_TO_ISO=0
-	    WRITE(6,*)'Warning: No match was found for the following nuclear reaction'
-	    WRITE(6,'(2(A5,I6))')NUC(IN)%SPECIES,NUC(IN)%BARYON_NUMBER,NUC(IN)%DAUGHTER,NUC(IN)%DAUGHTER_BARYON_NUMBER
-	    IN=IN-1
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(6,*)'Warning: No match was found for the following nuclear reaction'
+	      WRITE(6,'(2(A5,I6))')NUC(IN)%SPECIES,NUC(IN)%BARYON_NUMBER,NUC(IN)%DAUGHTER,NUC(IN)%DAUGHTER_BARYON_NUMBER
+	    END IF
+	   IN=IN-1
 	  END IF
 !
 	END DO
 	CLOSE(LU)
 	NUM_DECAY_PATHS=IN
-	WRITE(6,'(A,/)')' Successfully read in NUCLEAR data'
+	IF(MYPE .EQ. 0)WRITE(6,'(A,/)')' Successfully read in NUCLEAR data'
 !
-	IF(VERBOSE)THEN
+	IF(VERBOSE .AND. MYPE .EQ. 0)THEN
 	  DO IN=1,NUM_DECAY_PATHS
 	    WRITE(6,'(I5,2A10,3I8)')IN,TRIM(NUC(IN)%SPECIES),TRIM(NUC(IN)%DAUGHTER),NUC(IN)%BARYON_NUMBER,
 	1                  NUC(IN)%LNK_TO_ISO,NUC(IN)%DAUGHTER_LNK_TO_ISO

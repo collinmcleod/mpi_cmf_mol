@@ -90,6 +90,10 @@
 ! FQW has C units of Hz, not 10^15 Hz.
 !
 	FOUR_PI_D_H=1.0_LDP/5.27296E-03_LDP                    !1.8965D+02		!4*PI/H*DEX(-10)*DEX(-15)
+	WSE_S=0.0_LDP
+	WCR=0.0_LDP
+	dWSE_SdT=0.0_LDP
+	dWCRdT=0.0_LDP
 !
 ! Get edge frequencies.
 !
@@ -136,10 +140,6 @@
 	  IF(LAST_ITERATION)DO_ALL=.TRUE.
 !
 	  DO DPTH_INDX=DST,DEND
-	    WSE_S(:,DPTH_INDX,IP)=0.0_LDP
-	    WCR(:,DPTH_INDX,IP)=0.0_LDP
-	    dWSE_SdT(:,DPTH_INDX,IP)=0.0_LDP
-	    dWCRdT(:,DPTH_INDX,IP)=0.0_LDP
 !
 ! Compute dissolution vectors that are independent of level.
 !

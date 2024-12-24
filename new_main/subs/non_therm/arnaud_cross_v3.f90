@@ -81,8 +81,10 @@
 !
 	    IF(NEGATIVE_CROSS_SEC)THEN
 	      ID=THD(IT)%LNK_TO_ION
-	      WRITE(6,*)'Negative cross section(s) for ',ION_ID(ID),' in ARNAUD_CROSS_V2!'
-	      WRITE(6,*)'Forcing them to be zeros.'
+	      IF(MYPE .EQ. 0)THEN
+	        WRITE(6,*)'Negative cross section(s) for ',ION_ID(ID),' in ARNAUD_CROSS_V2!'
+	        WRITE(6,*)'Forcing them to be zeros.'
+	      END IF
 	    END IF
 	  END IF
 	END DO

@@ -170,9 +170,11 @@
 	    N_CHG=N_CHG + K
 	  END IF
 	END DO
-	WRITE(LUER,*)'Number of charge transitions read in is',N_CHG_RD
-	WRITE(LUER,*)'Number of charge transitions omitted is',N_CHG_OMITTED
-	WRITE(LUER,*)'Number of revised charge transitions, including split state, is',N_CHG
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LUER,*)'Number of charge transitions read in is',N_CHG_RD
+	  WRITE(LUER,*)'Number of charge transitions omitted is',N_CHG_OMITTED
+	  WRITE(LUER,*)'Number of revised charge transitions, including split state, is',N_CHG
+	END IF
 !
 	ALLOCATE (TYPE_CHG(N_CHG),STAT=IOS)
 	IF(IOS .EQ. 0)ALLOCATE (TLO_CHG(N_CHG),STAT=IOS)
@@ -198,7 +200,7 @@
 	  WRITE(LUER,*)'STAT=',IOS
 	  STOP
 	END IF
-	WRITE(LUER,*)'Done memory allocations for charge exchange reactions'
+	IF(MYPE .EQ. 0)WRITE(LUER,*)'Done memory allocations for charge exchange reactions'
 !
 ! Perform inilizations.
 !
@@ -217,7 +219,7 @@
 !
 	IOS=0
 	I=MAXVAL(LEV_CNT)
-	WRITE(LUER,*)'Maximum level count is',I
+	IF(MYPE .EQ. 0)WRITE(LUER,*)'Maximum level count is',I
 	IF(IOS .EQ. 0)ALLOCATE (TMP_ID_ION(I,4),STAT=IOS)
 	IF(IOS .EQ. 0)ALLOCATE (TMP_LEV_IN_POPS(I,4),STAT=IOS)
 	IF(IOS .EQ. 0)ALLOCATE (TMP_LEV_IN_ION(I,4),STAT=IOS)

@@ -8,18 +8,20 @@
 !
 !  				dRHS_dCHI( , ,)=dCHI
 !
-	SUBROUTINE EDD_JREL_VAR_V3(
+	SUBROUTINE EDD_JREL_VAR_MPI_V1(
 	1                  R,SIGMA,CHI,ESEC,FEDD,dIBCHI_A,dIBCHI_B,
 	1                  RHS_JNU,IB_STAB_FACTOR,DBB,
-	1                  INNER_BND_METH,METHOD,ND,NM)
+	1                  INNER_BND_METH,METHOD,
+	1                  DST,DEND,ND,NM)
 	USE SET_KIND_MODULE
-	USE MOD_VAR_JREL_V2
+	USE MOD_VAR_JREL_MPI_V1
 	USE MOD_VAR_OPAC_J, ONLY : KI, RHS_dHdCHI, VDST, VDEND
+	USE MPI
 	IMPLICIT NONE
 !
-! Altered 29-Apr-2019 :  Added DERIV_SCL_FAC. It should be set to unit if XM is not adjusted.
+! Created 13-Dec-2024 : Based on edd_jrel_var_v3.f 
 !
-	INTEGER ND,NM
+	INTEGER DST,DEND,ND,NM
 	REAL(KIND=LDP) ESEC(ND)
 	REAL(KIND=LDP) CHI(ND)
 	REAL(KIND=LDP) R(ND)
@@ -34,6 +36,8 @@
 !
 ! Local variables.
 !
+        REAL(KIND=LDP) WRK_RHS(ND-1,ND)
+        REAL(KIND=LDP) WRK_MAT(ND,ND)
 	INTEGER ERROR_LU
 	EXTERNAL ERROR_LU
 !
@@ -43,24 +47,20 @@
 	REAL(KIND=LDP) dTBdCHI_J,dTBdCHI_I,dTBdCHI_K,dTBdCHI
 	REAL(KIND=LDP) dXM_EPS_J,dXM_EPS_I,dXM_EPS_K
 	REAL(KIND=LDP) T1,T2
+	INTEGER MDST,MDEND,IERR
 	INTEGER I,J,K,L
 !
 ! 
 !
-	IF(NM .LT. 2)THEN
-	  I=ERROR_LU()
-	  WRITE(I,*)'Error in EDD_JREL_VAR_V2 - NM_KI too small'
-	  WRITE(I,*)'NM_KI='
-	  STOP
-	END IF
-	KI(:,:,:)=0.0_LDP
-	RHS_dHdCHI(:,:)=0.0_LDP
+	KI=0.0_LDP;  RHS_dHdCHI=0.0_LDP
+	MDST=MAX(1,DST-1)
+	MDEND=MIN(DEND+1,ND)
 !
 ! NB: The dTAUdCHI_J & dTAUdCHI_H matrices were computed in the calling routine..
 !
 ! The following derivatives are valid for all ML.
 !
-	DO I=1,ND-1
+	DO I=MDST,MIN(MDEND,ND-1)
 	  T1=(P_H(I)+W(I))*(CHI_H(I)+CHI_H(I+1))
 	  dHUdCHI(I)=HU(I)*W(I)/T1
 	  dHUdTAU(I)=-HU(I)/DTAU_H(I)
@@ -77,7 +77,7 @@
 !
 ! DTAU_H terms
 !
-	DO I=2,ND-1
+	DO I=MDST,MIN(MDEND,ND-1)
 	  J=I-1
 	  K=I+1
 	  dTAdCHI_J=-dHLdTAU(J)
@@ -225,18 +225,18 @@
 	      KI(ND,L,1)=KI(ND,L,1)+T1*dTAUdCHI_H(ND-1,L)
 	    END DO
 	  END IF
-	END DO
+	END IF
 !
 ! Divide KI(:,:,1) by GAM_REL since dCHI_J/dCHI=dCHI_H/dCHI=1/GAM_REL
 !
-	DO J=DST,DEND
-	  DO I=1,ND
+	DO J=1,ND
+	  DO I=DST,DEND
 	    WRK_MAT(I,J)=WRK_MAT(I,J)/GAM_REL(J)
 	  END DO
 	END DO
 !
 	I=ND*ND
-	ALL MPI_ALLREDUCE(MPI_IN_PLACE,WRK_MAT,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	CALL MPI_ALLREDUCE(MPI_IN_PLACE,WRK_MAT,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	DO J=VDST,VDEND
 	  KI(:,J,1)=WRK_MAT(:,J)
 	END DO
@@ -251,28 +251,28 @@
 	DO I=DST,MIN(DEND,ND-1)
 	  T1=dHUdTAU(I)*JNU(I+1)-dHLdTAU(I)*JNU(I)
 	  DO L=1,ND
-	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)+T1*dTAUdCHI_H(I,L)
+	    WRK_RHS(I,L)=WRK_RHS(I,L)+T1*dTAUdCHI_H(I,L)
 	  END DO
 	  T1=dHUdCHI(I)*JNU(I+1) - dHLdCHI(I)*JNU(I)
 	1                       + dHSdCHI(I)*GAM_RSQHNU_PREV(I) +
 	1     EPS_FAC(I)*( EPS_PREV_A(I)*JNU_PREV(I)-EPS_A(I)*JNU(I) +
 	1                  EPS_PREV_B(I)*JNU_PREV(I+1)-EPS_B(I)*JNU(I+1) )
-	  RHS_dHdCHI(I,I)=RHS_dHdCHI(I,I) + T1
-	  RHS_dHdCHI(I,I+1)=RHS_dHdCHI(I,I+1) + T1
+	  WRK_RHS(I,I)=WRK_RHS(I,I) + T1
+	  WRK_RHS(I,I+1)=WRK_RHS(I,I+1) + T1
+	END DO
+!
+! Recall dCHI_H/dCHI=1/GAM_REL
+!
+	DO L=VDST,VDEND
+	  DO I=DST,MIN(DEND,ND-1)
+	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)/GAM_REL(L)
+	  END DO
 	END DO
 !
 	I=(ND-1)*ND
 	CALL MPI_ALLREDUCE(MPI_IN_PLACE,WRK_RHS,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	DO J=VDST,VDEND
 	  RHS_dHdCHI(:,J)=WRK_RHS(:,J)
-	END DO
-!
-! Recall dCHI_H/dCHI=1/GAM_REL
-!
-	DO L=1,ND
-	  DO I=1,ND-1
-	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)/GAM_REL(L)
-	  END DO
 	END DO
 !
 	RETURN

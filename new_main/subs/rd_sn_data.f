@@ -8,6 +8,7 @@
 	USE CONTROL_VARIABLE_MOD
 	USE NUC_ISO_MOD
 	USE MOD_CMFGEN
+	USE MPI
 	IMPLICIT NONE
 !
 ! Altered: 24-Sep-2023 : Now scale ISO pops so mass fractions add correctly (08-Sep-2023)
@@ -318,11 +319,13 @@
 	   WRK_HYDRO=WRK_HYDRO+POP_HYDRO(:,K)
 	END DO
 	I=5; CALL WRITV_V2(WRK_HYDRO,NX,I,'Sum HYDRO mass frac',LU_MF)
-	WRITE(LUER,*)' '
-	WRITE(LUER,*)'   Normalized HYDRO mass fractions in RD_SN_DATA'
-	WRITE(LUER,*)'   Maximum normalization factor was',MAXVAL(WRK_HYDRO)
-	WRITE(LUER,*)'   Minimum normalization factor was',MINVAL(WRK_HYDRO)
-	FLUSH(UNIT=LUER)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LUER,*)' '
+	  WRITE(LUER,*)'   Normalized HYDRO mass fractions in RD_SN_DATA'
+	  WRITE(LUER,*)'   Maximum normalization factor was',MAXVAL(WRK_HYDRO)
+	  WRITE(LUER,*)'   Minimum normalization factor was',MINVAL(WRK_HYDRO)
+	  FLUSH(UNIT=LUER)
+	END IF
 !
 	ISO(:)%READ_ISO_POPS=.FALSE.
 	DO L=1,NISO
@@ -348,7 +351,7 @@
 	    STOP
 	  END IF
 	END DO
-	WRITE(LUER,'(/,1X,A)')'   Read SN isotope populations in RD_SN_DATA'
+	IF(MYPE .EQ. 0)WRITE(LUER,'(/,1X,A)')'   Read SN isotope populations in RD_SN_DATA'
 !
 	DO IS=1,NUM_ISOTOPES
 	  IF(ISO(IS)%READ_ISO_POPS)THEN
@@ -571,7 +574,7 @@
 	      DO I=1,ND
 	        T2=1.0_LDP-ISO(IS)%OLD_POP_DECAY(I)/ISO(IS)%OLD_POP(I)
 	        IF( (T2 .LE. -2.0_LDP .OR. T2 .GT. 0.67_LDP) .AND. ISO(IS)%OLD_POP(I) .GT. 1.0E-10_LDP)THEN
-	          IF(FIRST_WARN)THEN
+	          IF(FIRST_WARN .AND. MYPE .EQ. 0)THEN
 	            FIRST_WARN=.FALSE.
 	            WRITE(LUER,*)' '
 	            WRITE(LUER,*)'WARNING from RD_SN_DATA '
@@ -673,7 +676,8 @@
 	DEALLOCATE (R_HYDRO, LOG_R_HYDRO, V_HYDRO, SIGMA_HYDRO, T_HYDRO, DENSITY_HYDRO )
 	DEALLOCATE (ATOM_DEN_HYDRO, ELEC_DEN_HYDRO, POP_HYDRO, ISO_HYDRO, WRK_HYDRO)
 	DEALLOCATE (BARY_HYDRO, SPEC_HYDRO, ISO_SPEC_HYDRO)
-	WRITE(LUER,'(A,/)')' Exiting RD_SN_DATA'
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	IF(MYPE .EQ. 0)WRITE(LUER,'(A,/)')' Exiting RD_SN_DATA'
 !
 	RETURN
 	END

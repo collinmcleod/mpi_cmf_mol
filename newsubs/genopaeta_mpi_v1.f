@@ -84,6 +84,7 @@
 !
 	LOC_DST=DST
 	IF(LST_DEPTH_ONLY)LOC_DST=DEND
+	IF(LST_DEPTH_ONLY .AND. DEND .NE. ND)LOC_DST=2*ND
 	DO DPTH_INDX=LOC_DST,DEND
 !
 	  IF(ZION .EQ. 0.0_LDP)THEN
@@ -118,9 +119,6 @@
 ! We now do the bound-free contributions.
 !
 ! WARNING -- The routine returns if all the photouiozation cross-sections are zero.
-!
-	LOC_DST=DST
-	IF(LST_DEPTH_ONLY)LOC_DST=DEND
 !
 ! Compute the photo-ionization cross-sections for all levels.
 !

@@ -16,6 +16,7 @@ LIB_MOD=$(LIB_DIR)libmod.a
 MOD=  $(LIB)(mod_ray_mom_store.o)\
       $(LIB)(mod_var_mom_j_cmf.o)\
       $(LIB)(mod_var_mom_j_cmf_mpi_v1.o)\
+      $(LIB)(mod_var_jrel_mpi_v1.o)\
       $(LIB)(mod_var_jrel_v2.o)\
       $(LIB)(mod_space_grid_v2.o)\
       $(LIB)(mod_space_grid_v2_gam.o)
@@ -37,8 +38,10 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(define_grid_v2.o)\
       $(LIB)(define_grid_v2_gam.o)\
       $(LIB)(expn.o)\
+      $(LIB)(edd_j_hub_var_mpi_v1.o)\
       $(LIB)(edd_j_hub_var_v3.o)\
       $(LIB)(edd_jrel_var_v3.o)\
+      $(LIB)(edd_jrel_var_mpi_v1.o)\
       $(LIB)(edd_j_var_mpi_v1.o)\
       $(LIB)(fcomp_pp_v2.o)\
       $(LIB)(fcomp_pp_mpi_v1.o)\
@@ -82,7 +85,9 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(solve_cmf_formal_v2.o)\
       $(LIB)(solve_cmf_formal_v3.o)\
       $(LIB)(solve_cmf_formal_v3_gam.o)\
+      $(LIB)(up_tx_tvx_noeps_mpi_v1.o)\
       $(LIB)(up_tx_tvx_mpi_v1.o)\
+      $(LIB)(var_jrel_mpi_v1.o)\
       $(LIB)(var_jrel_v5.o)\
       $(LIB)(var_mom_j_ddt_v6.o)\
       $(LIB)(var_mom_pp_v1.o)\
@@ -90,6 +95,7 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(var_mom_j_cmf_v9.o)\
       $(LIB)(var_mom_j_cmf_v12.o)\
       $(LIB)(var_mom_j_cmf_mpi_v1.o)\
+      $(LIB)(var_mom_j_ddt_mpi_v1.o)\
       $(LIB)(var_mom_jext_cmf_v3.o)\
       $(LIB)(velocity_law.o)
 
@@ -150,9 +156,13 @@ $(LIB)(drhsdchi_pp.o) : drhsdchi_pp.f $(LIB)(mod_trap_derivatives.o)
 	$(F90) -c $(OPTION) drhsdchi_pp.f
 	ar $(AR_OPTION) $(LIB) drhsdchi_pp.o
 
-$(LIB)(edd_jrel_var_v2.o) : edd_jrel_var_v3.f $(LIB)(mod_var_jrel_v2.o)
+$(LIB)(edd_jrel_var_v3.o) : edd_jrel_var_v3.f $(LIB)(mod_var_jrel_v2.o)
 	$(F90) -c $(OPTION) edd_jrel_var_v3.f
 	ar $(AR_OPTION) $(LIB) edd_jrel_var_v3.o
+
+$(LIB)(edd_jrel_var_mpi_v1.o) : edd_jrel_var_mpi_v1.f $(LIB)(mod_var_jrel_mpi_v1.o)
+	$(F90) -c $(OPTION) edd_jrel_var_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) edd_jrel_var_mpi_v1.o
 
 $(LIB)(fg_j_cmf_v12.o) : fg_j_cmf_v12.f $(LIB)(mod_ray_mom_store.o)
 	$(F90) -c $(OPTION) fg_j_cmf_v12.f
@@ -177,6 +187,10 @@ $(LIB)(mom_j_ddt_v2.o) : mom_j_ddt_v2.f $(LIB)(mod_ray_mom_store.o)
 $(LIB)(mom_jrel_v9.o) : mom_jrel_v9.f $(LIB)(mod_ray_mom_store.o)
 	$(F90) -c $(OPTION) mom_jrel_v9.f
 	ar $(AR_OPTION) $(LIB) mom_jrel_v9.o
+
+$(LIB)(mom_jrel_mpi_v1.o) : mom_jrel_mpi_v1.f $(LIB)(mod_ray_mom_store.o)
+	$(F90) -c $(OPTION) mom_jrel_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) mom_jrel_mpi_v1.o
 
 $(LIB)(optdepth_v2.o) : optdepth_v2.f $(LIB)(mod_space_grid_v2.o)
 	$(F90) -c $(OPTION) optdepth_v2.f

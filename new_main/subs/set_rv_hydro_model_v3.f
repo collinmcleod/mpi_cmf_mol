@@ -7,6 +7,7 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered 14-Dec-2024 : Added MYPE check to diagnostic output messages.
 ! Altered 02-Nov-2017 : Bug fix when RMAX < R_HYDRO(1): OLD_T not being correctly set.
 ! Altered 25-Jan-2015 : Bug fix. Error assoicated with RDINR when NLEV> ND.
 !                         Now read in to T1, since we don't requird the level populations.
@@ -195,9 +196,11 @@
 	      WRITE(LUER,*)'R, V, the DENSITY is zero'
 	      STOP
 	    ELSE IF(KAPPA_HYDRO(1) .EQ. 0.0_LDP)THEN
-	      LUER=ERROR_LU()
-	      WRITE(LUER,*)'Warning: reading SN data in SET_RV_HYDRO_MODEL'
-	      WRITE(LUER,*)'KAPPA is zero'
+	      IF(MYPE .EQ. 0)THEN
+	        LUER=ERROR_LU()
+	        WRITE(LUER,*)'Warning: reading SN data in SET_RV_HYDRO_MODEL'
+	        WRITE(LUER,*)'KAPPA is zero'
+	      END IF
 	      EXIT
 	    ELSE
 	      EXIT
@@ -205,11 +208,11 @@
 	  END IF
 	  STRING=' '
 	END DO
-	WRITE(LUER,*)'Successfuly read SN data in SET_RV_HYDRO_V3'
+	IF(MYPE .EQ. 0)WRITE(LUER,*)'Successfuly read SN data in SET_RV_HYDRO_V3'
 	CLOSE(LU)
 !
         IF(PURE_HUBBLE_FLOW)THEN
-	  WRITE(6,*)'Setting Velocity so pure Hubble law in SET_RV_HYDRO_V3'
+	  IF(MYPE .EQ. 0)WRITE(6,*)'Setting Velocity so pure Hubble law in SET_RV_HYDRO_V3'
           T1=24.0_LDP*3600.0_LDP*1.0E+05_LDP*OLD_SN_AGE_DAYS/1.0E+10_LDP
           DO I=1,NX
             V_HYDRO(I)=R_HYDRO(I)/T1
@@ -235,12 +238,14 @@
 	  R_HYDRO(I)=R_HYDRO(I)+T1*V_HYDRO(I)
 	END DO
 !
-	OPEN(UNIT=LU,FILE='OLD_SN_R_GRID',STATUS='UNKNOWN')
-	  DO I=1,NX-1
-	    WRITE(LU,'(I5,4ES16.8)')I,R_HYDRO(I),V_HYDRO(I),SIGMA_HYDRO(I),R_HYDRO(I)/R_HYDRO(I+1)
-	  END DO
-	  WRITE(LU,'(I5,3ES16.8)')I,R_HYDRO(I),V_HYDRO(I),SIGMA_HYDRO(I)
-	CLOSE(LU)
+	IF(MYPE .EQ. 0)THEN
+	  OPEN(UNIT=LU,FILE='OLD_SN_R_GRID',STATUS='UNKNOWN')
+	    DO I=1,NX-1
+	      WRITE(LU,'(I5,4ES16.8)')I,R_HYDRO(I),V_HYDRO(I),SIGMA_HYDRO(I),R_HYDRO(I)/R_HYDRO(I+1)
+	    END DO
+	    WRITE(LU,'(I5,3ES16.8)')I,R_HYDRO(I),V_HYDRO(I),SIGMA_HYDRO(I)
+	  CLOSE(LU)
+	END IF
 !
 	IF(RDINR)THEN
 	  OPEN(UNIT=LU,STATUS='OLD',FILE='RDINR',IOSTAT=IOS)
@@ -308,8 +313,10 @@
 !
 	  T2=1.0_LDP-R(ND)/R_HYDRO(NX)
 	  IF(T2 .GT. 1.0E-06_LDP)THEN
-	    WRITE(LUER,*)'In SET_RV_HYDRO_MODEL_V3 I am assuming that the supplied R grid is from'
-	    WRITE(LUER,*)'the previous time step.'
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(LUER,*)'In SET_RV_HYDRO_MODEL_V3 I am assuming that the supplied R grid is from'
+	      WRITE(LUER,*)'the previous time step.'
+	    END IF
 !
 ! In the constant T1 we convert from days to seconds, and allow for the units of
 ! V (km/s) and R (10^10 cm).
@@ -412,7 +419,7 @@
 	  R_SCL_FAC=1.2_LDP; dLOG_T=0.04_LDP; IB_RAT=2.0_LDP; OB_RAT=1.5_LDP; DTAU2_ON_DTAU1=100.0_LDP
 	  CALL ADJUST_SN_R_GRID(R,OLD_R,OLD_T,OLD_TAU,R_SCL_FAC,dLOG_T,
 	1         IB_RAT,OB_RAT,DTAU2_ON_DTAU1,N_IB_INS,N_OB_INS,ND,NS)
-	  WRITE(LUER,*)'Computed R grid in SET_RV_HYDRO_MODEL_V3'
+	  IF(MYPE .EQ. 0)WRITE(LUER,*)'Computed R grid in SET_RV_HYDRO_MODEL_V3'
 !
 	END IF
 !
@@ -446,16 +453,18 @@
 	  TAU(I)=TAU(I-1)+0.5_LDP*(KAPPA(I-1)+KAPPA(I))*(R(I-1)-R(I))
 	END DO
 !
-	OPEN(UNIT=LU,FILE='NEW_SN_R_GRID',STATUS='UNKNOWN')
-	  WRITE(LU,'(/,3X,A,F6.3,A,F6.3,A)')'  dLOGR was ',0.4343*dLOGR,'(',EXP(dLOGR),')'
-	  WRITE(LU,'(3X,A,F6.3,A,F6.3,A)')'dLOGTAU was ',0.4343*dTAU,'(',EXP(dTAU),')'
-	  WRITE(LU,'(3X,A,F8.4)')'Rmax=',R(1)/R(ND)
-	  WRITE(LU,'(/,A,15X,A,3(5X,A))')'    I','R','V(km/s)','  SIGMA','    TAU'
-	  DO I=1,ND-1
-	    WRITE(LU,'(I5,ES16.8,7ES12.4)')I,R(I),V(I),SIGMA(I),TAU(I),R(I)/R(I+1),LOG10(TAU(I+1)/TAU(I))
-	  END DO
-	  WRITE(LU,'(I5,ES16.8,3ES12.4)')ND,R(ND),V(ND),SIGMA(ND),TAU(ND)
-	CLOSE(LU)
+	IF(MYPE .EQ. 0)THEN
+	  OPEN(UNIT=LU,FILE='NEW_SN_R_GRID',STATUS='UNKNOWN')
+	    WRITE(LU,'(/,3X,A,F6.3,A,F6.3,A)')'  dLOGR was ',0.4343*dLOGR,'(',EXP(dLOGR),')'
+	    WRITE(LU,'(3X,A,F6.3,A,F6.3,A)')'dLOGTAU was ',0.4343*dTAU,'(',EXP(dTAU),')'
+	    WRITE(LU,'(3X,A,F8.4)')'Rmax=',R(1)/R(ND)
+	    WRITE(LU,'(/,A,15X,A,3(5X,A))')'    I','R','V(km/s)','  SIGMA','    TAU'
+	    DO I=1,ND-1
+	      WRITE(LU,'(I5,ES16.8,7ES12.4)')I,R(I),V(I),SIGMA(I),TAU(I),R(I)/R(I+1),LOG10(TAU(I+1)/TAU(I))
+	    END DO
+	    WRITE(LU,'(I5,ES16.8,3ES12.4)')ND,R(ND),V(ND),SIGMA(ND),TAU(ND)
+	  CLOSE(LU)
+	END IF
 !
 	DEALLOCATE (R_HYDRO, LOG_R_HYDRO, V_HYDRO, SIGMA_HYDRO)
 	DEALLOCATE (DENSITY_HYDRO, KAPPA_HYDRO, TAU_HYDRO)

@@ -16,6 +16,8 @@
 !            atom, with many terms and levels treated as one (i.e using
 !            SUPER levels).
 !
+! NB: This routine has 2 RETURN statements.
+!
 	SUBROUTINE VAR_OP_MPI_V1(
 	1             HN_S,HNST_S,LOG_HNST_S,dlnHNST_S_dlnT,N_S,
 	1	      HNST_F_ON_S,EDGE_F,N_F,F_TO_S_MAPPING,
@@ -140,9 +142,11 @@ C
 	LOGICAL, PARAMETER :: L_TRUE=.TRUE.
 	LOGICAL, PARAMETER :: L_FALSE=.FALSE.
 !
+! This routine has to be excute dby all processes due to the way the photoionization
+! cross-sections are computed.
+!
 	HNUONK=HDKT*NU
 	EQION=GS_ION_EQ+(ION_LEV-1)
-!	IF(LST_DEPTH_ONLY .AND. DEND .NE. ND)RETURN
 !
 ! If EQION is not important, all free-free and bound-free processes
 ! are added to the IMP variation.
@@ -171,39 +175,41 @@ C
 C Free-free processes
 C
 	IF( IONFF .AND. PHOT_ID .EQ. 1)THEN
+	  IF( (LST_DEPTH_ONLY .AND. ND .EQ. DEND) .OR. (.NOT. LST_DEPTH_ONLY) )THEN
 C
 C Compute free-free gaunt factors. Replaces call to GFF in following DO loop.
 C
-	  IF(LST_DEPTH_ONLY)THEN
-	    CALL GFF_VEC(GFF_VAL(ND),NU,T(ND),Z,ND_LOC)
-	    POP_SUM(ND)=SUM(DI_S(:,ND))
-	  ELSE
-	    CALL GFF_VEC(GFF_VAL(DST:DEND),NU,T(DST:DEND),Z,ND_LOC)
-	    POP_SUM(DST:DEND)=SUM(DI_S,1)
-	  END IF
+	    IF(LST_DEPTH_ONLY)THEN
+	      CALL GFF_VEC(GFF_VAL(ND),NU,T(ND),Z,ND_LOC)
+	      POP_SUM(ND)=SUM(DI_S(:,ND))
+	    ELSE
+	      CALL GFF_VEC(GFF_VAL(DST:DEND),NU,T(DST:DEND),Z,ND_LOC)
+	      POP_SUM(DST:DEND)=SUM(DI_S,1)
+	    END IF
 C
-	  TCHI1=CHIFF*Z*Z/( NU**3 )
-	  TETA1=CHIFF*Z*Z*TWOHCSQ
+	    TCHI1=CHIFF*Z*Z/( NU**3 )
+	    TETA1=CHIFF*Z*Z*TWOHCSQ
 !
-	  DO K=K_ST,DEND
-	    ALPHA=GFF_VAL(K)/SQRT(T(K))
+	    DO K=K_ST,DEND
+	      ALPHA=GFF_VAL(K)/SQRT(T(K))
 C
-	    TCHI2=TCHI1*ALPHA
-	    PCHI(NT-1,K)=PCHI(NT-1,K)+POP_SUM(K)*TCHI2*(1.0_LDP-EMHNUKT(K))
-	    PCHI(NT,K)=PCHI(NT,K)+ED(K)*POP_SUM(K)*TCHI2/T(K)*( -0.5_LDP+(0.5_LDP-HNUONK/T(K))*EMHNUKT(K) )
+	      TCHI2=TCHI1*ALPHA
+	      PCHI(NT-1,K)=PCHI(NT-1,K)+POP_SUM(K)*TCHI2*(1.0_LDP-EMHNUKT(K))
+	      PCHI(NT,K)=PCHI(NT,K)+ED(K)*POP_SUM(K)*TCHI2/T(K)*( -0.5_LDP+(0.5_LDP-HNUONK/T(K))*EMHNUKT(K) )
 C
-	    TETA2=TETA1*ALPHA*EMHNUKT(K)
-	    PETA(NT-1,K)=PETA(NT-1,K)+TETA2*POP_SUM(K)
-	    PETA(NT,K)  =PETA(NT,K)  +TETA2*POP_SUM(K)*ED(K)*(HNUONK/T(K)-0.5_LDP)/T(K)
+	      TETA2=TETA1*ALPHA*EMHNUKT(K)
+	      PETA(NT-1,K)=PETA(NT-1,K)+TETA2*POP_SUM(K)
+	      PETA(NT,K)  =PETA(NT,K)  +TETA2*POP_SUM(K)*ED(K)*(HNUONK/T(K)-0.5_LDP)/T(K)
 !
-	    TCHI2=TCHI2*ED(K)*(1.0_LDP-EMHNUKT(K))
-	    TETA2=TETA2*ED(K)
-	    DO I=1,N_DI
-	      L=EQION+I-1
-	      PCHI(L,K)=PCHI(L,K)+TCHI2
-	      PETA(L,K)=PETA(L,K)+TETA2
+	      TCHI2=TCHI2*ED(K)*(1.0_LDP-EMHNUKT(K))
+	      TETA2=TETA2*ED(K)
+	      DO I=1,N_DI
+	        L=EQION+I-1
+	        PCHI(L,K)=PCHI(L,K)+TCHI2
+	        PETA(L,K)=PETA(L,K)+TETA2
+	      END DO
 	    END DO
-	  END DO
+	  END IF
 	END IF
 C 
 C
@@ -221,7 +227,10 @@ C
 	END IF
 !
 	NO_NON_ZERO_PHOT=COUNT(ALPHA_VEC .GT. 0)
-	IF(NO_NON_ZERO_PHOT .EQ. 0)RETURN
+	IF(NO_NON_ZERO_PHOT .EQ. 0 .OR. (LST_DEPTH_ONLY .AND. DEND .NE. ND) )THEN
+	  NULLIFY (PCHI,PETA)
+	  RETURN
+	END IF
 C
 C DIS_CONST is the constant K appearing in the expression for level dissolution.
 C A negative value for DIS_CONST implies that the cross-section is zero.
