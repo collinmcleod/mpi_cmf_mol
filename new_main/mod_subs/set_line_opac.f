@@ -321,8 +321,8 @@
 	1                       'NL=',NL,'NUP=',NUP,'# depths=',ZERO_CNT,'Last depth=',LST_DEPTH
 	    WRITE(LUER,'(1X,3(A,ES14.4,3X))')'OSCIL=',OSCIL(SIM_INDX),'Scale factor',T3,
 	1                                    'Frequency',FL_SIM(SIM_INDX)
-	    TA(1:J)=POPS(NL,DST:DEND); I=4; J=DEND-DST+1
-	    CALL WRITV_V2(TA,J,I,'POPS vector',LUER)
+	    J=DEND-DST+1; TA(1:J)=POPS(NL,DST:DEND)
+	    I=4; CALL WRITV_V2(TA,J,I,'POPS vector',LUER)
 	    CALL WRITV_V2(L_STAR_RATIO(DST:DEND,SIM_INDX),J,I,'L_STAR vector',LUER)
 	  END IF
 !

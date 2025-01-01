@@ -90,9 +90,12 @@
 	LOGICAL FIRST_WARN
 !
 	LUER=ERROR_LU()
-	WRITE(LUER,'(/,A)')' Entering RD_SN_DATA';    FLUSH(LUER)
-	WRITE(LUER,*)'NUM_SPECIES=',NUM_SPECIES
-	FLUSH(LUER)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LUER,'(/,A)')' Entering RD_SN_DATA';    FLUSH(LUER)
+	  WRITE(LUER,*)'NUM_SPECIES=',NUM_SPECIES
+	  FLUSH(LUER)
+	END IF
+!
 	OPEN(UNIT=LU,FILE='SN_HYDRO_DATA',STATUS='OLD',IOSTAT=IOS)
 	IF(IOS .NE. 0)THEN
 	  WRITE(LUER,*)'Error opening SN_HYDRO_DATA ins rd_sn_data.f'
@@ -131,8 +134,10 @@
 	      END IF
    	    END IF
 	  END DO
-	  WRITE(LUER,*)'Read in SN_HYDRO_DATA data headers'
-	  FLUSH(UNIT=LUER)
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LUER,*)'Read in SN_HYDRO_DATA data headers'
+	    FLUSH(UNIT=LUER)
+	  END IF
 !
 	  ALLOCATE (R_HYDRO(NX));           R_HYDRO=0.0_LDP
 	  ALLOCATE (LOG_R_HYDRO(NX));       LOG_R_HYDRO=0.0_LDP
@@ -189,8 +194,10 @@
 	   END IF
 	   STRING=' '
 	 END DO
-	 WRITE(LUER,*)'   Obtained non-POP vectors in RD_SN_DATA'
-	 FLUSH(LUER)
+	 IF(MYPE .EQ. 0)THEN
+	   WRITE(LUER,*)'   Obtained non-POP vectors in RD_SN_DATA'
+	   FLUSH(LUER)
+	 END IF
 !
 ! We can now read in the mass-fractions.
 !
@@ -306,14 +313,19 @@
 	   END IF
 	  END DO
 	END DO
-	WRITE(LUER,*)'   Read SN populations in RD_SN_DATA'; FLUSH(UNIT=LUER)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LUER,*)'   Read SN populations in RD_SN_DATA'; FLUSH(UNIT=LUER)
+	END IF
 !
 	CALL GET_LU(LU_MF,'In RD_SN_DATA')
 	WRITE(LU,'(/,1X,A,/)')'Original and Cummulative sums of mass fractions'
 	OPEN(UNIT=LU_MF,STATUS='UNKNOWN',ACTION='WRITE',FILE='MASS_FRACTION_SUM_CHK')
 !
-	WRITE(LUER,*)'NUM_SPECIES=',NUM_SPECIES,NSP
-	FLUSH(LUER)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LUER,*)'NUM_SPECIES / NSP=',NUM_SPECIES,NSP
+	  FLUSH(LUER)
+	END IF
+!
 	WRK_HYDRO=0.0_LDP
 	DO K=1,NSP                               !NUM_SPECIES
 	   WRK_HYDRO=WRK_HYDRO+POP_HYDRO(:,K)
@@ -390,11 +402,13 @@
 	I=6;CALL WRITV_V2(WRK,ND,I,'Mass fraction sum',LU_MF)
 	CLOSE(LU_MF)
 !
-	WRITE(LUER,*)' '
-	WRITE(LUER,*)'   Normalized mass fractions in RD_SN_DATA'
-	WRITE(LUER,*)'   Maximum normalization factor was',MAXVAL(WRK)
-	WRITE(LUER,*)'   Minimum normalization factor was',MINVAL(WRK)
-	WRITE(LUER,*)'   See MASS_FRACTION_SUMMARY_CHK for more details'
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LUER,*)' '
+	  WRITE(LUER,*)'   Normalized mass fractions in RD_SN_DATA'
+	  WRITE(LUER,*)'   Maximum normalization factor was',MAXVAL(WRK)
+	  WRITE(LUER,*)'   Minimum normalization factor was',MINVAL(WRK)
+	  WRITE(LUER,*)'   See MASS_FRACTION_SUMMARY_CHK for more details'
+	END IF
 !
 ! Compute the mass of each species present in the ejecta.
 !
@@ -477,24 +491,26 @@
 	  END DO
 	END IF
 !
-	FIRST_WARN=.TRUE.
-	DO IP=1,NUM_PARENTS
-	  IF(PAR(IP)%DECAY_CHAIN_AVAILABLE)THEN
-	  ELSE
-	    IF(FIRST_WARN)THEN
-	      WRITE(LUER,*)' '
-	      WRITE(LUER,*)'Warning: Possible error in reading SN_HYDRO_DATA with RD_SN_DATA.'
-	      WRITE(LUER,*)'The following species have ISOTOPE data present in NUC_DECAY_DATA',
-	1                        '     but have no isotope data in SN_HYDRO_DATA.'
-	      WRITE(LUER,*)'You many need to add the appropriate isotopic data'
-	      WRITE(LUER,*)SPECIES(PAR(IP)%ISPEC)
-	      FIRST_WARN=.FALSE.
+	IF(MYPE .EQ. 0)THEN
+	  FIRST_WARN=.TRUE.
+	  DO IP=1,NUM_PARENTS
+	    IF(PAR(IP)%DECAY_CHAIN_AVAILABLE)THEN
 	    ELSE
-	      WRITE(LUER,*)SPECIES(PAR(IP)%ISPEC)
+	      IF(FIRST_WARN)THEN
+	        WRITE(LUER,*)' '
+	        WRITE(LUER,*)'Warning: Possible error in reading SN_HYDRO_DATA with RD_SN_DATA.'
+	        WRITE(LUER,*)'The following species have ISOTOPE data present in NUC_DECAY_DATA',
+	1                          '     but have no isotope data in SN_HYDRO_DATA.'
+	        WRITE(LUER,*)'You many need to add the appropriate isotopic data'
+	        WRITE(LUER,*)SPECIES(PAR(IP)%ISPEC)
+	        FIRST_WARN=.FALSE.
+	      ELSE
+	        WRITE(LUER,*)SPECIES(PAR(IP)%ISPEC)
+	      END IF
 	    END IF
-	  END IF
-	END DO
-	WRITE(LUER,*)' '
+	  END DO
+	  WRITE(LUER,*)' '
+	END IF
 !
 ! If population is zero at some depths, but species is present, we will
 ! set to small value.

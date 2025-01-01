@@ -134,28 +134,30 @@
 	  END IF                        !Species present
 	END DO				!Over species
 !
-	CALL GEN_ASCI_OPEN(LUOUT,'CHG_EXCH_RD_CHK','UNKNOWN',' ','WRITE',IZERO,IOS)
-	CALL SET_LINE_BUFFERING(LUOUT)
-	WRITE(LUOUT,'(/,A)')' The LHS are charge exchange reactions that are included'
-	WRITE(LUOUT,  '(A)')' The RHS are charge exchange reactions that are excluded'
-	WRITE(LUOUT,  '(A)')' An ID of zero implies that the species (LHS) is the last ionization stage'
-	WRITE(LUOUT,'(/,2(3X,A),3X,A,T20,4X,A,2X,A,3X,A)')'J','K','Species','ID','NLev','nGsum'
-	DO J=1,N_CHG_RD
-	  L=LEV_CNT(J,1)*LEV_CNT(J,2)*LEV_CNT(J,3)*LEV_CNT(J,4)
-	  IF(L .NE. 0)THEN
-	    WRITE(LUOUT,'(A)')' '
-	    DO K=1,4
-	      WRITE(LUOUT,'(2I4,3X,A,T20,2I6,F7.1)')J,K,TRIM(SPEC_ID_CHG_RD(J,K)),
+	IF(MYPE .EQ. 0)THEN
+	  CALL GEN_ASCI_OPEN(LUOUT,'CHG_EXCH_RD_CHK','UNKNOWN',' ','WRITE',IZERO,IOS)
+	  CALL SET_LINE_BUFFERING(LUOUT)
+	  WRITE(LUOUT,'(/,A)')' The LHS are charge exchange reactions that are included'
+	  WRITE(LUOUT,  '(A)')' The RHS are charge exchange reactions that are excluded'
+	  WRITE(LUOUT,  '(A)')' An ID of zero implies that the species (LHS) is the last ionization stage'
+	  WRITE(LUOUT,'(/,2(3X,A),3X,A,T20,4X,A,2X,A,3X,A)')'J','K','Species','ID','NLev','nGsum'
+	  DO J=1,N_CHG_RD
+	    L=LEV_CNT(J,1)*LEV_CNT(J,2)*LEV_CNT(J,3)*LEV_CNT(J,4)
+	    IF(L .NE. 0)THEN
+	      WRITE(LUOUT,'(A)')' '
+	      DO K=1,4
+	        WRITE(LUOUT,'(2I4,3X,A,T20,2I6,F7.1)')J,K,TRIM(SPEC_ID_CHG_RD(J,K)),
 	1         ID_POINTER(J,K),LEV_CNT(J,K),G_SUM(J,K)
-	    END DO
-	  ELSE
-	    WRITE(LUOUT,'(A)')' '
-	    DO K=1,4
-	      WRITE(LUOUT,'(40X,2I4,3X,A,T60,2I6,F7.1)')J,K,TRIM(SPEC_ID_CHG_RD(J,K)),
+	      END DO
+	    ELSE
+	      WRITE(LUOUT,'(A)')' '
+	      DO K=1,4
+	        WRITE(LUOUT,'(40X,2I4,3X,A,T60,2I6,F7.1)')J,K,TRIM(SPEC_ID_CHG_RD(J,K)),
 	1         ID_POINTER(J,K),LEV_CNT(J,K),G_SUM(J,K)
-	    END DO
-	  END IF
-	END DO
+	      END DO
+	    END IF
+	  END DO
+	END IF
 !
 ! Now determine total number of charge reactions.
 !
@@ -236,9 +238,11 @@
 !
 	LST=0
 	DO J=1,N_CHG_RD
-	  WRITE(LUOUT,'(/,A,I3,4(2X,A))')' Operating on charge exchange reaction J=',J,SPEC_ID_CHG_RD(J,1:4)
-	  WRITE(LUOUT,'(A,3X,4I5)')' Super levels associated with each each species:',
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LUOUT,'(/,A,I3,4(2X,A))')' Operating on charge exchange reaction J=',J,SPEC_ID_CHG_RD(J,1:4)
+	    WRITE(LUOUT,'(A,3X,4I5)')' Super levels associated with each each species:',
 	1                 LEV_CNT(J,1),LEV_CNT(J,2),LEV_CNT(J,3),LEV_CNT(J,4)
+	  END IF
 !
 	IF(LEV_CNT(J,1)*LEV_CNT(J,2)*LEV_CNT(J,3)*LEV_CNT(J,4) .NE. 0)THEN
 !
@@ -364,18 +368,21 @@
 ! Check that the SL's involved in a charge exchange reaction correspond to a
 ! single LS state.
 !
-	WRITE(LUOUT,'(A)')
-	WRITE(LUOUT,'(A)')
-	WRITE(LUOUT,'(A)')' Summary of charge exchange info'
-	DO J=1,N_CHG
-	  WRITE(LUOUT,'(/,4(A),7X,A,3X,A,8X,A,3X,A)')'   Type','     ID','  Level','   Lpop',
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LUOUT,'(A)')
+	  WRITE(LUOUT,'(A)')
+	  WRITE(LUOUT,'(A)')' Summary of charge exchange info'
+	  DO J=1,N_CHG
+	    WRITE(LUOUT,'(/,4(A),7X,A,3X,A,8X,A,3X,A)')'   Type','     ID','  Level','   Lpop',
 	1                                             'z','Chg_ID','g','Species'
-	  WRITE(LUOUT,'(4(3X,I4),3X,F5.2,5X,I4,2X,F7.2,3X,A)')
+	    WRITE(LUOUT,'(4(3X,I4),3X,F5.2,5X,I4,2X,F7.2,3X,A)')
 	1       (TYPE_CHG(J),ID_ION_CHG(J,K),LEV_IN_ION_CHG(J,K),LEV_IN_POPS_CHG(J,K),
 	1         Z_CHG(J,K),CHG_ID(J,K),G_CHG(J,K),TRIM(SPEC_ID_CHG(J,K)), K=1,4)
-	END DO
-	CLOSE(LUOUT)
+	  END DO
+	  CLOSE(LUOUT)
+	END IF
 !
+	IF(MYPE .EQ. 0)THEN
 	CALL GEN_ASCI_OPEN(LUOUT,'CHG_EXCH_CHK','UNKNOWN',' ','WRITE',IZERO,IOS)
 	DO J=1,N_CHG
 	  STRING=' '
@@ -443,6 +450,7 @@
 	  END DO
 	END IF
 	CLOSE(LUOUT)
+	END IF
 !
 	DEALLOCATE (LEV_CNT)
 	DEALLOCATE (CHG_ID)

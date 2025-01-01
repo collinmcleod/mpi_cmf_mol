@@ -5,7 +5,7 @@
 ! we can adjust the relaxation parameter at specific depths, and on the fly.
 !
 	SUBROUTINE FIDDLE_POP_CORRECTIONS_MPI_V1(POPS,STEQ,T_MIN,CHANGE_LIM,MAX_dT_COR,
-	1              SCALE_OPT,LAMBDA_IT,LU_SUM,NT,DST,DEND,ND)
+	1              SCALE_OPT,LAMBDA_IT,NT,DST,DEND,ND)
 	USE SET_KIND_MODULE
 	USE MPI
 	IMPLICIT NONE
@@ -22,7 +22,6 @@
 	INTEGER NT
 	INTEGER ND
 	INTEGER DST,DEND
-	INTEGER LU_SUM
 	REAL(KIND=LDP) POPS(NT,ND)
 	REAL(KIND=LDP) STEQ(NT,DST:DEND)
 !
@@ -46,7 +45,7 @@
 	REAL(KIND=LDP) DPTH_LIT_LIM,DPTH_BIG_LIM
 	REAL(KIND=LDP) T1,T2,T3
 	REAL(KIND=LDP) MIN_SCALE
-	REAL(KIND=LDP) SCALE
+	REAL(KIND=LDP) SCALE_FAC
 	REAL(KIND=LDP) BAD_DECREASE_LIMIT
 	REAL(KIND=LDP) BAD_INCREASE_LIMIT
 !
@@ -58,15 +57,20 @@
 	INTEGER IOS
 	INTEGER I,J,IC,IERR
 	INTEGER L,L_ST,L_END
+	INTEGER LU_SUM
 	LOGICAL FILE_OPEN
 	CHARACTER(LEN=20) DC_OPTION
 	CHARACTER(LEN=80) STRING
 	INTEGER, PARAMETER :: IZERO=0
 	INTEGER, PARAMETER :: IONE=1
 !
+	WRITE(6,*)'Calling FIDDLE',DST,DEND,ND,MYPE; FLUSH(UNIT=6)
 	BIG_LIM=(CHANGE_LIM-1.0_LDP)/CHANGE_LIM
         LIT_LIM=1.0_LDP-CHANGE_LIM
 	MIN_SCALE=1.0E+20_LDP
+	CALL GET_LU(LU_SUM,'In FIDDLE_POP_CORRECTIONS_MPI_V1')
+	WRITE(6,*)'Got LU',MYPE,LU_SUM
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Set default parameters.
 !
@@ -94,7 +98,10 @@
 !     specified depth. POP LIMIT only effects corrections bigger than POP LIMIT.
 !
 	
-	OPEN(UNIT=LU_SUM,FILE='ADJUST_CORRECTIONS',STATUS='OLD',ACTION='READ',IOSTAT=IOS)
+	WRITE(6,*)'Entering read ADJUST_CORRECTIONS',MYPE,LU_SUM
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	OPEN(UNIT=LU_SUM,FILE='ADJUST_CORRECTIONS',STATUS='OLD',ACTION='READ',IOSTAT=IOS)
+	IOS=100
 	IF(IOS .EQ. 0)THEN
 	  CALL RD_OPTIONS_INTO_STORE(LU_SUM,LU_SCR)
 	  CALL RD_STORE_INT(L_ST,  'L_ST',L_FALSE,'Beginning depth')
@@ -142,42 +149,47 @@
 	  DO L=L_ST,L_END
 	    RELAX_PARAM(L)=RELAX_VARIABLE
 	  END DO
+	ELSE
+	  WRITE(6,*)'Skipped read ADJUST_CORRECTIONS',MYPE,LAMBDA_IT
 	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 	INQUIRE(UNIT=LU_SUM,OPENED=FILE_OPEN)
 	IF(FILE_OPEN)CLOSE(LU_SUM)
 	IF(LAMBDA_IT)RELAX_PARAM(1:ND)=1.0_LDP
 	IF(LAMBDA_IT)POP_LIM(1:ND)=100.0_LDP*CHANGE_LIM
 !
+	WRITE(6,*)'Entering MAJOR check',MYPE; FLUSH(UNIT=6)
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	IF(SCALE_OPT(1:5) .EQ. 'MAJOR')THEN
 	  DO I=DST,DEND
 !
 	    T1=BIG_LIM                  !Prevents division by zero and insures
-	    T2=LIT_LIM                  !SCALE=1 if small changes.
+	    T2=LIT_LIM                  !SCALE_FAC=1 if small changes.
 	    DO J=1,NT-1
 	      IF(POPS(J,I) .GT. 1.0E-10_LDP*POPS(NT-1,I))THEN
 	        T1=MAX(T1,STEQ(J,I))            !Note + means decrease
 	        T2=MIN(T2,STEQ(J,I))            !Note - means increase
 	      END IF
 	    END DO
-	    SCALE=MIN( BIG_LIM/T1, LIT_LIM/T2 )
+	    SCALE_FAC=MIN( BIG_LIM/T1, LIT_LIM/T2 )
 !
 ! Limit the change in T to a maximum of 20%, and ensure T > T_MIN.
 !
 	    T3=MAX( T_LIM(I),ABS(STEQ(NT,I)) )
-	    SCALE=MIN( T_LIM(I)/T3,SCALE )
-	    MIN_SCALE=MIN(SCALE,MIN_SCALE)
+	    SCALE_FAC=MIN( T_LIM(I)/T3,SCALE_FAC )
+	    MIN_SCALE=MIN(SCALE_FAC,MIN_SCALE)
 	    IF(STEQ(NT,I) .NE. 0 .AND. POPS(NT,I) .GT. T_MIN .AND.
-	1                      POPS(NT,I)*(1.0_LDP-STEQ(NT,I)*SCALE) .LT. T_MIN)THEN
-	      SCALE=(1.0_LDP-T_MIN/POPS(NT,I))/STEQ(NT,I)
+	1                      POPS(NT,I)*(1.0_LDP-STEQ(NT,I)*SCALE_FAC) .LT. T_MIN)THEN
+	      SCALE_FAC=(1.0_LDP-T_MIN/POPS(NT,I))/STEQ(NT,I)
 	    END IF
-	    IF(SCALE .GT. 1.0_LDP)SCALE=1.0_LDP             !i.e., will not force T to T_MIN
+	    IF(SCALE_FAC .GT. 1.0_LDP)SCALE_FAC=1.0_LDP             !i.e., will not force T to T_MIN
 !
 ! RELAX_PARAM allows for the use of successive over or under relaxation.
 ! When RELAX_PARAM > 1, BIG_LIM and LIT_LIM ensure that we don't get
 ! negatve populations.
 !
-	    IF(SCALE .EQ. 1.0_LDP)SCALE=RELAX_PARAM(I)
+	    IF(SCALE_FAC .EQ. 1.0_LDP)SCALE_FAC=RELAX_PARAM(I)
 !
 ! Ensure population change doesn't change population by too large an amount.
 ! POP_LIM allows us to force smaller corrections at some depths even while
@@ -187,18 +199,20 @@
 	    DPTH_BIG_LIM=MIN(BIG_LIM,T2)
 	    DPTH_LIT_LIM=MAX(LIT_LIM,1.0_LDP-POP_LIM(I))
 	    DO J=1,NT
-	      T1=STEQ(J,I)*SCALE
+	      T1=STEQ(J,I)*SCALE_FAC
 	      IF(T1 .GT. DPTH_BIG_LIM)T1=DPTH_BIG_LIM
 	      IF(T1 .LT. DPTH_LIT_LIM)T1=DPTH_LIT_LIM
 	      POPS(J,I)=POPS(J,I)*(1.0_LDP-T1)
 	    END DO
 	  END DO
 	  T1=MIN_SCALE
-	  CALL MPI_REDUCE(T1,MIN_SCALE,IONE,MPI_DOUBLE_PRECISION,MPI_MAX,IZERO,MPI_COMM_WORLD,IERR)
+	  CALL MPI_REDUCE(T1,MIN_SCALE,IONE,MPI_DOUBLE_PRECISION,MPI_MIN,IZERO,MPI_COMM_WORLD,IERR)
 	  IF(MYPE .EQ. 0)THEN
 	    WRITE(6,'(A,ES12.4)')' The minimum value of scale for Major species is:',MIN_SCALE
 	  END IF
 	END IF
+	WRITE(6,*)'Exited major check',MYPE; FLUSH(UNIT=6)
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Only adjust populatons at adjacent depths when the corrections are rediculously large
 ! (e.g. -T1 or 1-1/T1.). If CONSISTENCY_CNT .LE. 0, this is never done.
@@ -211,6 +225,8 @@
 	1           BAD_INCREASE_LIMIT,BAD_DECREASE_LIMIT,DC_OPTION)
 	  COUNTER=0
 	END IF
+	WRITE(6,*)'Exiting FIDDLE',MYPE; FLUSH(UNIT=6)
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 	RETURN
 	END

@@ -56,8 +56,9 @@
 	REAL(KIND=LDP) RECIP_CDELTAT
 !
 	INTEGER VEC_LENGTH
-	LOGICAL, SAVE :: FIRST_TIME=.TRUE.
+	LOGICAL :: FIRST_TIME=.TRUE.
 !
+	SAVE
  	END MODULE MOD_VAR_HUB_J_MPI_V1
 !
 ! This subroutine computes the variation of J as a function of the emissivity
@@ -183,7 +184,7 @@
 ! Local variables.
 !
 	INTEGER MDST,MDEND
-	INTEGER I
+	INTEGER I,J
 	INTEGER ICNT,IERR
 	INTEGER ERRORCODE
 !
@@ -235,6 +236,7 @@
 	  TB=>TRI_VECS(:,2)
 	  TC=>TRI_VECS(:,3)
 	  XM=>TRI_VECS(:,4)
+	  VEC_LENGTH=4*ND
 	END IF
 !
 ! 
@@ -262,7 +264,6 @@
 	  JNU_OLDT=0.0_LDP; RSQ_HNU_OLDt=0.0_LDP
 	  RSQH_AT_IB_OLDT=0.0_LDP; HONJ_OUTBC_OLDT=0.0_LDP
 	END IF
-	WRITE(6,*)'A-MYPE=',MYPE
 !
 ! NB: The factor of 10^10 occurs because c. /\t is a length, and R in
 !     cmfgen is in units of 10^10 cm. NB: In the differenced equations
@@ -282,7 +283,6 @@
 	END IF
 	R_FAC_FOR_J=ROLD_ON_R
 	IF(USE_DR4JDT)R_FAC_FOR_J=ROLD_ON_R*ROLD_ON_R
-	WRITE(6,*)'B-MYPE=',MYPE
 !
 ! Compute the Q factors from F. Then compute optical depth scale.
 !
@@ -299,7 +299,6 @@
 	DO I=2,ND-1
 	  RSQ_DTAUONQ(I)=0.5_LDP*R(I)*R(I)*(DTAU(I)+DTAU(I-1))/Q(I)
 	END DO
-	WRITE(6,*)'C-MYPE=',MYPE
 !
 ! 
 !
@@ -345,7 +344,6 @@
 	    DJDT_OLDT(I)=T1*RSQ_DTAUONQ(I)*RECIP_CDELTAT/CHI(I)
 	  END DO
 	END IF
-	WRITE(6,*)'D-MYPE=',MYPE
 !
 ! If if it is the first frequency, we still need to allow for the time variability
 ! terms.
@@ -362,7 +360,6 @@
 	    DJDT_OLDT(I)=T1*RSQ_DTAUONQ(I)*RECIP_CDELTAT/CHI(I)
 	  END DO
 	END IF
-	WRITE(6,*)'E-MYPE=',MYPE
 !
 ! 
 !
@@ -374,7 +371,6 @@
 	  HS(I)=WPREV(I)/(1.0_LDP+W(I))
 	  HT(I)=dH_OLDT(I)/(1.0_LDP+W(I))
 	END DO
-	WRITE(6,*)'F-MYPE=',MYPE
 !
 ! Compute the TRIDIAGONAL operators, and the RHS source vector.
 !
@@ -388,6 +384,7 @@
 	  END DO
 	END IF
 !
+	TRI_VECS=0.0_LDP
 	DO I=MAX(2,DST),MIN(DEND,ND-1)
 	  TA(I)=-HL(I-1)
 	  TC(I)=-HU(I)
@@ -396,7 +393,6 @@
 	  VC(I)=HS(I)
 	  XM(I)=RSQ_DTAUONQ(I)*SOURCE(I)
 	END DO
-	WRITE(6,*)'G-MYPE=',MYPE
 !
 	DO I=MAX(2,DST),MIN(DEND,ND-1)
 	  XM(I)=XM(I) +
@@ -404,7 +400,6 @@
 	1        (HT(I)*RSQ_HNU_OLDT(I) - HT(I-1)*RSQ_HNU_OLDT(I-1)) +
 	1         PSIPREV(I)*JNUM1(I) + DJDT_OLDT(I)*JNU_OLDt(I)
 	END DO
-	WRITE(6,*)'H-MYPE=',MYPE
 !
 	DERIV_SCL_FAC=1.0_LDP
 	IF(XM_CHK_OPTION .EQ. 'SET_POS')THEN
@@ -421,11 +416,10 @@
 	  END DO
         ELSE IF(XM_CHK_OPTION .EQ. 'NONE')THEN
 	ELSE
-	  I=ERROR_LU()
-	  WRITE(I,*)'Unrecognized H_CHK_OPTION in VAR_MOM_J_DDT_V6: ',TRIM(H_CHK_OPTION)
+	  J=ERROR_LU()
+	  WRITE(J,*)'Unrecognized H_CHK_OPTION in VAR_MOM_J_DDT_V6: ',TRIM(H_CHK_OPTION)
 	  STOP
 	END IF
-	WRITE(6,*)'I-MYPE=',MYPE
 !
 ! Evaluate TA,TB,TC for boundary conditions
 ! NB: GAM(1) is zero if inital frequency. Likewise, RECIP_CDELTAT is zero if not doing
@@ -473,13 +467,12 @@
 	    dRHSdCHI_OB=-dRHSdCHI_OB/CHI(1)
 	    XM(2)=XM(2)-JMIN_OB*TA(2)
 	  ELSE
-	    I=ERROR_LU()
-	    WRITE(I,*)'Only HONJ & HALF_MD boundary conditions implemented at outer boundary'
-	    WRITE(I,*)'Routine is VAR_MOM_J_DDT_V2'
+	    J=ERROR_LU()
+	    WRITE(J,*)'Only HONJ & HALF_MD boundary conditions implemented at outer boundary'
+	    WRITE(J,*)'Routine is VAR_MOM_J_DDT_V2'
 	    STOP
 	  END IF
 	END IF
-	WRITE(6,*)'J-MYPE=',MYPE
 !
 	IF(DEND .EQ. ND)THEN
 	  IF(INNER_BND_METH .EQ. 'DIFFUSION')THEN
@@ -539,9 +532,9 @@
 	    DJDt(ND)=0.0_LDP
 	    DJDt_OLDt(ND)=0.0_LDP
 	  ELSE
-	    I=ERROR_LU()
-	    WRITE(I,*)'Only DIF (diffusion), ZERO_FLUX & HOLLOW boundary conditions currently implemented'
-	    WRITE(I,*)'Routine is VAR_MOM_J_DDT_V2'
+	    J=ERROR_LU()
+	    WRITE(J,*)'Only DIF (diffusion), ZERO_FLUX & HOLLOW boundary conditions currently implemented'
+	    WRITE(J,*)'Routine is VAR_MOM_J_DDT_V2'
 	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
@@ -549,12 +542,19 @@
 	  VB(ND)=0.0_LDP
 	  VC(ND)=0.0_LDP
 	END IF
-	WRITE(6,*)'K-MYPE=',MYPE
 !
 ! Solve for the radiation field along ray for this frequency.
 !
         I=4*VEC_LENGTH
         CALL MPI_ALLREDUCE(MPI_IN_PLACE,TRI_VECS,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+!	IF(MYPE .EQ. 0)THEN
+!	  CALL WRITV(TA,ND,'TA',6)
+!	  CALL WRITV(TB,ND,'TB',6)
+!	  CALL WRITV(TC,ND,'TC',6)
+!	  CALL WRITV(XM,ND,'XM',6)
+!	  FLUSH(UNIT=6)
+!	END IF
+!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	CALL THOMAS(TA,TB,TC,XM,ND,1)
 !
 	JNU_MOD(1:ND)=XM(1:ND)
@@ -569,29 +569,30 @@
           RSQH_AT_OB=R(1)*R(1)*HONJ_OUTBC*XM(1)
         END IF
 !
-	IF(XM(I) .LT. 0.0_LDP)THEN
-          IF(J_CHK_OPTION .EQ. 'FORM_VAL')THEN
-	    XM(I)=JNU_STORE(I)
-	  ELSE IF(J_CHK_OPTION .EQ. 'ABS_VAL')THEN
-	     XM(I)=ABS(XM(I))/10.0_LDP
-	  ELSE IF(J_CHK_OPTION .EQ. 'NONE')THEN
-	  ELSE
-	    I=ERROR_LU()
-	    WRITE(I,*)'Unrecognized J_CHK_OPTION in VAR_MOM_J_DDT_V6: ',TRIM(J_CHK_OPTION)
-	    STOP
-	  END IF	
-	END IF
-!
-	JNU(1:ND)=XM(1:ND)
-	DO I=1,ND-1
-	  RSQ_HNU(I)=(HU(I)*XM(I+1)-HL(I)*XM(I))+HS(I)*RSQ_HNUM1(I)+HT(I)*RSQ_HNU_OLDT(I)
+	DO I=1,ND
+	  IF(XM(I) .LT. 0.0_LDP)THEN
+            IF(J_CHK_OPTION .EQ. 'FORM_VAL')THEN
+	      XM(I)=JNU_STORE(I)
+	    ELSE IF(J_CHK_OPTION .EQ. 'ABS_VAL')THEN
+	       XM(I)=ABS(XM(I))/10.0_LDP
+	    ELSE IF(J_CHK_OPTION .EQ. 'NONE')THEN
+	    ELSE
+	      J=ERROR_LU()
+	      WRITE(J,*)'Unrecognized J_CHK_OPTION in VAR_MOM_J_DDT_V6: ',TRIM(J_CHK_OPTION)
+	      STOP
+	    END IF	
+	  END IF
 	END DO
 !
+	JNU(1:ND)=XM(1:ND)
+	DO I=MDST,MIN(DEND,ND-1)
+	  RSQ_HNU(I)=(HU(I)*XM(I+1)-HL(I)*XM(I))+HS(I)*RSQ_HNUM1(I)+HT(I)*RSQ_HNU_OLDT(I)
+	END DO
 !
 ! Make sure H satisfies the basic requirement that it is less than J.
 !
         IF(H_CHK_OPTION .EQ. 'AV_VAL')THEN
-          DO I=1,ND-1
+          DO I=MDST,MIN(DEND,ND-1)
             T1=(R(I)*R(I)*XM(I)+R(I+1)*R(I+1)*XM(I+1))/2.0_LDP
             IF(RSQ_HNU(I) .GT. T1)THEN
               RSQ_HNU(I)=T1
@@ -600,7 +601,7 @@
             END IF
           END DO
         ELSE IF(H_CHK_OPTION .EQ. 'MAX_VAL')THEN
-          DO I=1,ND-1
+          DO I=MDST,MIN(DEND,ND-1)
             T1=MAX(R(I)*R(I)*XM(I),R(I+1)*R(I+1)*XM(I+1))
             IF(RSQ_HNU(I) .GT. T1)THEN
               RSQ_HNU(I)=0.99_LDP*T1
@@ -610,8 +611,8 @@
           END DO
         ELSE IF(H_CHK_OPTION .EQ. 'NONE')THEN
 	ELSE
-	  I=ERROR_LU()
-	  WRITE(I,*)'Unrecognized H_CHK_OPTION in VAR_MOM_J_DDT_V6: ',TRIM(H_CHK_OPTION)
+	  J=ERROR_LU()
+	  WRITE(J,*)'Unrecognized H_CHK_OPTION in VAR_MOM_J_DDT_V6: ',TRIM(H_CHK_OPTION)
 	  STOP
 	END IF
 !
@@ -633,7 +634,7 @@
 	1                JMIN_IB,KMIN_IB,JPLUS_IB,KPLUS_IB,
 	1                JMIN_OB,KMIN_OB,JPLUS_OB,KPLUS_OB,
 	1                INNER_BND_METH,OUTER_BND_METH,
-	1                ND,NM_KI)
+	1                DST,DEND,ND,NM_KI)
 	CALL TUNE(2,'MOM_EDD')
 !
 ! Evaluate the intensity variations.

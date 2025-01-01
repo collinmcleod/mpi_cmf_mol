@@ -47,6 +47,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(ba_ehb_bf_update_mpi_v1.o)\
       $(LIB)(ba_ehb_ff_update_mpi_v1.o)\
       $(LIB)(eval_adiabatic_mpi_v1.o)\
+      $(LIB)(eval_rad_decay_mpi_v1.o)\
       $(LIB)(evalse_qwvj_mpi_v1.o)\
       $(LIB)(evalse_lowt_mpi_v1.o)\
       $(LIB)(evalse_x_qwvj_mpi_v1.o)\

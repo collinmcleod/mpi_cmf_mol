@@ -36,7 +36,7 @@
 ! and direct-ionization cross section used in Arnaud & Rothenflug 1985
 ! These parameters are then used in
 !
-	IF(MYPE .EQ. 0)WRITE(LU_ER,*)'Opening arnaud_rothenflug.dat'
+	IF(MYPE .EQ. 0)WRITE(LU_ER,'(/,1X,A)')'Opening arnaud_rothenflug.dat'
 	OPEN(UNIT=LU_IN,FILE='arnaud_rothenflug.dat',STATUS='OLD',ACTION='READ',IOSTAT=IOS)
 	  IF(IOS .NE. 0)THEN
 	    WRITE(LU_ER,*)'Unble to open arnaud_rothenflug.dat in READ_ION'
@@ -142,7 +142,10 @@
 !
 
 	             TMP_NAME=ADJUSTL(STRING(NM_POS:))
-	             WRITE(6,*)ID,TRIM(ION_ID(ID)),TRIM(TMP_NAME),TRIM(ATM(ID)%XZVLEVNAME_F(1))
+	             IF(MYPE .EQ. 0)THEN
+	               IF(ID .EQ. 1)WRITE(6,'(A3,A7,A33,A23)')'ID','Ion','Arn.  level','Ion level'
+	               WRITE(6,'(I3,A7,3X,A30,3X,A20)')ID,TRIM(ION_ID(ID)),TRIM(TMP_NAME),TRIM(ATM(ID)%XZVLEVNAME_F(1))
+	             END IF
 	             IF(ID .EQ. SPECIES_END_ID(ISPEC)-1)THEN
 	               THD(IT)%SUM_GION=ATM(ID)%GIONXzV_F
 	               THD(IT)%N_ION_ROUTES=1

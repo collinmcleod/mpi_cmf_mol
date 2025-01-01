@@ -43,14 +43,14 @@
 !
 ! Output:
 !
-	REAL(KIND=LDP) AD_CR_V(ND)
-	REAL(KIND=LDP) AD_CR_DT(ND)
+	REAL(KIND=LDP) AD_CR_V(DST:DEND)
+	REAL(KIND=LDP) AD_CR_DT(DST:DEND)
+	REAL(KIND=LDP) WORK(DST:DEND)
 !
 ! Input:
 !
 	REAL(KIND=LDP) POPS(NT,ND)
 	REAL(KIND=LDP) AVE_ENERGY(NT)
-	REAL(KIND=LDP) WORK(ND)
 	REAL(KIND=LDP) HDKT
 	REAL(KIND=LDP) TIME_SEQ_NO
 !
@@ -60,7 +60,8 @@
 	REAL(KIND=LDP) EI_VEC(ND)
 	REAL(KIND=LDP) P_VEC(ND)
 	REAL(KIND=LDP) GAMMA(ND)
-	REAL(KIND=LDP) INT_EN(ND)
+	REAL(KIND=LDP) INT_EN(DST:DEND)
+	REAL(KIND=LDP) OLD_INT_EN(DST:DEND)
 !
 	REAL(KIND=LDP) OLD_POPS(NT,ND)
 	REAL(KIND=LDP) OLD_R(ND)
@@ -68,7 +69,6 @@
 	REAL(KIND=LDP) OLD_ED(ND)
 	REAL(KIND=LDP) OLD_GAMMA(ND)
 	REAL(KIND=LDP) OLD_POP_ATOM(ND)
-	REAL(KIND=LDP) OLD_INT_EN(ND)
 !
 	REAL(KIND=LDP) TOT_ENERGY(NT)
 !
@@ -92,6 +92,7 @@
 	INTEGER ID
 	INTEGER LU
 	LOGICAL WRITE_CHK
+	CHARACTER(LEN=80) FILENAME
 !
 ! A full linearization is now obsolete, but check to make sure.
 !
@@ -138,6 +139,7 @@
 	    OLD_POP_ATOM(I)=OLD_POP_ATOM(I)+OLD_POPS(J,I)
 	  END DO
 	END DO
+	WRITE(6,*)'Set OLD_POP';FLUSH(UNIT=6)
 !
 	DO ISPEC=1,NUM_SPECIES
 	  DO J=DST,DEND
@@ -158,6 +160,7 @@
 	    END IF
 	  END DO
 	END DO
+	WRITE(6,*)'Set CHECK';FLUSH(UNIT=6)
 !
 ! Compute time step. The factor of 10^5 arises because R is in units of 10^10 cm, and
 ! V is in units of km/s.
@@ -168,8 +171,14 @@
 !
 	INT_EN(:)=0.0_LDP
 	OLD_INT_EN(:)=0.0_LDP
+	WRITE(FILENAME,'(I2.2)')MYPE; FILENAME='E_CHK_'//TRIM(FILENAME)
+	OPEN(UNIT=220,FILE=FILENAME,STATUS='UNKNOWN')
 	DO I=DST,DEND
+	  WRITE(220,*)'I=',I,POP_ATOM(I),OLD_POP_ATOM(I); FLUSH(UNIT=220)
 	  DO J=1,NT-2
+	     WRITE(220,'(I5,3ES14.4)')J,INT_EN(I),POPS(J,I),TOT_ENERGY(I)
+	     WRITE(220,'(I5,3ES14.4)')J,OLD_INT_EN(I),OLD_POPS(J,I),TOT_ENERGY(I)
+	     FLUSH(UNIT=220)
 	     INT_EN(I)=INT_EN(I)+POPS(J,I)*TOT_ENERGY(J)
 	     OLD_INT_EN(I)=OLD_INT_EN(I)+OLD_POPS(J,I)*TOT_ENERGY(J)
 	     IF(I .EQ. 1)THEN
@@ -179,8 +188,11 @@
 	     END IF
 	  END DO
 	END DO
-	INT_EN=HDKT*INT_EN/POP_ATOM
-	OLD_INT_EN=HDKT*OLD_INT_EN/OLD_POP_ATOM
+	WRITE(220,*)'Finished'
+	CLOSE(UNIT=220)
+	INT_EN=HDKT*INT_EN/POP_ATOM(DST:DEND)
+	OLD_INT_EN=HDKT*OLD_INT_EN/OLD_POP_ATOM(DST:DEND)
+	WRITE(6,*)'Done INTi & 220';FLUSH(UNIT=6)
 !
 ! We now compute constants for each of the 4 terms. These make
 ! it simpler and cleaner for the evaluation of the linearization.
@@ -199,11 +211,13 @@
 	  EI_VEC(I)=SCALE*POP_ATOM(I)/DELTA_T_SECS
           P_VEC(I)=SCALE*(POP_ATOM(I)+ED(I))*T(I)/DELTA_T_SECS
 	END DO
+	WRITE(6,*)'Done EK';FLUSH(UNIT=6)
 !
 	DO I=DST,DEND
 	  GAMMA(I)=ED(I)/POP_ATOM(I)
 	  OLD_GAMMA(I)=OLD_ED(I)/OLD_POP_ATOM(I)
 	END DO
+	WRITE(6,*)'Done OLD';FLUSH(UNIT=6)
 !
 ! Note: The internal energy terms do not get included in the EHB equation.
 !
@@ -216,6 +230,7 @@
 	    STEQ_T(I)=STEQ_T(I)-WORK(I)
 	  END DO
 	END IF
+	WRITE(6,*)'Done STEQ';FLUSH(UNIT=6)
 !
 ! Diagonal terms.
 !
@@ -234,6 +249,7 @@
 	    END DO
 	  END DO	!Loop of depth.
 	END IF          !End COMPUTE_BA
+	WRITE(6,*)'Done COMPUTE_BA';FLUSH(UNIT=6)
 !
 ! Now compute the adiabatic cooling rate (in ergs/cm^3/sec) for diagnostic
 ! purposes. The rate is output to the GENCOOL file.
@@ -251,8 +267,6 @@
 	  AD_CR_V(I) =P_VEC(I)*LOG(VOL_EXP_FAC(I))
 	  AD_CR_DT(I)=EK_VEC(I)*( (1.0_LDP+GAMMA(I))*T(I)- (1.0_LDP+OLD_GAMMA(I))*OLD_T(I) )
 	END DO
-	CALL MPI_ALLREDUCE(MPI_IN_PLACE,AD_CR_V,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-	CALL MPI_ALLREDUCE(MPI_IN_PLACE,AD_CR_DT,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	AD_CR_V=AD_CR_V*EHB_CONSTANT
 	AD_CR_DT=AD_CR_DT*EHB_CONSTANT
 !
@@ -261,9 +275,9 @@
 !
 	WRITE_CHK=.TRUE.
 	IF(WRITE_CHK)THEN
-	  OPEN(UNIT=7,FILE='ADIABAT_CHK',STATUS='UNKNOWN')
 	  DO K=0,NTHREAD-1
 	    IF(K .EQ. MYPE .AND. MYPE .EQ. 0)THEN
+	      OPEN(UNIT=7,FILE='ADIABAT_CHK',STATUS='UNKNOWN')
 	      WRITE(7,'(A)')'!'
 	      WRITE(7,'(A)')'! The terms (DEk/Dt, DEI/Dt, and DP/dt) listed below are included in the CMFGEN'
 	      WRITE(7,'(A)')'! radiative equilibrium equation. No additional scaling is needed. The d terms'
@@ -277,6 +291,7 @@
 	1                    ' DEk/Dt',' DEI/Dt','?DP/Dt'
 	    END IF
 	    IF(K .EQ. MYPE)THEN
+	      IF(MYPE .NE. 0)OPEN(UNIT=7,FILE='ADIABAT_CHK',STATUS='UNKNOWN',ACTION='WRITE',POSITION='APPEND')
 	      DO I=DST,DEND
 	        T1=EK_VEC(I)*(1.0_LDP+GAMMA(I))*T(I)
 	        T2=EI_VEC(I)*INT_EN(I)
@@ -286,8 +301,9 @@
 	1                    (POP_ATOM(I)/OLD_POP_ATOM(I))-1.0_LDP
 	        WRITE(7,'(5X,7ES14.5)')1.5D0*T(I)*8.6174D-01,INT_EN(I)*8.6174D-01,T1,T2,T3,T4,
 	1                    P_VEC(I)*LOG(VOL_EXP_FAC(I))
-	        FLUSH(UNIT=7)
 	      END DO
+	      FLUSH(UNIT=7)
+	      CLOSE(UNIT=7)
 	    END IF
 	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	  END DO
@@ -297,9 +313,9 @@
 	    CLOSE(UNIT=7)
 	  END IF
 !
-	  OPEN(UNIT=7,FILE='ENERGY_COMP',STATUS='UNKNOWN')
 	  DO K=0,NTHREAD-1
 	    IF(K .EQ. MYPE .AND. MYPE .EQ. 0)THEN
+	      OPEN(UNIT=7,FILE='ENERGY_COMP',STATUS='UNKNOWN')
 	      WRITE(7,'(A)')'!'
 	      WRITE(7,'(A)')'! Energy summary (ergs/cm^3)'
 	      WRITE(7,'(A,ES12.4)')'! Delta t=',DELTA_T_SECS
@@ -312,6 +328,7 @@
 	      FLUSH(UNIT=7)
 	    END IF
 	    IF(K .EQ. MYPE)THEN
+	      IF(MYPE .NE. 0)OPEN(UNIT=7,FILE='ENERGY_COMP',STATUS='OLD', POSITION='APPEND', ACTION='WRITE')
 	      T1=4*ACOS(-1.0_LDP)*1.0E-10_LDP
 	      DO I=DST,DEND
 	        T2=T1*EK_VEC(I)*(1.0_LDP+GAMMA(I))*T(I)*DELTA_T_SECS
@@ -320,8 +337,9 @@
 	        WRITE(7,'(I5,3ES15.5,6ES14.5)')I,R(I),V(I),T(I),0.5D+10*DENSITY(I)*(V(I)**2),T2,T3,T4,
 	1		RADIOACTIVE_DECAY_ENERGY(I),RADIOACTIVE_DECAY_ENERGY(I)*DELTA_T_SECS
 	      END DO
-	      FLUSH(UNIT=7)
+	      CLOSE(UNIT=7)
 	    END IF
+	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	  END DO
 	  CLOSE(UNIT=7)
 	END IF

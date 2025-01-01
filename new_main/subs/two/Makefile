@@ -24,6 +24,8 @@ OBJ = $(LIB)(steq_ba_two_phot_rate_mpi_v1.o)\
 
 all : $(LIB)
 	rm -f *.o
+	mv -f *.mod $(MOD_DIR)
+
 $(LIB) : $(OBJ)	
 
 # General rules to make obects in a library and object files

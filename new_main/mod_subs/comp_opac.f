@@ -383,6 +383,7 @@
 !
 ! The continuum source function is defined by:
 !                                              S= ZETA + THETA.J
+	ZETA=0.0_LDP; THETA=0.0_LDP
 	DO I=MDST,DEND
 	  ZETA(I)=ETA(I)/CHI(I)
 	  THETA(I)=CHI_SCAT(I)/CHI(I)

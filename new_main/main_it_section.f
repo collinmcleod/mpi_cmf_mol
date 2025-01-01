@@ -138,12 +138,6 @@
 	LAST_AV=NITSF
 	NEXT_AV=0
 !
-	IF(DST .EQ. 31)THEN
-          WRITE(125,'(10ES14.4)')(ATM(12)%XzV(I,DST),I=4,11)
-          WRITE(125,'(10ES14.4)')(ATM(12)%XzV(I,DST+1),I=4,11)
-	  FLUSH(UNIT=125)
-        END IF
-!
 ! Set edge cross-sections.
 !
 	CONT_FREQ=0.0_LDP; FREQ_INDX=ML
@@ -461,12 +455,6 @@
 	  WRITE(LUER,*)'We will now zero the BA matrices'
 	  WRITE(LUER,'(A)')' '
 	END IF
-
-	IF(DST .EQ. 31)THEN
-          WRITE(125,'(A,10ES14.4)')'B ',(ATM(12)%XzV(I,DST),I=4,11)
-          WRITE(125,'(A,10ES14.4)')'B ',(ATM(12)%XzV(I,DST+1),I=4,11)
-	  FLUSH(UNIT=125)
-	END IF
 !
 ! Zero STEQ and BA arrays.
 !
@@ -504,11 +492,6 @@
 	  FLUSH(UNIT=6)
 	END IF
 !
-	  IF(DST .EQ. 31)THEN
-            WRITE(125,'(A,10ES14.4)')'F ',(ATM(12)%XzV(I,DST),I=4,11)
-            WRITE(125,'(A,10ES14.4)')'F ',(ATM(12)%XzV(I,DST+1),I=4,11)
-	    FLUSH(UNIT=125)
-	  END IF
 ! 
 !
 ! Compute the value of the S.E. equations and compute the variation
@@ -1796,6 +1779,7 @@
 	  WRITE(199,'(I10,2ES18.8,3X,A)')ML,STEQ_T(DPTH_INDX),BA_T(VAR_INDX,DIAG_INDX,DPTH_INDX),'chg_2'
 	  CALL WR2D_MPI_V1(STEQ_T,IONE,DST,DEND,ND,'After charge','&',L_TRUE,183)
 	END IF
+	WRITE(6,*)'Eval charge rates -- X1'; FLUSH(UNIT=6)
 !
 ! Penning
 !
@@ -1804,6 +1788,7 @@
 	IF(INCL_PENNING_ION)THEN
 	  CALL DO_PENNING_ION_MPI_V1(HDKT,COMPUTE_BA,DIAG_INDX,ND)
 	END IF
+	WRITE(6,*)'Eval penning -- X1'; FLUSH(UNIT=6)
 !
 ! 
 !
@@ -1838,6 +1823,7 @@
 	    CALL WR2D_MPI_V1(STEQ_T,IONE,DST,DEND,ND,'After advection','&',L_TRUE,183)
 	  END IF
 	END IF
+	WRITE(6,*)'Eval done advection -- X1'; FLUSH(UNIT=6)
 !
 ! Allow for adiabatic cooling, if requested.
 !
@@ -1861,6 +1847,7 @@
 	    CALL WR2D_MPI_V1(TA,IONE,DST,DEND,ND,'Adiabatic term','&',L_TRUE,LU_T_EHB)
 	  END IF
 	END IF
+	WRITE(6,*)'Eval done adiabatai -- X1'; FLUSH(UNIT=6)
 !
 	IF(INC_SHOCK_POWER)THEN
 	  CALL EVAL_SHOCK_POWER(dE_SHOCK_POWER,ND,SHOCK_POWER_FAC)
@@ -1876,7 +1863,7 @@
 	  IF(TREAT_NON_THERMAL_ELECTRONS)THEN
 	    STEQ_T_EHB=STEQ_T_EHB+dE_RAD_DECAY(DST:DEND)
 	  ELSE IF(SN_MODEL .AND. INCL_RADIOACTIVE_DECAY)THEN
-	    CALL EVAL_RAD_DECAY_V1(dE_RAD_DECAY,NT,ND)
+	    CALL EVAL_RAD_DECAY_MPI_V1(dE_RAD_DECAY,NT,ND)
 	  END IF
 	  IF(LST_ITERATION .AND. VERBOSE_OUTPUT)THEN
 	    WRITE(199,'(I10,2ES18.8,3X,A)')ML,STEQ_T(DPTH_INDX),BA_T(VAR_INDX,DIAG_INDX,DPTH_INDX),'SN_Rad_Decay'

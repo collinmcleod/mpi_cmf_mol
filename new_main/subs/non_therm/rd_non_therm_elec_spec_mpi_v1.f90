@@ -4,11 +4,12 @@
 	SUBROUTINE RD_NON_THERM_ELEC_SPEC_MPI_V1(DST,DEND,ND,LU)
 	USE SET_KIND_MODULE
 	USE MOD_NON_THERM
+	IMPLICIT NONE
 !
 ! Altered 17-DEc-2024 : Added DST, DEND to call. MPI version
 ! Created 30-Oct-2021
 !
-	INTEGER ND  		!Number of depth points
+	INTEGER DST,DEND,ND  		!Number of depth points
 	INTEGER LU
 	REAL(KIND=LDP) LOC_XKT(NKT)
 	CHARACTER(LEN=132) STRING
@@ -82,7 +83,6 @@
 	      READ(STRING(I+1:),*)DPTH_INDX
 	      IF(DPTH_INDX .GE. DST .AND. DPTH_INDX .LE. DEND)THEN
 	        READ(LU,*)(YE(I,DPTH_INDX),I=1,NKT)
-	        WRITE(6,*)MYPE,'Read depth DPTH_INDX'
 	        IF(DPTH_INDX .EQ. DEND)EXIT
 	      ELSE
 	        READ(LU,*)(T1,I=1,NKT)

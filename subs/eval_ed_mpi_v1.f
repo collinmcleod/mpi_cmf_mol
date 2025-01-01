@@ -6,6 +6,7 @@ C (so that a Newton-Rapshon technique can be used to solve for Ne
 C as equations are non-linear) and the POPULATION of the highest
 C ionization species.
 C
+C Altered 27-Dec-2025 : ZION was incorrectly dimensioned.
 C Created 29-Aug-1990.
 C
 	SUBROUTINE EVAL_ED_MPI_V1(CHARGE,dCHARGEdNE,
@@ -26,7 +27,7 @@ C
 	REAL(KIND=LDP) U(DST:DEND,NION)
 	REAL(KIND=LDP) PHI(DST:DEND,NION)
 	REAL(KIND=LDP) DION_MAT(DST:DEND,NSPEC)
-	REAL(KIND=LDP) Z(NSPEC),ED(ND),POPOXY(ND)
+	REAL(KIND=LDP) Z(NION),ED(ND),POPOXY(ND)
 	REAL(KIND=LDP) LOC_CH(ND),dDIONdNe(ND),dLOC_CH_dNe(ND)
 C
 	REAL(KIND=LDP) T1

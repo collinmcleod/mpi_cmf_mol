@@ -38,7 +38,7 @@ OBJ2  =  obs_frame_v2.o obs_frame_sub_v9.o
 INC = ABS_EW.INC CMF_ABS_EW.INC COMP_JCONT_V4.INC EVAL_LTE_INC_V5.INC  OPACITIES_V5.INC XOPAC_V4.INC  
 
 all: $(EXE_DIR)cmf_flux.exe $(EXE_DIR)obs_frame.exe
-
+	cp -p mod_freq_obs.mod ../mod
 #
 # Give the dependencies of cmf_flux.exe and how it is created.
 # 

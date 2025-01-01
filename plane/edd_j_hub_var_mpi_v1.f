@@ -7,7 +7,7 @@
 !				WRK_MAT( , ,2)=dETA
 !  				dRHS_dHdCHI( , ,)  !RHS of H equation.
 !
-	SUBROUTINE EDD_J_HUB_VAR_MPI_V1(dTAUdCHI,
+	SUBROUTINE EDD_J_HUB_VAR_MPI_V1(
 	1                  SOURCE,CHI,ESEC,ES_COH_VEC,DTAU,R,
 	1                  EDDF,Q,HU,HL,HS,HT,RSQ_DTAUONQ,DERIV_SCL_FAC,
 	1                  W,WPREV,PSI,PSIPREV,DJDt,DJDt_OLDt,
@@ -30,7 +30,6 @@
 !
 	INTEGER DST,DEND
 	INTEGER ND,NM
-	REAL(KIND=LDP) dTAUdCHI(ND,ND)
 	REAL(KIND=LDP) SOURCE(ND)
 	REAL(KIND=LDP) CHI(ND)
 	REAL(KIND=LDP) ESEC(ND)
@@ -65,6 +64,7 @@
 !
 ! Local vectors.
 !
+	REAL(KIND=LDP) dTAUdCHI(ND,ND)
 	REAL(KIND=LDP) dHUdCHI(ND),dHLdCHI(ND)
 	REAL(KIND=LDP) dHSdCHI(ND),dHTdCHI(ND)
 	REAL(KIND=LDP) dHUdTAU(ND),dHLdTAU(ND)
@@ -73,6 +73,7 @@
 ! Local varoables.
 !
 	REAL(KIND=LDP) WRK_MAT(ND,ND)
+	REAL(KIND=LDP) WRK_RHS(ND-1,ND)
 !
 	REAL(KIND=LDP) T1
 	REAL(KIND=LDP) MOD_DTAU
@@ -95,11 +96,12 @@
 	WRK_MAT=0.0_LDP
 	RHS_dHdCHI=0.0_LDP
 	MDST=MAX(1,DST-1)
-	MDEND=MAX(DEND+1,ND)
+	MDEND=MIN(DEND+1,ND)
 !
 ! Compute the dTAUdCHI matrix.
 !
 	CALL dSPHEREdCHI(dTAUdCHI,DTAU,R,Q,ND)
+	WRITE(6,*)MYPE,'Doing dSPH'; FLUSH(UNIT=6)
 !
 ! The following derivatives are valid for all ML.
 !
@@ -112,6 +114,7 @@
 	  dHSdCHI(I)=-HS(I)/T1
 	  dHTdCHI(I)=-HT(I)/T1
 	END DO
+	WRITE(6,*)MYPE,'Doing HL'; FLUSH(UNIT=6)
 !
 ! 
 !
@@ -122,6 +125,7 @@
 ! To improve rounding error, we note that dTBdCHI needs to be added to
 ! both dTBdCHI_I and dTBdCHI_J.
 !
+	WRITE(6,*)MYPE,'Doing XXX'; FLUSH(UNIT=6)
 	DO I=MAX(DST,2),MIN(DEND,ND-1)
 	  J=I-1
 	  K=I+1
@@ -144,6 +148,7 @@
 !
 	END DO
 !
+	WRITE(6,*)MYPE,'Doing WRK_MAT1'
 	DO I=MAX(DST,2),MIN(DEND,ND-1)
 	  J=I-1
 	  K=I+1
@@ -155,6 +160,7 @@
 !
 ! Can now update WRK_MAT for direct opacity variation.
 !
+	WRITE(6,*)MYPE,'Doing WRK_MAT2'
 	DO I=MAX(DST,2),MIN(DEND,ND-1)
 	  J=I-1
 	  K=I+1
@@ -199,6 +205,7 @@
 !
 ! Now do the boundary conditions.
 !
+	WRITE(6,*)MYPE,'Doing DST'
 	IF(DST .EQ. 1)THEN
 	  IF(OUTER_BND_METH .EQ. 'HONJ')THEN
 	    T1=  ( EDDF(1)*Q(1)*JNU(1)*R(1)*R(1) - EDDF(2)*Q(2)*JNU(2)*R(2)*R(2) )/DTAU(1)/DTAU(1)
@@ -230,6 +237,7 @@
 !
 ! Inner boundary --- diffusion approximation.
 !
+	WRITE(6,*)MYPE,'Doing DEND'
 	IF(DEND .EQ. ND)THEN
 	  IF(INNER_BND_METH .EQ. 'DIFFUSION')THEN
 	    T1= ( R(ND)*R(ND)*EDDF(ND)*JNU(ND) - R(ND-1)*R(ND-1)*EDDF(ND-1)*Q(ND-1)*JNU(ND-1) )
@@ -284,17 +292,24 @@
 ! we would the require two matrices. Note that HU(I), HL(I),
 ! HS(I), and HT(I) depend directly on CHI(I) and CHI(I+1).
 !
-	DO I=1,ND-1
+	WRITE(6,*)MYPE,'Doing RHS'
+	DO I=DST,MIN(DEND,ND-1)
 	  T1=dHUdTAU(I)*JNU(I+1)-dHLdTAU(I)*JNU(I)
-	  DO L=DST,MIN(DST,DST+1)
-	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)+T1*dTAUdCHI(I,L)
+	  DO L=1,ND
+	    WRK_RHS(I,L)=WRK_RHS(I,L)+T1*dTAUdCHI(I,L)
 	  END DO
 	  T1=dHUdCHI(I)*JNU(I+1) - dHLdCHI(I)*JNU(I)
 	1                       + dHSdCHI(I)*RSQ_HNUM1(I)
 	1                       + dHTdCHI(I)*RSQ_HNU_OLDt(I)
-	  RHS_dHdCHI(I,I)=RHS_dHdCHI(I,I) + T1
-	  IF(I .LT. ND .AND. I .LE. DEND)RHS_dHdCHI(I,I+1)=RHS_dHdCHI(I,I+1) + T1
+	  WRK_RHS(I,I)=WRK_RHS(I,I) + T1
+	  WRK_RHS(I,I+1)=WRK_RHS(I,I+1) + T1
 	END DO
 !
+	I=(ND-1)*ND
+	CALL MPI_ALLREDUCE(MPI_IN_PLACE,WRK_RHS,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+	DO J=VDST,VDEND
+	  RHS_dHdCHI(:,J)=WRK_RHS(:,J)
+	END DO
+
 	RETURN
 	END
