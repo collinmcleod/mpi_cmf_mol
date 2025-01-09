@@ -227,6 +227,8 @@
 	          END DO
 	        END DO
 	      END DO 		!Loop over depth
+!	      I=SE(ID)%N_SE*SE(ID)%N_IV*(DEND-DST+1)
+!	      CALL CHECK_VEC_NAN(SE(ID)%BA_PAR,I,'SE_NON_THERM(STOP)',J)
 	    END IF
 	  END DO		!Loop over ionization stage
 	END IF			!Include excitations?
@@ -262,9 +264,10 @@
 	    WRITE(LU_TH,*)''
 	    WRITE(LU_TH,'(X,A5,6(A12))')'Depth','Ne(NT)','Ne','Ne(NT)/Ne','Ek(NT)','Ek','Ek(NT)/Ek'
 	    DO DPTH_INDX=DST,DEND
-	      WRITE(LU_TH,'(X,I5,6ES12.4)')DPTH_INDX,T1_SUM(I),ED(DPTH_INDX),T1_SUM(I)/ED(DPTH_INDX),             &
-	                             T2_SUM(I),1.5_LDP*8.617343E-5_LDP*ED(DPTH_INDX)*T(DPTH_INDX)*1.0E4_LDP,   &
-	                             T2_SUM(I)/(1.5_LDP*8.617343E-5_LDP*ED(DPTH_INDX)*T(DPTH_INDX)*1.0E4_LDP)
+	      I=DPTH_INDX
+	      WRITE(LU_TH,'(X,I5,6ES12.4)')I,T1_SUM(I),ED(I),T1_SUM(I)/ED(I),                  &
+	                             T2_SUM(I),1.5_LDP*8.617343E-5_LDP*ED(I)*T(I)*1.0E4_LDP,   &
+	                             T2_SUM(I)/(1.5_LDP*8.617343E-5_LDP*ED(I)*T(I)*1.0E4_LDP)
 	    END DO
 !
 	    WRITE(LU_TH,'(//,A)')'Comparison of heating fractions (SE as evaluated in SE_BA_NON_THERM)'

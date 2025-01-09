@@ -23,6 +23,7 @@ OBJ = $(LIB)(steq_ba_two_phot_rate_mpi_v1.o)\
       $(LIB)(two_phot_var_opac_mpi_v1.o)
 
 all : $(LIB)
+	cp -f $(INSTALL_DIR)perm_mod_file jnk.mod
 	rm -f *.o
 	mv -f *.mod $(MOD_DIR)
 

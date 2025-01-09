@@ -17,7 +17,7 @@ include Makefile_definitions
 # libraries and executables.
 
 all : info d_tools d_blas d_dust d_lpack d_nm_subs d_stark d_unix d_subs d_plane d_newsubs d_pgplt \
-         d_lte d_new_main d_obs 
+         d_lte d_mpi d_new_main d_obs 
      
 #    d_lte d_new_main d_disp d_spec_plt d_obs d_misc
 
@@ -32,6 +32,8 @@ d_lpack:
 	(cd lpack; make)
 d_dust:
 	(cd dust; make)
+d_mpi:
+	(cd mpi_output; make )
 d_tools:
 	(cd tools; make )
 d_nm_subs:

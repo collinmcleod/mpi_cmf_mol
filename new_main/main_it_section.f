@@ -555,6 +555,14 @@
 	  CALL TUNE(IONE,'SE_NON_THERM')
 	    CALL SE_BA_NON_THERM_MPI_V1(dE_RAD_DECAY,dE_SHOCK_POWER,COMPUTE_BA,NT,ND,DEC_NRG_SCL_FAC)
 	  CALL TUNE(ITWO,'SE_NON_THERM')
+!
+	DO ID=1,NUM_IONS
+	  IF(ATM(ID)%XzV_PRES)THEN
+            I=SE(ID)%N_SE*SE(ID)%N_IV*(DEND-DST+1)
+            CALL CHECK_VEC_NAN(SE(ID)%BA_PAR,I,'AF_NON_THERM(STOP)',J)
+	  END IF
+	END DO
+!
 	ELSE
 	  dE_RAD_DECAY=0.0_LDP; dE_SHOCK_POWER=0.0_LDP
 	END IF
@@ -950,8 +958,8 @@
 	FLUSH(LUER)
 	CALL TUNE(IONE,'MLCF')
 	CALL TUNE(IONE,'10000')
-	IF(MYPE .EQ. 0)WRITE(6,*)'Starting 10000 loop', WRITE_JH; FLUSH(6)
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	IF(MYPE .EQ. 0)WRITE(6,*)'Starting 10000 loop', WRITE_JH; FLUSH(6)
 !
 !	WRITE(STRING,*)ML; STRING='ML='//ADJUSTL(TRIM(STRING))
 !	CALL WRITV(T,ND,TRIM(STRING),852+MYPE); FLUSH(852+MYPE)
@@ -1075,7 +1083,6 @@
 ! opacity and emissivity. These are used in carrying the variation of J from
 ! one frequency to the next.
 !
-	    CALL TUNE(IONE,'RS_ZONE')
 	    DO SIM_INDX=1,MAX_SIM
 	      IF(RESONANCE_ZONE(SIM_INDX))THEN
 	        DO I=DST,DEND
@@ -1084,7 +1091,6 @@
 	        END DO
 	      END IF
 	    END DO
-	    CALL TUNE(ITWO,'RS_ZONE')
 !
 ! CHECK for negative line opacities. NEG_OPAC_FAC is the factor we
 ! multiply the line opacities by so that the total opacity is positive.
@@ -1731,6 +1737,14 @@
 	  END IF
 	END IF
 !
+	DO ID=1,NUM_IONS
+	  IF(ATM(ID)%XzV_PRES)THEN
+           I=SE(ID)%N_SE*SE(ID)%N_IV*(DEND-DST+1)
+            CALL CHECK_VEC_NAN(SE(ID)%BA,I,'AT_10000(STOP)',J)
+	  END IF
+	END DO
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!
 10000	CONTINUE
 	IF(LST_ITERATION .AND. VERBOSE_OUTPUT)THEN
 	  WRITE(199,'(I10,2ES18.8,3X,A)')ML,STEQ_T(DPTH_INDX),BA_T(VAR_INDX,DIAG_INDX,DPTH_INDX),'End cont loop'
@@ -1739,6 +1753,13 @@
 	CALL TUNE(ITWO,'10000')
 	CALL TUNE(3,' ')
 	IF(MYPE .EQ. 0) WRITE(LUER,'(/,A,I10,/)')' Number of weak lines is:',NUM_OF_WEAK_LINES
+!
+	DO ID=1,NUM_IONS
+	  IF(ATM(ID)%XzV_PRES)THEN
+           I=SE(ID)%N_SE*SE(ID)%N_IV*(DEND-DST+1)
+            CALL CHECK_VEC_NAN(SE(ID)%BA,I,'SE_AFT_10000(STOP)',J)
+	  END IF
+	END DO
 !
 ! 
 !
@@ -1779,7 +1800,7 @@
 	  WRITE(199,'(I10,2ES18.8,3X,A)')ML,STEQ_T(DPTH_INDX),BA_T(VAR_INDX,DIAG_INDX,DPTH_INDX),'chg_2'
 	  CALL WR2D_MPI_V1(STEQ_T,IONE,DST,DEND,ND,'After charge','&',L_TRUE,183)
 	END IF
-	WRITE(6,*)'Eval charge rates -- X1'; FLUSH(UNIT=6)
+	IF(MYPE .EQ. 0)WRITE(6,*)'Eval charge rates -- X1'; FLUSH(UNIT=6)
 !
 ! Penning
 !
@@ -1823,7 +1844,7 @@
 	    CALL WR2D_MPI_V1(STEQ_T,IONE,DST,DEND,ND,'After advection','&',L_TRUE,183)
 	  END IF
 	END IF
-	WRITE(6,*)'Eval done advection -- X1'; FLUSH(UNIT=6)
+	IF(MYPE .EQ. 0)WRITE(6,*)'Eval done advection -- X1'; FLUSH(UNIT=6)
 !
 ! Allow for adiabatic cooling, if requested.
 !
@@ -2484,6 +2505,13 @@
 	    WRITE(LUER,'(A,/)')' Successfully opened/read BAMAT files in CMFGEN_SUB before SOLVE_FOR_POPS'
 	  END IF
 	END IF
+!
+	DO ID=1,NUM_IONS
+	  IF(ATM(ID)%XzV_PRES)THEN
+            I=SE(ID)%N_SE*SE(ID)%N_IV*(DEND-DST+1)
+            CALL CHECK_VEC_NAN(SE(ID)%BA,I,'BF_SOLVE_10000(STOP)',J)
+	  END IF
+	END DO
 !
 	CALL TUNE(IONE,'SOLVE_FOR_POPS')
 	CALL SOLVE_FOR_POPS_MPI_V1(POPS,NT,NION,ND,NC,NP,NUM_BNDS,DIAG_INDX,

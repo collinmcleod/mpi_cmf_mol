@@ -93,7 +93,9 @@
 	  WRITE(I,*)'NM_KI='
 	  STOP
 	END IF
+	KI(:,:,1:2)=0.0_LDP
 	WRK_MAT=0.0_LDP
+	WRK_RHS=0.0_LDP
 	RHS_dHdCHI=0.0_LDP
 	MDST=MAX(1,DST-1)
 	MDEND=MIN(DEND+1,ND)
@@ -101,7 +103,6 @@
 ! Compute the dTAUdCHI matrix.
 !
 	CALL dSPHEREdCHI(dTAUdCHI,DTAU,R,Q,ND)
-	WRITE(6,*)MYPE,'Doing dSPH'; FLUSH(UNIT=6)
 !
 ! The following derivatives are valid for all ML.
 !
@@ -114,7 +115,6 @@
 	  dHSdCHI(I)=-HS(I)/T1
 	  dHTdCHI(I)=-HT(I)/T1
 	END DO
-	WRITE(6,*)MYPE,'Doing HL'; FLUSH(UNIT=6)
 !
 ! 
 !
@@ -125,7 +125,6 @@
 ! To improve rounding error, we note that dTBdCHI needs to be added to
 ! both dTBdCHI_I and dTBdCHI_J.
 !
-	WRITE(6,*)MYPE,'Doing XXX'; FLUSH(UNIT=6)
 	DO I=MAX(DST,2),MIN(DEND,ND-1)
 	  J=I-1
 	  K=I+1
@@ -148,7 +147,6 @@
 !
 	END DO
 !
-	WRITE(6,*)MYPE,'Doing WRK_MAT1'
 	DO I=MAX(DST,2),MIN(DEND,ND-1)
 	  J=I-1
 	  K=I+1
@@ -160,7 +158,6 @@
 !
 ! Can now update WRK_MAT for direct opacity variation.
 !
-	WRITE(6,*)MYPE,'Doing WRK_MAT2'
 	DO I=MAX(DST,2),MIN(DEND,ND-1)
 	  J=I-1
 	  K=I+1
@@ -205,7 +202,6 @@
 !
 ! Now do the boundary conditions.
 !
-	WRITE(6,*)MYPE,'Doing DST'
 	IF(DST .EQ. 1)THEN
 	  IF(OUTER_BND_METH .EQ. 'HONJ')THEN
 	    T1=  ( EDDF(1)*Q(1)*JNU(1)*R(1)*R(1) - EDDF(2)*Q(2)*JNU(2)*R(2)*R(2) )/DTAU(1)/DTAU(1)
@@ -237,7 +233,6 @@
 !
 ! Inner boundary --- diffusion approximation.
 !
-	WRITE(6,*)MYPE,'Doing DEND'
 	IF(DEND .EQ. ND)THEN
 	  IF(INNER_BND_METH .EQ. 'DIFFUSION')THEN
 	    T1= ( R(ND)*R(ND)*EDDF(ND)*JNU(ND) - R(ND-1)*R(ND-1)*EDDF(ND-1)*Q(ND-1)*JNU(ND-1) )
@@ -292,7 +287,6 @@
 ! we would the require two matrices. Note that HU(I), HL(I),
 ! HS(I), and HT(I) depend directly on CHI(I) and CHI(I+1).
 !
-	WRITE(6,*)MYPE,'Doing RHS'
 	DO I=DST,MIN(DEND,ND-1)
 	  T1=dHUdTAU(I)*JNU(I+1)-dHLdTAU(I)*JNU(I)
 	  DO L=1,ND

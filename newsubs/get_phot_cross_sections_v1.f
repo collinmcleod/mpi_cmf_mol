@@ -79,6 +79,7 @@
 !
 ! Each processor computes the cross-section for 1 frequency.
 !
+	  WRITE(6,*)'New phot',MYPE,ID,FREQ,NLEVS; FLUSH(UNIT=6)
 	  K=CUR_ML+MYPE
 	  IF(K .LE. NCF)THEN
 	    FREQ=NU_EVAL_CONT(K)
@@ -92,14 +93,17 @@
 	      COMP_FREQ(I)=NU_EVAL_CONT(CUR_ML+I)
 	    END IF
 	  END DO
+	  WRITE(6,*)'Done new phot',MYPE,ID,FREQ,NLEVS; FLUSH(UNIT=6)
 	END IF
 !
 ! Set the photoionization cross-sections on all nodes for the current frequency.
 !
+	 WRITE(6,*)'Doing broadcast',MYPE,ID,FREQ,NLEVS; FLUSH(UNIT=6)
 	IF(MYPE .EQ. NU_THRD)THEN
 	  PHOT(1:NLEVS)=PD(ID)%LST_CROSS(1:NLEVS,PHOT_ID)
 	END IF
 	CALL MPI_BCAST(PHOT,NLEVS,MPI_DOUBLE_PRECISION,NU_THRD,MPI_COMM_WORLD,IERR)
+	WRITE(6,*)'Done broadcast',MYPE,ID,FREQ,NLEVS; FLUSH(UNIT=6)
 !
 	RETURN
 	END

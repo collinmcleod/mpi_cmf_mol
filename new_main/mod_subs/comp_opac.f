@@ -325,10 +325,12 @@
 ! Use X-ray emission as tubulated by a PLASMA code. Emission should  be
 ! tabulated per electron and per ion.
 !
+	    CALL TUNE(1,'PLASMA_CODE')
 	    CALL GET_SCL_XRAY_FLUXES_V1(CONT_FREQ,
 	1              XRAY_EMISS_1,XRAY_EMISS_2,
 	1              NU_EVAL_CONT,NCF,FREQ_INDX,
 	1              VSMOOTH_XRAYS,SECTION)
+	    CALL TUNE(2,'PLASMA_CODE')
 !
 ! We use T3 for the Electron density. We asume H, He, and C are fully ionized
 ! in the X-ray emitting plasma. All other species are assumed have Z=6.0
@@ -346,13 +348,9 @@
           ETA(MDST:DEND)=ETA(MDST:DEND)+ZETA(MDST:DEND)
 	  ETA_MECH(MDST:DEND)=TA(MDST:DEND)
 !
-! Changed 06-Aug-2003: Clumping was not beeing allowed for when computing
-! the shock luminosity.
+! Changed 06-Aug-2003: Clumping was not beeing allowed for when computing the shock luminosity.
+! Don't need all processes to know about X-ray flux, therefor no reduction.
 !
-	  IF(.NOT. LST_DEPTH_ONLY)THEN
-	    CALL MPI_ALLREDUCE(MPI_IN_PLACE,ZETA,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierr)
-	    CALL MPI_ERR_CHECK(IERR,'MPI_ALLREDUCE -- FST_ZETA -- COMP_OPAC')
-	  END IF
 	  IF(DST .EQ. 1)THEN
 	    T1=0.241838_LDP		!eV to 10^15Hz
 	    IF(SECTION .EQ. 'CONTINUUM')THEN

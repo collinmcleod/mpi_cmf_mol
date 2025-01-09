@@ -23,7 +23,7 @@ C i.e. TUNE(1,'Unique ID') does not initialize the counters.
 C
         SUBROUTINE TUNE(LRUN,IDENT)
 	USE SET_KIND_MODULE
-        IMPLICIT NONE
+	IMPLICIT NONE
 !
 ! Altered 18-Feb-2013 : MAX_IDS increased. STACK introduced.
 !                       Routine should now be much more efficient, with less instructions per call.
@@ -69,9 +69,15 @@ C
 !
 ! We will only get time for process 0
 !
+!	WRITE(280+MYPE,'(I4,2X,A)')LRUN,TRIM(IDENT); FLUSH(280+MYPE)
+!	IF(MYPE .EQ. 0)THEN
+!	  WRITE(6,'(I4,2X,A)')LRUN,TRIM(IDENT); FLUSH(6)
+!	ELSE
+!	  RETURN
+!	END IF
+!
 	IF(MYPE .NE. 0)RETURN
-	WRITE(277,'(I4,2X,A)')LRUN,TRIM(IDENT); FLUSH(277)
-        IF (FIRSTTIME)THEN
+	IF(FIRSTTIME)THEN
           FIRSTTIME=.FALSE.
           DO  I=1,MAX_IDS
             ST_CPU(I)=0.0_LDP
