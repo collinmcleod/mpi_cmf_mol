@@ -233,6 +233,22 @@
 	  RETURN
 	END IF
 !
+	DO L=1,ND
+	  IF(R(L) .NE. R(L) .OR. V(L) .NE. V(L)  .OR. SIGMA(L) .NE.  SIGMA(L))THEN
+	    WRITE(6,*)'Error reading SCRTEMP file -- NANS encountered'
+	    WRITE(6,*)'SCRTEMP file may have been corrupted by previous iteration.'
+	    STOP
+	  END IF
+	END DO
+!
+	DO I=1,NT*ND
+	  IF(POPS(I) .NE. POPS(I))THEN
+	    WRITE(6,*)'Error reading SCRTEMP file -- NANS encountered'
+	    WRITE(6,*)'SCRTEMP file may have been corrupted by previous iteration.'
+	    STOP
+	  END IF
+	END DO
+!
 ! Successful Read !
 !
 	CLOSE(UNIT=LU)

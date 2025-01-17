@@ -794,8 +794,7 @@
 	1            ND_MAX,NP_MAX,NCF_MAX,N_LINE_MAX,
 	1            TX_OFFSET,MAX_SIM,NM,NM_KI,NLF)
 !
-	IF(MYPE .EQ. 0)CALL TUNE(3,' ')
-	!
+	CALL TUNE(3,' ')
 	CALL MPI_FINALIZE (ierr)
 	STOP
 !

@@ -170,7 +170,9 @@
 	    END DO
 	  END DO
 	END DO
-!
+	CALL CHECK_VEC_NAN(C_ION,NION*NT,'CION(STOP)',J)
+	CALL CHECK_VEC_NAN(C_MAT,NT*NT,'CION(STOP)',J)
+ !
 ! Now do STEQ
 !
 	IF(DIAG_BAND)THEN
@@ -207,6 +209,7 @@
 	    END IF
 	  END DO
 	END DO
+	CALL CHECK_VEC_NAN(C_ION,NION*NT,'CION_2ND(STOP)',J)
 !
 ! Allow for advection terms in the ionization equations.
 !
@@ -249,6 +252,7 @@
 	    END DO
 	  END DO
 	END IF
+	CALL CHECK_VEC_NAN(C_ION,NION*NT,'CION_3RD(STOP)',J)
 !
 ! We now replace any equations that need replacing.
 !
@@ -260,6 +264,7 @@
 	    C_MAT(I,:)=C_NC(ISPEC,:)
 	  END IF
 	END DO
+	CALL CHECK_VEC_NAN(C_MAT,NT*NT,'CMAT_NC(STOP)',J)
 !
 	DO ISPEC=1,NUM_SPECIES
 	  IF(DIAG_BAND .AND. SPECIES_PRES(ISPEC))THEN
@@ -278,6 +283,7 @@
 	ELSE
 	  C_MAT(NT,:)  =BA_T(:,BAND_INDX,DEPTH_INDX)
 	END IF
+	CALL CHECK_VEC_NAN(C_MAT,NT*NT,'CMAT_3RD(STOP)',J)
 !
 ! Crude section to create ELECTRON cooling equation.
 ! Must be done after all equations are done, but before GS equation is replaced.
@@ -320,6 +326,7 @@
 	    END IF
 	  END DO
 	END IF
+	CALL CHECK_VEC_NAN(C_MAT,NT*NT,'CMAT_4th(STOP)',J)
 !
 ! Check if we wish to use the ionization conservation equation.
 ! We only use the diagonal band to do this. We use REPLACE
@@ -351,7 +358,7 @@
 	  CLOSE(LUOUT)
 	END IF
 !
-	IF(K .EQ. 10000 .AND. DIAG_BAND)THEN
+	IF(K .EQ. 5 .AND. DIAG_BAND)THEN
 	  OPEN(UNIT=LUOUT,FILE='BA_ASCI_N_D43_NOREP',STATUS='UNKNOWN')
 	    CALL WR2D_MA(POPS(1,K),NT,1,'POPS_D1',LUOUT)
 	    CALL WR2D_MA(STEQ_VEC,NT,1,'STEQ_VEC_D1',LUOUT)
@@ -395,6 +402,7 @@
 	1       NT,ND,NION,DIAG_BAND,K,
 	1       FIRST_MATRIX,LAST_MATRIX)
 	END IF
+	CALL CHECK_VEC_NAN(C_MAT,NT*NT,'CMAT_FIX(STOP)',J)
 !
 	IF(LTE_MODEL)THEN
 	  CALL ADJUST_CMAT_TO_LTE(C_MAT,STEQ_VEC,DIAG_BAND,DEPTH_INDX,NT)
@@ -415,9 +423,10 @@
 ! set WRITE_INDX to 0 to avoid writes.
 !
 	K=DEPTH_INDX
-	WRITE_INDX=0                      !; WRITE_INDX(1:4)=(/5,15,52,58/)
+!	WRITE_INDX=0                      !; WRITE_INDX(1:4)=(/5,15,52,58/)
+	WRITE_INDX(1:4)=(/5,15,52,58/)
 	DO I=1,NINDX
-	  IF(WRITE_INDX(I) .EQ. 0)EXIT
+	  IF(WRITE_INDX(I) .EQ. 0 .OR. WRITE_INDX(I) .GT. ND)EXIT
 	  WRITE(FILENAME,'(I5)')WRITE_INDX(I)
 	  FILENAME='BA_ASCI_N_D'//ADJUSTL(FILENAME)
 	  IF(K .EQ. WRITE_INDX(I) .AND. DIAG_BAND)THEN

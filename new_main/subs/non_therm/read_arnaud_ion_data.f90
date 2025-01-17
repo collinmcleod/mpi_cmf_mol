@@ -6,6 +6,8 @@
 	IMPLICIT NONE
 	INTEGER ND
 !
+! Altered : 12-Jan-2025 : Unimportant access error to array fixed.
+!                         Bug fix -- issues for double ionization when X-rays not included. 
 ! Altered : 26-Apr-2019 : better error handling and reporting.
 !
 	INTEGER I,J,K
@@ -173,7 +175,11 @@
 	               IF(INDEX(TMP_NAME,'&') .NE. 0 .AND. THD(IT)%N_ION_ROUTES .EQ.0)THEN
 	                 THD(IT)%SUM_GION=ATM(ID+1)%GIONXzV_F
 	                 THD(IT)%N_ION_ROUTES=1
-	                 THD(IT)%ION_LEV(THD(IT)%N_ION_ROUTES)=SE(ID)%XRAY_EQ
+	                 IF(SE(ID)%XRAY_EQ .EQ. 0)THEN
+	                    THD(IT)%ION_LEV(THD(IT)%N_ION_ROUTES)=ATM(ID)%NXzV+1
+	                 ELSE
+	                   THD(IT)%ION_LEV(THD(IT)%N_ION_ROUTES)=SE(ID)%XRAY_EQ
+	                 END IF
 	                 IF(MYPE .EQ. 0)WRITE(6,*)'SE(ID)%XRAY_EQ=',SE(ID)%XRAY_EQ,TRIM(ATM(ID_ION)%XZVLEVNAME_F(1))
 	               END IF
 	             END IF

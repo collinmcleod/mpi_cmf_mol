@@ -192,7 +192,6 @@
 	CLOSE(UNIT=220)
 	INT_EN=HDKT*INT_EN/POP_ATOM(DST:DEND)
 	OLD_INT_EN=HDKT*OLD_INT_EN/OLD_POP_ATOM(DST:DEND)
-	WRITE(6,*)'Done INTi & 220';FLUSH(UNIT=6)
 !
 ! We now compute constants for each of the 4 terms. These make
 ! it simpler and cleaner for the evaluation of the linearization.
@@ -211,13 +210,11 @@
 	  EI_VEC(I)=SCALE*POP_ATOM(I)/DELTA_T_SECS
           P_VEC(I)=SCALE*(POP_ATOM(I)+ED(I))*T(I)/DELTA_T_SECS
 	END DO
-	WRITE(6,*)'Done EK';FLUSH(UNIT=6)
 !
 	DO I=DST,DEND
 	  GAMMA(I)=ED(I)/POP_ATOM(I)
 	  OLD_GAMMA(I)=OLD_ED(I)/OLD_POP_ATOM(I)
 	END DO
-	WRITE(6,*)'Done OLD';FLUSH(UNIT=6)
 !
 ! Note: The internal energy terms do not get included in the EHB equation.
 !
@@ -230,7 +227,6 @@
 	    STEQ_T(I)=STEQ_T(I)-WORK(I)
 	  END DO
 	END IF
-	WRITE(6,*)'Done STEQ';FLUSH(UNIT=6)
 !
 ! Diagonal terms.
 !
@@ -249,7 +245,6 @@
 	    END DO
 	  END DO	!Loop of depth.
 	END IF          !End COMPUTE_BA
-	WRITE(6,*)'Done COMPUTE_BA';FLUSH(UNIT=6)
 !
 ! Now compute the adiabatic cooling rate (in ergs/cm^3/sec) for diagnostic
 ! purposes. The rate is output to the GENCOOL file.

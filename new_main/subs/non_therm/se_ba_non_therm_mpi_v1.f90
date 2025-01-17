@@ -132,8 +132,9 @@
 	          ION_EXC_EN=ATM(ID+1)%EDGEXzV_F(1)
 	          ONE_ELEC=.FALSE.
 	        ELSE
-	          NUP_F=THD(IT)%ION_LEV(J); NUP=ATM(ID+1)%F_TO_S_XzV(NUP_F)
-                  SE_ION_LEV=SE(ID)%ION_LEV_TO_EQ_PNT(NUP)
+	          NUP_F=THD(IT)%ION_LEV(J)
+!	          NUP=ATM(ID+1)%F_TO_S_XzV(NUP_F)
+!                 SE_ION_LEV=SE(ID)%ION_LEV_TO_EQ_PNT(NUP)
 	          GUPPER=ATM(ID+1)%GXzV_F(NUP_F)
                   SE_ION_LEV=ATM(ID)%NXzV+1               !NUP -- assume all to ground state at  present.
 	          ION_EXC_EN=0.0_LDP                        !=ATM(ID+1)%EDGEXzV_F(1)-ATM(ID+1)%EDGEXzV_F(NUP_F)
@@ -169,8 +170,9 @@
                     SE_ION_LEV=SE(ID)%XRAY_EQ
 	            GUPPER=THD(IT)%SUM_GION
 	          ELSE
-	            NUP_F=THD(IT)%ION_LEV(J); NUP=ATM(ID+1)%F_TO_S_XzV(NUP)
-                    SE_ION_LEV=SE(ID)%ION_LEV_TO_EQ_PNT(NUP)
+	            NUP_F=THD(IT)%ION_LEV(J)
+! 	            NUP=ATM(ID+1)%F_TO_S_XzV(NUP)
+!	            SE_ION_LEV=SE(ID)%ION_LEV_TO_EQ_PNT(NUP)
 	            GUPPER=ATM(ID+1)%GXzV_F(NUP_F)
 	          END IF
                   SE_ION_LEV=ATM(ID)%NXzV+1               !NUP -- assume all to ground state at  present.

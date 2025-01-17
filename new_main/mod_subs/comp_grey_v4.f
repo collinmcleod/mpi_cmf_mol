@@ -232,8 +232,10 @@
 !
 ! TA is a temporary vector with the change in enthalpy.
 !
-	   WRITE(LUER,*)'Calling JGREY_HUB_DDT_V5'
-	   WRITE(LUWARN,*)'Calling JGREY_HUB_DDT_V5'
+	   IF(MYPE .EQ. 0)THEN
+	     WRITE(LUER,*)'Calling JGREY_HUB_DDT_V5'
+	     WRITE(LUWARN,*)'Calling JGREY_HUB_DDT_V5'
+	   END IF
 	   T2=1.0E-06_LDP		!Accuracy to converge f
 	   CALL JGREY_HUB_DDT_V5(RJ,SOB,CHI,PLANCKMEAN,R,CLUMP_FAC,V,SIGMA,POPS,
 	1              P,AQW,HMIDQW,KQW,LUM,METHOD,DIF,IC,

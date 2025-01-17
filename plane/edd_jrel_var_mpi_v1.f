@@ -52,9 +52,9 @@
 !
 ! 
 !
-	KI=0.0_LDP;  RHS_dHdCHI=0.0_LDP
-	MDST=MAX(1,DST-1)
-	MDEND=MIN(DEND+1,ND)
+	KI=0.0_LDP;          RHS_dHdCHI=0.0_LDP
+	WRK_RHS=0.0_LDP;     WRK_MAT=0.0_LDP
+	MDST=MAX(1,DST-1);   MDEND=MIN(DEND+1,ND)
 !
 ! NB: The dTAUdCHI_J & dTAUdCHI_H matrices were computed in the calling routine..
 !
@@ -77,7 +77,7 @@
 !
 ! DTAU_H terms
 !
-	DO I=MDST,MIN(MDEND,ND-1)
+	DO I=MAX(2,DST),MIN(DEND,ND-1)
 	  J=I-1
 	  K=I+1
 	  dTAdCHI_J=-dHLdTAU(J)
@@ -183,9 +183,9 @@
 	  T1=  ( (FEDD(1)+VdHdR_TERM(1))*Q(1)*JNU(1)*GAM_RSQ(1) -
 	1      (FEDD(2)+VdHdR_TERM(2))*Q(2)*JNU(2)*GAM_RSQ(2) )/DTAU_H(1)/DTAU_H(1)
 	  DO L=1,ND
-	    KI(1,L,1)=KI(1,L,1)+T1*dTAUdCHI_H(1,L)
+	    WRK_MAT(1,L)=WRK_MAT(1,L)+T1*dTAUdCHI_H(1,L)
 	  END DO
-	  KI(1,1,1)=KI(1,1,1)+ (PSI(1)*JNU(1)- PSIPREV(1)*JNU_PREV(1))/CHI_H(1)
+	  WRK_MAT(1,1)=WRK_MAT(1,1)+ (PSI(1)*JNU(1)- PSIPREV(1)*JNU_PREV(1))/CHI_H(1)
 	END IF
 !!
 ! NB: We multiply DBB by GAM_REL, as we will divid KI by GAM_REL later.
@@ -222,7 +222,7 @@
 	1           GAM_RSQ(ND-1)*(FEDD(ND-1)+VdHdR_TERM(ND-1))*Q(ND-1)*JNU(ND-1) )
 	1           / DTAU_H(ND-1)/DTAU_H(ND-1)
 	    DO L=1,ND
-	      KI(ND,L,1)=KI(ND,L,1)+T1*dTAUdCHI_H(ND-1,L)
+	      WRK_MAT(ND,L)=WRK_MAT(ND,L)+T1*dTAUdCHI_H(ND-1,L)
 	    END DO
 	  END IF
 	END IF
@@ -265,7 +265,7 @@
 !
 	DO L=VDST,VDEND
 	  DO I=DST,MIN(DEND,ND-1)
-	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)/GAM_REL(L)
+	    WRK_RHS(I,L)=WRK_RHS(I,L)/GAM_REL(L)
 	  END DO
 	END DO
 !

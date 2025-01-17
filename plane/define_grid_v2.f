@@ -65,7 +65,7 @@
       END IF
 !
       IF(NEW_GRID)THEN
-        WRITE(LUER,*)'   Calculating characteristic rays.....'
+        IF(MYPE .EQ. 0)WRITE(LUER,*)'   Calculating characteristic rays.....'
         CALL CHARACTERISTICS_V2(R_EXT,P,V_EXT,VDOP_VEC,VDOP_FRAC,ND_EXT,NC,NP)
       END IF
 !--------------------------------------------------------------------

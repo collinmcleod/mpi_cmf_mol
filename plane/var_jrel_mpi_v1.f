@@ -120,7 +120,10 @@
 	INTEGER IFAIL
 ! 
 !
-	IF(INIT)CALL ALLOC_MOD_VAR_JREL_MPI_V1(ND)
+	IF(INIT)THEN
+	  CALL ALLOC_MOD_VAR_JREL_MPI_V1(ND)
+	  IF(MYPE .EQ. 0)WRITE(6,*)'Allocated memory in VAR_JREL'; FLUSH(UNIT=6)!
+	END IF
 !
 ! Zero relevant vectors and matrices.
 !
@@ -128,7 +131,7 @@
 	GAM_RSQHNU=0.0_LDP		!1:ND
 	LUER=6
 	MDST=MAX(DST-1,1)
-	MDEND=MAX(DEND,DEND+1)
+	MDEND=MIN(ND,DEND+1)
 !
 	IF(INIT)THEN
 	  TX=0.0_LDP	
@@ -296,7 +299,8 @@
 ! EPS is used if we define N in terms of J rather than H, This is sometimes
 ! useful as H can approach zero, and hence N/H is undefined.
 !
-	  DO I=MDST,MDEND
+	  SET_UP_VECS=0.0_LDP
+	  DO I=DST,MIN(DEND,ND-1)
 	    DELTAH(I)=CON_DELTAH(I)/dLOG_NU/(CHI_H(I)+CHI_H(I+1))
 	    W(I)=DELTAH(I)*(1.0_LDP+CON_dNdNUH(I)*NMID_ON_HMID(I))
 	    WPREV(I)=DELTAH(I)*(1.0_LDP+CON_dNdNUH(I)*NMID_ON_HMID_PREV(I))
@@ -310,13 +314,19 @@
 	    EPS_PREV_A(I)=EPS_PREV_A(I)*GAM_RSQ(I)
 	  END DO
 !
-	  DO I=MAX(2,MDST),MDEND
+	  DO I=MAX(2,DST),DEND
 	    DELTA(I)=CON_DELTA(I)/CHI_J(I)/dLOG_NU
 	  END DO
 	  DELTA(1)=CON_DELTA(1)/CHI_H(1)/dLOG_NU
 	END IF
 !
-	DO I=MAX(2,MDST),MIN(MDEND,ND-1)
+	IF(DST .EQ. 1)THEN
+	  PSI(1)=GAM_RSQ(1)*DELTA(1)*( HBC-NBC+(NBC+BETA(1)*K_ON_J(1))*
+	1             GAM_REL_SQ(1)*(SIGMA(1)+1.0_LDP) )
+	  PSIPREV(1)=GAM_RSQ(1)*DELTA(1)*( HBC_PREV-NBC_PREV+(NBC_PREV+
+	1             BETA(1)*K_ON_J_PREV(1))*GAM_REL_SQ(1)*(SIGMA(1)+1.0_LDP) )
+	END IF
+	DO I=MAX(2,DST),MIN(DEND,ND-1)
 	  GAM_RSQ_DTAUONQ(I)=0.5_LDP*GAM_RSQ(I)*(DTAU_J(I)+DTAU_J(I-1))/Q(I)
 	  PSI(I)=GAM_RSQ_DTAUONQ(I)*DELTA(I)*
 	1            (1.0_LDP+CON_dKdNU(I)*K_ON_J(I)+CON_dHdNU(I)*H_ON_J(I) )
@@ -324,14 +334,35 @@
 	1            (1.0_LDP+CON_dKdNU(I)*K_ON_J_PREV(I)+
 	1                       CON_dHdNU(I)*H_ON_J_PREV(I) )
 	END DO
+	IF(DEND .EQ. ND)THEN
+	  PSI(ND)=0.0_LDP; PSIPREV(ND)=0.0_LDP
+	END IF
 !
 ! Compute vectors used to compute the flux vector H.
 !
-	DO I=MDST,MIN(MDEND,ND-1)
+	DO I=DST,MIN(DEND,ND-1)
 	  HU(I)=GAM_RSQ(I+1)*(K_ON_J(I+1)+VdHdR_TERM(I+1))*Q(I+1)/(P_H(I)+W(I))/DTAU_H(I)
 	  HL(I)=GAM_RSQ(I)*(K_ON_J(I)+VdHdR_TERM(I))*Q(I)/(P_H(I)+W(I))/DTAU_H(I)
 	  HS(I)=WPREV(I)/(P_H(I)+W(I))
 	END DO
+!
+        I=N_SET_UP_VECS*ND
+        CALL MPI_ALLREDUCE(MPI_IN_PLACE,SET_UP_VECS,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+!
+! We create PSIPREV_MOD to save multiplications in the UP_TX_TVX routine.
+! It is only different from PSIPREV when N_ON_J is non zero.
+!
+	PSIPREV_MOD(1)=PSIPREV(1); PSIPREV_MOD(ND)=PSIPREV(ND)
+	DO I=2,ND-1
+	  PSIPREV_MOD(I)=(EPS_PREV_A(I)-EPS_PREV_B(I-1)) + PSIPREV(I)
+	END DO
+!
+	VB(1)=0.0_LDP; VC(1)=0.0_LDP
+	DO I=2,ND-1
+	  VB(I)=-HS(I-1)
+	  VC(I)=HS(I)
+	END DO
+	VB(ND)=0.0_LDP; VC(ND)=0.0_LDP
 !
 ! 
 !
@@ -339,7 +370,7 @@
 !
 	IF(INCL_ADVEC_TERMS)THEN
 	  DO I=MDST,MDEND
-	   VdJdR_TERM(I)=CON_DELTA(I)*dlnGRSQJdlnR(I)/CHI_J(I)
+	    VdJdR_TERM(I)=CON_DELTA(I)*dlnGRSQJdlnR(I)/CHI_J(I)
 	    P_J(I)=1.0_LDP+VdJdR_TERM(I)
 	  END DO
 	ELSE
@@ -358,8 +389,6 @@
 	  TC(I)=-HU(I)+EPS_B(I)
 	  TB(I)=GAM_RSQ_DTAUONQ(I)*(P_J(I)-COH_VEC(I)) + PSI(I) + HL(I) +
 	1             HU(I-1)-EPS_B(I-1)+EPS_A(I)
-	  VB(I)=-HS(I-1)
-	  VC(I)=HS(I)
 	  XM(I)=GAM_RSQ_DTAUONQ(I)*SOURCE(I)/GAM_REL(I)
 	END DO
 	XM(1)=0.0_LDP; XM(ND)=0.0_LDP
@@ -368,19 +397,11 @@
 ! PSIPREV is equivalent to the U vector of FORMSOL.
 !
 	IF(DST .EQ. 1)THEN
-
-	  PSI(1)=GAM_RSQ(1)*DELTA(1)*( HBC-NBC+(NBC+BETA(1)*K_ON_J(1))*
-	1             GAM_REL_SQ(1)*(SIGMA(1)+1.0_LDP) )
-	  PSIPREV(1)=GAM_RSQ(1)*DELTA(1)*( HBC_PREV-NBC_PREV+(NBC_PREV+
-	1             BETA(1)*K_ON_J_PREV(1))*GAM_REL_SQ(1)*(SIGMA(1)+1.0_LDP) )
-!
 	  TA(1)=0.0_LDP
 	  TC(1)= -GAM_RSQ(2)*( K_ON_J(2)+VdHdR_TERM(2) )*Q(2)/DTAU_H(1)
 	  TB(1)=  GAM_RSQ(1)*( K_ON_J(1)+VdHdR_TERM(1) )*Q(1)/DTAU_H(1) +
 	1                    PSI(1) + HBC*GAM_RSQ(1)*P_H(1)
 	  XM(1)=0.0_LDP
-	  VB(1)=0.0_LDP
-	  VC(1)=0.0_LDP
 	END IF
 !
 ! Need to include relativistic terms.
@@ -454,9 +475,6 @@
 	    XM(ND)=GAM_RSQ(ND)*IC*(0.25_LDP+0.5_LDP*IN_HBC)
 	  END IF
 	  TC(ND)=0.0_LDP
-	  VB(ND)=0.0_LDP
-	  VC(ND)=0.0_LDP
-	  PSIPREV(ND)=0.0_LDP
 	END IF
 	IF( ND-1 .LE. DEND .AND. ND-1 .GE. DST)XM(ND-1)=XM(ND-1)+dXM_NDM1
 !
@@ -464,16 +482,13 @@
 ! It is only different from PSIPREV when N_ON_J is non zero.
 !
 	IF(DST .EQ.1)THEN
-	  PSIPREV_MOD(1)=PSIPREV(1)
 	  XM(1)=XM(1) + PSIPREV(1)*JNU_PREV(1)
 	END IF
 	IF(DEND .EQ. ND)THEN
-	  PSIPREV_MOD(ND)=PSIPREV(ND)
 	  XM(ND)=XM(ND)
 	END IF
 !
 	DO I=MAX(2,DST),MIN(DEND,ND-1)
-	  PSIPREV_MOD(I)=(EPS_PREV_A(I)-EPS_PREV_B(I-1)) + PSIPREV(I)
 	  XM(I)=XM(I) + VB(I)*GAM_RSQHNU_PREV(I-1) + VC(I)*GAM_RSQHNU_PREV(I)
 	1          + PSIPREV_MOD(I)*JNU_PREV(I)
 	1          + ( EPS_PREV_B(I)*JNU_PREV(I+1) - EPS_PREV_A(I-1)*JNU_PREV(I-1) )
@@ -498,18 +513,33 @@
           WRITE(LUER,*)'Value is: ',TRIM(XM_CHK_OPTION)
           WRITE(LUER,*)'Allowed values are: SET_POS, NONE'
 	END IF
+!	IF(MYPE .EQ. 0)THEN
+!	  WRITE(281,'(6ES14.6)')FREQ,XM(1:2),XM(ND-1:ND)
+!	  FLUSH(UNIT=281)
+!	END IF
 !
 ! Solve for the radiation field along ray for this frequency.
 !
-	I=4*VEC_LENGTH
+	I=4*ND
         CALL MPI_ALLREDUCE(MPI_IN_PLACE,TRI_VECS,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	TRI_VECS_SAVE=TRI_VECS
-	CALL THOMAS(TA,TB,TC,XM,ND,1)
-	IF(MYPE .EQ. 0)THEN
-	  WRITE(281,'(6ES14.6)')FREQ,XM(1:2),XM(ND-1:ND)
-	  FLUSH(UNIT=281)
-	END IF
+!	IF(MYPE .EQ. 0)THEN
+!	  WRITE(281,'(6ES14.6)')FREQ,TA(1:3),TB(1:3),TC(1:3),XM(1:3)
+!	  CALL WR2D_V2(TRI_VECS,ND,4,'TRI_VECS',' ',.FALSE.,281)
+!	  FLUSH(UNIT=281)
+!	END IF
 !
+	CALL THOMAS(TA,TB,TC,XM,ND,1)
+!	IF(MYPE .EQ. 0)THEN
+!	  WRITE(281,'(6ES14.6)')FREQ,XM(1:2),XM(ND-1:ND)
+!	  FLUSH(UNIT=281)
+!	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(282,'(ES14.6,6ES14.4)')FREQ,XM(1:3),XM(ND-2:ND)
+	  FLUSH(UNIT=282)
+	END IF
 	DO I=1,ND
 	  IF(XM(I) .GT. 1.0E+20_LDP)THEN
 	    WRITE(LUER,*)'Error in VAR_JREL_V2: RJ blowing up'
@@ -598,7 +628,7 @@
 	    TB(I)=TB(I)+GAM_RSQ_DTAUONQ(I)*BETA(I)*(B(I)-dlnGRSQJdlnR(I)/R(I))/CHI_J(I)
 	    TC(I)=TC(I)+GAM_RSQ_DTAUONQ(I)*BETA(I)*C(I)*GAM_RSQ(I+1)/GAM_RSQ(I)/CHI_J(I)
 	  END DO
-	  CALL THOMAS(TA,TB,TC,XM_SAV,ND,1)
+	  CALL THOMAS(TA,TB,TC,XM,ND,1)
 	END IF
 !
 ! 
@@ -608,10 +638,12 @@
 !
 ! Compute d{non-radiation field}/dchi matrix.
 !
+	FLUSH(UNIT=6)
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	CALL TUNE(1,'EDD_JREL_V3')
 	CALL EDD_JREL_VAR_MPI_V1(
 	1          R,SIGMA,CHI,ESEC,K_ON_J,dIBCHI_A,dIBCHI_B,RHS_JNU,
-	1          IB_STAB_FACTOR,DBB,INNER_BND_METH,METHOD,ND,NM_KI)
+	1          IB_STAB_FACTOR,DBB,INNER_BND_METH,METHOD,DST,DEND,ND,NM_KI)
 	CALL TUNE(2,'EDD_JREL_V3')
 !
 ! Evaluate the intensity variations.
