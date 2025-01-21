@@ -69,13 +69,6 @@
 	LOGICAL NAN_PRES
 	CHARACTER(LEN=80) TMP_STR
 !
-	  K=1; WRITE(TMP_STR,'(I5)')K; TMP_STR='KI in UP(STOP)'//ADJUSTL(TMP_STR)
-	  I=ND*(VDEND-VDST+1)
-	  CALL CHECK_VEC_NAN(KI(:,:,1),I,TMP_STR,K)
-	  K=2; WRITE(TMP_STR,'(I5)')K; TMP_STR='KI in UP(STOP)'//ADJUSTL(TMP_STR)
-	  I=ND*(VDEND-VDST+1)
-	  CALL CHECK_VEC_NAN(KI(:,:,2),I,TMP_STR,K)
-!
 ! Determine whether we are using the G eddington factor to describe N
 ! (in terms of H) or whether N is also being described interms of J.
 !
@@ -180,12 +173,6 @@
 	    END IF
 !
 	  END IF	!DO_THIS_MATRIX
-	  WRITE(TMP_STR,'(I5)')K; TMP_STR='TX in UP(STOP)'//ADJUSTL(TMP_STR)
-	  I=ND*(VDEND-VDST+1)
-	  CALL CHECK_VEC_NAN(TX(:,:,K),I,TMP_STR,K)
-	  I=(ND-1)*(VDEND-VDST+1)
-	  WRITE(TMP_STR,'(I5)')K; TMP_STR='TV in UP(STOP)'//ADJUSTL(TMP_STR)
-	  CALL CHECK_VEC_NAN(TVX(:,:,K),ND*(ND-1),TMP_STR,K)
 	END DO		!K
 !
 	RETURN

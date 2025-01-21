@@ -1,5 +1,7 @@
 # Include local system definitions
 
+OPTION=$(FG)
+
 include ../../../Makefile_definitions
 
 # Library where object files will/are stored
@@ -14,11 +16,11 @@ LIB_MOD=$(LIB_DIR)libmod.a
 OBJ = $(LIB)(rd_chg_exch_v3.o)\
       $(LIB)(do_penning_ion_mpi_v1.o)\
       $(LIB)(eval_chg_rates_mpi_v1.o)\
-      $(LIB)(set_chg_exch_v4.o)\
-      $(LIB)(set_chg_lev_id_v4.o)\
+      $(LIB)(set_chg_exch_mpi_v1.o)\
+      $(LIB)(set_chg_lev_id_mpi_v1.o)\
       $(LIB)(verify_chg_exch_v3.o)\
       $(LIB)(steq_ba_chg_exch_mpi_v1.o)\
-      $(LIB)(wr_chg_cool_v3.o)
+      $(LIB)(wr_chg_cool_mpi_v1.o)
 
 all : $(LIB)
 	rm -f *.o
@@ -32,17 +34,17 @@ CMF = $(LIB_DIR)libmod.a(mod_cmfgen.o)
 # General rules to make obects in a library and object files
 
 $(LIB)(%.o) : %.f $(CG)
-	$(F90) -c $(FG) $< 
+	$(F90) -c $(OPTION) $< 
 	ar $(AR_OPTION) $(LIB) $*.o
 
 # Specific rules
 
 $(LIB)(steq_ba_chg_exch_v3.o) : steq_ba_chg_exch_v3.f $(CG) $(ST) 
-	$(F90) -c $(FG) steq_ba_chg_exch_v3.f
+	$(F90) -c $(OPTION) steq_ba_chg_exch_v3.f
 	ar $(AR_OPTION) $(LIB) steq_ba_chg_exch_v3.o
 
 $(LIB)(set_chg_lev_id_v4.o) : set_chg_lev_id_v4.f $(CG) $(CMF)
-	$(F90) -c $(FG) set_chg_lev_id_v4.f
+	$(F90) -c $(OPTION) set_chg_lev_id_v4.f
 	ar $(AR_OPTION) $(LIB) set_chg_lev_id_v4.o
 
 $(CG):

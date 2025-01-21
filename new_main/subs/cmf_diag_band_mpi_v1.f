@@ -19,6 +19,7 @@
 	1                DIAG_INDX,N,NION,NUM_BNDS,DST,DEND,ND,
 	1                BA_COMPUTED,WR_BA_INV,WR_PRT_INV)
 	USE SET_KIND_MODULE
+	USE MPI
 	IMPLICIT NONE
 !
 ! Created 24-Sep-2024: Based on CMF_BLKBND_MPI_V1 (Also see cmf_blkband_v3.f for earlier alterations).
@@ -206,6 +207,7 @@
         CHARACTER(LEN=1), PARAMETER :: NO_TRANS='N'
 	CHARACTER(LEN=50) TMP_STR
 !
+	INTEGER IERR
 	INTEGER LUER,ERROR_LU
 	EXTERNAL ERROR_LU
 !
@@ -317,7 +319,6 @@
 	1         DIAG_INDX,DIAG_INDX,DEPTH_INDX,
 	1         FIRST_MATRIX,LAST_MATRIX,USE_PASSED_REP)
 	    FIRST_MATRIX=.FALSE.
-!
 	    STEQ_STORE(:,K)=STEQ(:,K)
 !
 ! Perform the LU decomposition using DGETRF. We first equilibrize the matrix

@@ -94,7 +94,7 @@
 ! MPYE will be use to label each process, and NTHREAD is the number of processors. To avoid
 ! multiple output, we will use processor 0 for most output.
 !
-	CALL MPI_INIT(ierr)
+	CALL MPI_INIT(IERR)
 	CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYPE,IERR)
 	CALL MPI_COMM_SIZE(MPI_COMM_WORLD,NTHREAD,IERR)
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
@@ -794,7 +794,15 @@
 	1            ND_MAX,NP_MAX,NCF_MAX,N_LINE_MAX,
 	1            TX_OFFSET,MAX_SIM,NM,NM_KI,NLF)
 !
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Successfully exited CMFGEN_SUB'; FLUSH(UNIT=6)
+	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	CALL TUNE(3,' ')
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Successfully exited TUNE'; FLUSH(UNIT=6)
+	END IF
+!
 	CALL MPI_FINALIZE (ierr)
 	STOP
 !

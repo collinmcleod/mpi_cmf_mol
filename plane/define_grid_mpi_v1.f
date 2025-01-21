@@ -1,0 +1,269 @@
+!
+	SUBROUTINE DEFINE_GRID_MPI_V1(R_EXT,V_EXT,VDOP_VEC,VDOP_FRAC,ND_EXT,R,P,ND,NC,NP)
+	USE SET_KIND_MODULE
+	USE MOD_SPACE_GRID_V2
+	USE_MPI
+	IMPLICIT NONE
+!
+! Created 19-Jan-2025 -- Under development.
+!
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+!
+! Determine radial grid from given input parameters
+! Written   11-94 DLM
+! Altered 2/21/96 DLM Updated to F90 standard
+! Altered 6/12/97 DLM Changed name from rpz.f
+! Altered 26/Nov/98 DJH: Changed to V2
+!                        Altered to allow an extended R_GRID (R_EXT).
+!--------------------------------------------------------------------
+!
+! Grid size variables: passed from calling routine
+!
+	INTEGER NP
+	INTEGER ND
+	INTEGER NC
+!
+	INTEGER ND_EXT
+	REAL(KIND=LDP) R_EXT(ND_EXT)
+	REAL(KIND=LDP) V_EXT(ND_EXT)
+	REAL(KIND=LDP) VDOP_VEC(ND_EXT)
+	REAL(KIND=LDP) VDOP_FRAC
+!
+! Grid variables
+!
+	REAL(KIND=LDP) R(ND)
+	REAL(KIND=LDP) V(ND)
+	REAL(KIND=LDP) P(NP)
+!
+! Local variables
+!
+	REAL(KIND=LDP) MU(NP)
+	REAL(KIND=LDP) TEMP_VEC(NP)
+!
+	INTEGER ID,IP
+	INTEGER I,J
+	INTEGER NRAY
+	INTEGER IOS
+	INTEGER LUER, ERROR_LU
+	LOGICAL NEW_GRID
+	EXTERNAL ERROR_LU
+!
+	INTEGER NUM_RAYS_PER_CORE
+	INTEGER GET_IP
+	GET_IP(MYPE,NTHREAD,I)=MOD(I,2)*(MYPE+(I-1)*NTHREAD+1)+MOD(I+1,2)*(I*NTHREAD-MYPE)
+!
+!=======================================================================
+!
+! If necessary, calculate characteristic rays for moving atmospheres
+!
+!------------------------------------------------------------------------
+!
+	LUER=ERROR_LU()
+	NUM_RAYS_PER_CORE=NP/(NTHREAD-1)+1
+
+	IF(ALLOCATED(R_EXT_SAV) .AND. ND_EXT .EQ. ND_EXT_SAV)THEN
+	NEW_GRID=.FALSE.
+	DO I=1,ND_EXT
+	  IF(R_EXT(I) .NE. R_EXT_SAV(I))THEN
+	    NEW_GRID=.TRUE.
+	    EXIT
+	  END IF
+	END DO
+	ELSE
+	NEW_GRID=.TRUE.
+	END IF
+!
+	IF(NEW_GRID)THEN
+	  IF(MYPE .EQ. 0)WRITE(LUER,*)'   Calculating characteristic rays.....'
+	  CALL CHARACTERISTICS_V2(R_EXT,P,V_EXT,VDOP_VEC,VDOP_FRAC,ND_EXT,NC,NP)
+	END IF
+!--------------------------------------------------------------------
+!
+	IF(NEW_GRID .AND. ALLOCATED(TAU))THEN
+	  DEALLOCATE (TAU, DTAU)
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. NP)EXIT
+	    DEALLOCATE (RAY(IP)%I_P, RAY(IP)%I_M, RAY(IP)%LNK)
+	    DEALLOCATE (RAY(IP)%I_P_PREV, RAY(IP)%I_M_PREV)
+	    DEALLOCATE (RAY(IP)%I_P_SAVE, RAY(IP)%I_M_SAVE)
+	  END DO
+	END IF
+!
+	IF(NEW_GRID)THEN
+	  J=0
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. NP)EXIT
+	    NRAY=RAY(IP)%NZ
+	    J=MAX(J,NRAY)
+	    ALLOCATE (RAY(IP)%I_P(NRAY))
+	    ALLOCATE (RAY(IP)%I_M(NRAY))
+	    ALLOCATE (RAY(IP)%I_P_PREV(NRAY))
+	    ALLOCATE (RAY(IP)%I_M_PREV(NRAY))
+	    ALLOCATE (RAY(IP)%I_P_SAVE(NRAY))
+	    ALLOCATE (RAY(IP)%I_M_SAVE(NRAY))
+	    ALLOCATE (RAY(IP)%LNK(ND)); RAY(IP)%LNK(:)=0
+	  END DO
+	  ALLOCATE (TAU(J))
+	  ALLOCATE (DTAU(J))
+	END IF
+!
+! Determine the links betweem the extended-fine grid and the original R grid.
+!
+	DO IPROC=1,NUM_RAYS_PER_CORE
+	  IP=GET_IP(MYPE,NTHREAD,IPROC)
+	  IF(IP .GT. NP)EXIT
+	  RAY(IP)%LNK(1:ND)=0
+	  ID=1
+	  DO J=1,RAY(IP)%NZ
+	    IF(RAY(IP)%R_RAY(J) .EQ. R(ID))THEN
+	      RAY(IP)%LNK(ID)=J
+	      WRITE(160,*)IP,J,RAY(IP)%LNK(ID)
+	      ID=ID+1
+	    END IF
+	  END DO
+	END DO
+!
+! Check all lnks allocated
+!
+	DO IPROC=1,NUM_RAYS_PER_CORE
+	  IP=GET_IP(MYPE,NTHREAD,IPROC)
+	  IF(IP .GT. NP)EXIT
+	  DO ID=1,MIN(ND,ND-(IP-NC-1))
+	    IF(RAY(IP)%LNK(ID) .EQ. 0)THEN
+	      WRITE(LUER,*)'Error in DEFNE_GRID_V2'
+	      WRITE(LUER,*)'LNK not defined: IP=',IP,'ID=',ID
+	      STOP
+	    END IF
+	  END DO
+	END DO
+!
+	DO IPROC=1,NUM_RAYS_PER_CORE
+	  IP=GET_IP(MYPE,NTHREAD,IPROC)
+	  IF(IP .GT. NP)EXIT
+	  IF( ALLOCATED(RAY(IP)%JQW_P) .AND. (ND .NE. ND_SAV .OR. NP .NE. NP_SAV) )THEN
+	    DEALLOCATE(RAY(IP)%JQW_P, RAY(IP)%HQW_P, RAY(IP)%KQW_P, RAY(IP)%NQW_P)
+	    DEALLOCATE(RAY(IP)%JQW_M, RAY(IP)%HQW_M, RAY(IP)%KQW_M, RAY(IP)%NQW_M)
+	    DEALLOCATE(I_P_GRID, I_M_GRID)
+	  END IF
+!
+	  IF(.NOT. ALLOCATED(RAY(IP)%JQW_P))THEN
+	    ALLOCATE (RAY(IP)%JQW_P(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (RAY(IP)%HQW_P(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (RAY(IP)%KQW_P(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (RAY(IP)%NQW_P(ND),STAT=IOS)
+!
+	    IF(IOS .EQ. 0)ALLOCATE (RAY(IP)%JQW_M(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (RAY(IP)%HQW_M(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (RAY(IP)%KQW_M(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (RAY(IP)%NQW_M(ND),STAT=IOS)
+!
+	    IF(IOS .EQ. 0)ALLOCATE (I_P_GRID(ND),STAT=IOS)
+	    IF(IOS .EQ. 0)ALLOCATE (I_M_GRID(ND),STAT=IOS)
+	    IF(IOS .NE. 0)THEN
+	      WRITE(LUER,*)'Error in DEFINE_GRID_V2'
+	      WRITE(LUER,*)'Unable to allocate JQW_P etc'
+	      WRITE(LUER,*)'Status =',IOS
+	      STOP
+	    END IF
+	  END IF
+	END DO
+!
+! Calculate J, H, K and N integration weights for mu+
+!
+	DO ID=1,ND
+	  J=NP+1-ID
+	  MU=0.0LDP
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. J)EXIT
+	    MU(IP)=RAY(IP)%MU_P(RAY(IP)%LNK(ID))
+	  END DO
+	  CALL MPI_ALLREDUCE(MPI_IN_PLACE,MU,J,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+!
+	  CALL J_WEIGHT(J,MU,TEMP_VEC)
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. J)EXIT
+	    RAY(IP)%JQW_P(ID)=TEMP_VEC(IP)
+	  END DO
+!
+	  CALL H_WEIGHT(J,MU,TEMP_VEC)
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. J)EXIT
+	    RAY(IP)%HQW_P(ID)=TEMP_VEC(IP)
+	  END DO
+!
+	  CALL K_WEIGHT(J,MU,TEMP_VEC)
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. J)EXIT
+	    RAY(IP)%KQW_P(ID)=TEMP_VEC(IP)
+	  END DO
+!
+	  CALL N_WEIGHT(J,MU,TEMP_VEC)
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. J)EXIT
+	    RAY(IP)%NQW_P(ID)=TEMP_VEC(IP)
+	  END DO
+!
+	END DO
+!
+! Calculate J, H, K and N integration weights for mu-
+!
+	DO ID=1,ND
+	  J=NP+1-ID
+	  MU=0.0LDP
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. J)EXIT
+	    MU(IP)=RAY(IP)%MU_M(RAY(IP)%LNK(ID))
+	  END DO
+	  CALL MPI_ALLREDUCE(MPI_IN_MLACE,MU,J,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+!
+! Quadrature weights for mu_m are negative.  Change them to positive.
+!
+	  CALL J_WEIGHT(J,MU,TEMP_VEC)
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. J)EXIT
+	    RAY(IP)%JQW_M(ID)=-TEMP_VEC(IP)
+	  END DO
+!
+	  CALL H_WEIGHT(J,MU,TEMP_VEC)
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. J)EXIT
+	    RAY(IP)%HQW_M(ID)=-TEMP_VEC(IP)
+	  END DO
+!
+	  CALL K_WEIGHT(J,MU,TEMP_VEC)
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. J)EXIT
+	    RAY(IP)%KQW_M(ID)=-TEMP_VEC(IP)
+	  END DO
+!
+	  CALL N_WEIGHT(J,MU,TEMP_VEC)
+	  DO IPROC=1,NUM_RAYS_PER_CORE
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. J)EXIT
+	    RAY(IP)%NQW_M(ID)=-TEMP_VEC(IP)
+	  END DO
+!
+	END DO
+!
+	IF(NEW_GRID)THEN
+	  IF(ALLOCATED(R_EXT_SAV))DEALLOCATE(R_EXT_SAV)
+	  ALLOCATE(R_EXT_SAV(ND_EXT))
+	  R_EXT_SAV(:)=R_EXT
+	  ND_EXT_SAV=ND_EXT
+	  ND_SAV=ND
+	  NP_SAV=NP
+	END IF
+!
+	RETURN
+	END

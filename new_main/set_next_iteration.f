@@ -118,7 +118,7 @@
 	  END IF
 !
 	  IF(SN_MODEL .AND. MYPE .EQ. 0)THEN
-	    CALL WRITE_SEQ_TIME_FILE_V1(SN_AGE_DAYS,ND,LUSCR)
+	    CALL WRITE_SEQ_TIME_FILE_MPI_V1(SN_AGE_DAYS,ND,LUSCR)
 	  END IF
 !
 ! If we have reached desired convergence, we do one final loop
@@ -235,5 +235,6 @@
 	  CALL TUNE(ITWO,'GIT')
 	  CALL TUNE(ITHREE,' ')
 	  IF(MYPE .EQ. 0)WRITE(6,*)'End of iteration section',MYPE,MAXCH,FIXED_T
+	  FLUSH(UNIT=6)
 !
 	  GOTO 20000				!Begin another iteration

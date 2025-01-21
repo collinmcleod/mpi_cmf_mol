@@ -77,6 +77,10 @@
 	  END IF
 	END DO
 !
+! This routin gathers the charge exchange cooling rates for later writing.
+!
+	CALL READY_CHG_COOL_WR(ND)
+
 	IF(MYPE .NE. 0)RETURN
 !
 ! We use TA for NETCR (the net cooling rate).
@@ -101,7 +105,7 @@
 ! Output charge exchange cooling rate, radioactive heating team
 ! (hence option L_FALSE), and artificial heating term.
 !
-	  CALL WR_CHG_COOL_V3(NETCR,TOTCR,LS,ND,LU)
+	  CALL WR_CHG_COOL_MPI_V1(NETCR,TOTCR,LS,ND,LU)
 	  CALL WR_COOLING_TERM(LOC_dE_SHOCK_POWER,NETCR,TOTCR,L_FALSE,'Shock Power Term',LS,ND,LU)
 	  CALL WR_COOLING_TERM(LOC_dE_RAD_DECAY,NETCR,TOTCR,L_FALSE,'Radiative decay heating term',LS,ND,LU)
 !          XRAY_HEATING(1:ND)=4.0E-10_LDP*3.1459_LDP*XRAY_LUM_TOT(1:ND)/CLUMP_FAC(1:ND)

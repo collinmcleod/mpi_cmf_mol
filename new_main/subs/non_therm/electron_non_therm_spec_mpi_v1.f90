@@ -192,8 +192,8 @@
 ! LELEC : Energy loss through Coulomb interaction
 ! SOURCE : Electron source
 !
-	IF(VERBOSE)WRITE(LU_TH,*)'Checking MAT memory allocation'
-	IF(.NOT. ALLOCATED(MAT))THEN
+	IF(VERBOSE)WRITE(LU_TH,*)'Checking SOURCE, LELEC memory allocation'
+	IF(.NOT. ALLOCATED(SOURCE))THEN
 	  IF(VERBOSE)WRITE(LU_TH,*)'Allocating memory in ELECTRON_NON_THERMAL_SPEC'
 	  ALLOCATE (LELEC(NKT),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (SOURCE(NKT),STAT=IOS)
