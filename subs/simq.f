@@ -47,12 +47,13 @@ C
 	USE SET_KIND_MODULE
       IMPLICIT NONE
 C
+C Altered 24-JAn-2025: Fixed dimension declaration of A.
 C Altered 05-Dec-1996: Aritmetic if's  removed. END DO used to terminate all
 C                         DO LOOPS. Changes verified.
 C Altered 26-May-1996: Implicit none installed.
 C
       INTEGER N,KS
-      REAL(KIND=LDP) A(N),B(N)
+      REAL(KIND=LDP) A(N*N),B(N)
 C
 C Local variables.
 C

@@ -60,24 +60,30 @@
 	  WRK = LOCAL_DUST_TO_GAS_RATIO * DENSITY * CLUMP_FAC * R * R
 	  CALL LUM_FROM_ETA_V2(WRK,R,'LINMON',ND)
 	  T1 = 4.*acos(-1.0_LDP)*sum(WRK)/1.989E3_LDP
-	  WRITE(6,*)LOCAL_DUST_TO_GAS_RATIO(1:ND)
+	  IF(MYPE .EQ. 0)WRITE(6,*)LOCAL_DUST_TO_GAS_RATIO(1:ND)
 	  FLUSH(UNIT=6)
 	  IF(MASS_DUST .NE. 0)THEN
 	    LOCAL_DUST_TO_GAS_RATIO(1:ND) = LOCAL_DUST_TO_GAS_RATIO(1:ND) * MASS_DUST / T1
-	    WRITE(6,*)'Mass of dust before scaling',T1
+	    IF(MYPE .EQ. 0)WRITE(6,*)'Mass of dust before scaling',T1
 	  END IF
-	  WRITE(6,*)'Final mass of dust' 
 !
-	  WRITE(6,'(/,A,/)')' Summary of dust properties written do CMF_DUST_SUMMARY'
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(6,*)'Final mass of dust' 
+	    WRITE(6,'(/,A,/)')' Summary of dust properties written do CMF_DUST_SUMMARY'
+	  END IF
 !
-	  CALL GET_LU(UNIT_DUST,'SET_DUST_EJECTA_PROPERTIES')
-	  OPEN(UNIT_DUST,FILE='CMF_DUST_SUMMARY',STATUS='UNKNOWN')
+	  IF(MYPE .EQ. 0)THEN
+	    CALL GET_LU(UNIT_DUST,'SET_DUST_EJECTA_PROPERTIES')
+	    OPEN(UNIT_DUST,FILE='CMF_DUST_SUMMARY',STATUS='UNKNOWN')
 	    WRITE(UNIT_DUST,'(A30,3X,A)') 'Dust_file_name:',TRIM(DUST_FILE_NAME)
 	    WRITE(UNIT_DUST,'(A30,3X,A)') 'Dust_type:',TRIM(DUST_TYPE)
 	    WRITE(UNIT_DUST,'(A30,I10)')  'Nb of entries in dust file:',N_DUST_FILE
-	    WRITE(UNIT_DUST,'(A30,2ES15.5)') 'Start/end of lam:',LAM_DUST_IN(1),    LAM_DUST_IN(n_dust_file)
-	    WRITE(UNIT_DUST,'(A30,2ES15.5)') 'Start/end of kaa(scat):',KAP_SCAT_DUST_IN(1),KAP_SCAT_DUST_IN(n_dust_file)
-	    WRITE(UNIT_DUST,'(A30,2ES15.5)') 'Start/end of kap(abs) :',KAP_ABS_DUST_IN(1),KAP_ABS_DUST_IN(n_dust_file)
+	    WRITE(UNIT_DUST,'(A30,2ES15.5)') 'Start/end of lam:',
+	1               LAM_DUST_IN(1),    LAM_DUST_IN(n_dust_file)
+	    WRITE(UNIT_DUST,'(A30,2ES15.5)') 'Start/end of kaa(scat):',
+	1               KAP_SCAT_DUST_IN(1),KAP_SCAT_DUST_IN(n_dust_file)
+	    WRITE(UNIT_DUST,'(A30,2ES15.5)') 'Start/end of kap(abs) :',
+	1               KAP_ABS_DUST_IN(1),KAP_ABS_DUST_IN(n_dust_file)
 
 	    WRK = LOCAL_DUST_TO_GAS_RATIO * DENSITY * CLUMP_FAC * R * R
 	    CALL LUM_FROM_ETA_V2(WRK,R,'LINMON',ND) 
@@ -85,16 +91,19 @@
 !
 ! If we do not multiple by R^2, we can use LUM_FROM_ETA_V2 to estimate the optical depth scale.
 !
-	    WRITE(UNIT_DUST,'(/,6A15)') 'Lambda(um)','Lambda(Ang)','Tau(abs)','Kappa(abs)','Tau(scat)','Kappa(SCAT)'
+	    WRITE(UNIT_DUST,'(/,6A15)') 'Lambda(um)','Lambda(Ang)',
+	1                               'Tau(abs)','Kappa(abs)','Tau(scat)','Kappa(SCAT)'
 	    DO I=1,N_DUST_FILE,INT(N_DUST_FILE/20)
-	      WRK_ABS(1:ND) = KAP_ABS_DUST_IN(I) * LOCAL_DUST_TO_GAS_RATIO(1:ND) * DENSITY(1:ND) * CLUMP_FAC(1:ND)*1D10
+	      WRK_SCAT(1:ND) = LOCAL_DUST_TO_GAS_RATIO(1:ND) * DENSITY(1:ND) * CLUMP_FAC(1:ND)*1D10
+	      WRK_ABS(1:ND) = KAP_ABS_DUST_IN(1:ND) * WRK_SCAT(1:ND)
 	      CALL LUM_FROM_ETA_V2(WRK_ABS,R,'LINMON',ND)
-	      WRK_SCAT(1:ND) = KAP_SCAT_DUST_IN(I) * LOCAL_DUST_TO_GAS_RATIO(1:ND) * DENSITY(1:ND) * CLUMP_FAC(1:ND)*1D10
+	      WRK_SCAT(1:ND) = KAP_SCAT_DUST_IN(1:ND) * WRK_SCAT(1:ND)
 	      CALL LUM_FROM_ETA_V2(WRK_SCAT,R,'LINMON',ND)
 	      WRITE(UNIT_DUST,'(6ES15.3)')LAM_DUST_IN(I),1.0E+04*LAM_DUST_IN(I),SUM(WRK_ABS), 
 	1            KAP_ABS_DUST_IN(I), SUM(WRK_SCAT), KAP_SCAT_DUST_IN(I)
 	    ENDDO
-	    WRITE(UNIT_DUST,'(6A15)') 'Lambda(um)','Lambda(Ang)','Tau(abs)','Kappa(abs)','Tau(scat)','Kappa(SCAT)'
+	    WRITE(UNIT_DUST,'(6A15)') 'Lambda(um)','Lambda(Ang)',
+	1                             'Tau(abs)','Kappa(abs)','Tau(scat)','Kappa(SCAT)'
 !
 	    WRITE(UNIT_DUST,'(/,A5,A20,A20)') 'I','Velocity','Dust to gas ratio'
 	    DO I=1,ND 
@@ -102,6 +111,7 @@
 	    ENDDO
 	    DEALLOCATE (WRK, WRK_ABS, WRK_SCAT)
 	  CLOSE(UNIT_DUST)
+	  END IF
 	ENDIF
 !
 	RETURN

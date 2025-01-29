@@ -63,7 +63,10 @@
 	END IF
 	IF(TWO_METHOD .NE. TWO_PHOTON_METHOD .AND. FIRST)THEN
 	  TWO_METHOD=TWO_PHOTON_METHOD
-	  IF(MYPE .EQ. 0)WRITE(LUER,*)'Using ',TRIM(TWO_METHOD),' method for two-photon decay'
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LUER,*)'Using ',TRIM(TWO_METHOD),' method for two-photon decay'
+	    FLUSH(LUER)
+	  END IF
 	  FIRST=.FALSE.
 	END IF
 	FIRST=.FALSE.

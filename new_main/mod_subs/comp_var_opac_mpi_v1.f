@@ -101,8 +101,7 @@
 !
 ! Add in 2-photon opacities and emissivities.
 !
-	  CALL TWO_PHOT_VAR_OPAC_MPI_V1(VETA,VCHI,POPS,T,CONT_FREQ,
-	1           DST,DEND,ND,NT,LST_DEPTH_ONLY)
+	  CALL TWO_PHOT_VAR_OPAC_MPI_V1(POPS,T,CONT_FREQ,DST,DEND,ND,NT,LST_DEPTH_ONLY)
 !
 ! Altered 04-Mar-2004: Call inserted directly into subroutine. No longer done
 !                        as include file.
