@@ -147,7 +147,7 @@
 ! Can now update KI for direct opacity variation.
 !
 	CALL TUNE(1,'EDD_KI_dTA')
-	DO I=MAX(2,VDST),MIN(VDEND,ND-1)
+	DO I=MAX(2,VDST-1),MIN(VDEND+1,ND-1)
 	  J=I-1
 	  K=I+1
 	  T1=0.5_LDP*R(I)*R(I)/Q(I)
@@ -186,13 +186,15 @@
 	1               + dXM_EPS_K
 	  END IF
 !
-	  T1=T1*(DTAU(J)+DTAU(I))/CHI(I)
-	  KI(I,I,1)=KI(I,I,1)
-	1             - (dTAdCHI_I*JNU(J)+dTCdCHI_I*JNU(K)+dTBdCHI_I*JNU(I))
-	1             + (dUdCHI*JNUM1(I)-dTBdCHI*JNU(I))
-	1             + (dHSDCHI(I)*RSQ_HNUM1(I)-dHSDCHI(J)*RSQ_HNUM1(J))
-	1             - T1*SOURCE(I)
-	1             + dXM_EPS_I
+	  IF(I .GE. VDST .AND. I .LE. VDEND)THEN
+	    T1=T1*(DTAU(J)+DTAU(I))/CHI(I)
+	    KI(I,I,1)=KI(I,I,1)
+	1               - (dTAdCHI_I*JNU(J)+dTCdCHI_I*JNU(K)+dTBdCHI_I*JNU(I))
+	1               + (dUdCHI*JNUM1(I)-dTBdCHI*JNU(I))
+	1               + (dHSDCHI(I)*RSQ_HNUM1(I)-dHSDCHI(J)*RSQ_HNUM1(J))
+	1               - T1*SOURCE(I)
+	1               + dXM_EPS_I
+	  END IF
 !
 	END DO
 !
@@ -285,12 +287,12 @@
 	  END DO
 	END DO
 !
-	DO I=VDST,MIN(VDEND,ND-1)
+	DO I=MAX(1,VDST-1),MIN(VDEND,ND-1)
 	  T1=dHUdCHI(I)*JNU(I+1) - dHLdCHI(I)*JNU(I)
 	1                        + dHSdCHI(I)*RSQ_HNUM1(I) +
 	1 EPS_FAC(I)*( EPS_PREV_A(I)*JNUM1(I)-EPS_A(I)*JNU(I) +
 	1                  EPS_PREV_B(I)*JNUM1(I+1)-EPS_B(I)*JNU(I+1) )
-	  RHS_dHdCHI(I,I)=RHS_dHdCHI(I,I) + T1
+	  IF(I .GT. VDST)   RHS_dHdCHI(I,I)=RHS_dHdCHI(I,I) + T1
 	  IF(I+1 .LE. VDEND)RHS_dHdCHI(I,I+1)=RHS_dHdCHI(I,I+1) + T1
 	END DO
 	CALL TUNE(2,'EDD_RHS_dHdCHI')

@@ -6,6 +6,8 @@ include ../Makefile_definitions
 
 OPTIONS=$(FG)
 
+$(LIB)(mod_trap_derivatives.o) :
+	(cd ../subs; make)
 
 # These names are for the fortran linker
 
@@ -47,10 +49,10 @@ MODS= $(LIB_DIR)libmod.a(mod_cmfgen.o)\
       $(LIB_DIR)libmod.a(steq_data_mod.o)\
       $(LIB_DIR)libmod.a(var_rad_mod.o)
 
-cmfgen.o : cmfgen.f $(MODS) $(USR)
+cmfgen.o : cmfgen.f $(MODS) $(USR) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTIONS) cmfgen.f 
 
-cmfgen_sub.o : cmfgen_sub.f $(MODS) $(UPDATE) main_it_section.f set_next_iteration.f GET_J_CHI.INC  
+cmfgen_sub.o : cmfgen_sub.f $(MODS) $(UPDATE) main_it_section.f set_next_iteration.f GET_J_CHI.INC $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTIONS) cmfgen_sub.f 
 
 $(USR):
@@ -84,6 +86,9 @@ lib2:
 	(cd ../pgplt; make )
 lib3:
 	(cd  mod_subs; make)
+
+$(LIB)(mod_trap_derivatives.o) :
+	(cd ../subs; make)
 
 
 clean :

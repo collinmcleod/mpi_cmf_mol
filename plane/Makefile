@@ -22,6 +22,7 @@ MOD=  $(LIB)(mod_ray_mom_store.o)\
       $(LIB)(mod_space_grid_v2_gam.o)
 
 MODS= $(LIB_MOD)(gam_mu_mod.o)\
+      $(LIB_MOD)(mod_var_opac_j.o)\
       $(LIB_MOD)(mod_rd_gamray_cntrl_variables.o)
 
 OBJ = $(LIB)(add_dust_eta.o)\
@@ -108,124 +109,129 @@ $(LIB) : $(MOD) $(OBJ)
 
 # General rules to make obects in a library and object files
 
-$(LIB)(%.o) : %.f 
+$(LIB)(%.o) : %.f $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) $<
 	ar $(AR_OPTION) $(LIB) $*.o
 
-%.o : %.f 
+%.o : %.f $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) $<
 	ar $(AR_OPTION) $(LIB) $*.o
 
-$(LIB)(characteristics_v2.o) : characteristics_v2.f $(LIB)(mod_space_grid_v2.o)
+$(LIB)(characteristics_v2.o) : characteristics_v2.f $(LIB)(mod_space_grid_v2.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) characteristics_v2.f
 	ar $(AR_OPTION) $(LIB) characteristics_v2.o
 
-$(LIB)(characteristics_v2_gam.o) : characteristics_v2_gam.f $(LIB)(mod_space_grid_v2_gam.o)
+$(LIB)(characteristics_v2_gam.o) : characteristics_v2_gam.f $(LIB)(mod_space_grid_v2_gam.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) characteristics_v2_gam.f
 	ar $(AR_OPTION) $(LIB) characteristics_v2_gam.o
 
-$(LIB)(cmf_formal_rel_v4.o) : cmf_formal_rel_v4.f $(LIB)(mod_space_grid_v2.o) $(LIB)(mod_ray_mom_store.o)
+$(LIB)(cmf_formal_rel_v4.o) : cmf_formal_rel_v4.f $(LIB)(mod_space_grid_v2.o) $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) cmf_formal_rel_v4.f
 	ar $(AR_OPTION) $(LIB) cmf_formal_rel_v4.o
 
-$(LIB)(cmf_formal_rel_v5.o) : cmf_formal_rel_v5.f $(LIB)(mod_space_grid_v2.o) $(LIB)(mod_ray_mom_store.o)
+$(LIB)(cmf_formal_rel_v5.o) : cmf_formal_rel_v5.f $(LIB)(mod_space_grid_v2.o) $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) cmf_formal_rel_v5.f
 	ar $(AR_OPTION) $(LIB) cmf_formal_rel_v5.o
 
-$(LIB)(cmf_rel_dust_qw.o) : cmf_rel_dust_qw.f $(LIB)(mod_space_grid_v2.o)
+$(LIB)(cmf_rel_dust_qw.o) : cmf_rel_dust_qw.f $(LIB)(mod_space_grid_v2.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) cmf_rel_dust_qw.f
 	ar $(AR_OPTION) $(LIB) cmf_rel_dust_qw.o
 
-$(LIB)(add_dust_eta.o) : add_dust_eta.f $(LIB)(mod_space_grid_v2.o)
+$(LIB)(add_dust_eta.o) : add_dust_eta.f $(LIB)(mod_space_grid_v2.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) add_dust_eta.f
 	ar $(AR_OPTION) $(LIB) add_dust_eta.o
 
-$(LIB)(cmf_formal_rel_v4_gam.o) : cmf_formal_rel_v4_gam.f $(LIB)(mod_space_grid_v2_gam.o) $(LIB_MOD)(mod_ray_mom_store.o)
+$(LIB)(cmf_formal_rel_v4_gam.o) : cmf_formal_rel_v4_gam.f $(LIB)(mod_space_grid_v2_gam.o) $(LIB_MOD)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) cmf_formal_rel_v4_gam.f
 	ar $(AR_OPTION) $(LIB) cmf_formal_rel_v4_gam.o
 
-$(LIB)(define_grid_v2_gam.o) : define_grid_v2_gam.f $(LIB)(mod_space_grid_v2_gam.o) $(LIB_MOD)(mod_rd_gamray_cntrl_variables.o) $(LIB_MOD)(gam_mu_mod.o)
+$(LIB)(define_grid_v2_gam.o) : define_grid_v2_gam.f $(LIB)(mod_space_grid_v2_gam.o) $(LIB_MOD)(mod_rd_gamray_cntrl_variables.o) \
+                                                    $(LIB_MOD)(gam_mu_mod.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) define_grid_v2_gam.f
 	ar $(AR_OPTION) $(LIB) define_grid_v2_gam.o
 
-$(LIB)(define_grid_v2.o) : define_grid_v2.f $(LIB)(mod_space_grid_v2.o)
+$(LIB)(define_grid_v2.o) : define_grid_v2.f $(LIB)(mod_space_grid_v2.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) define_grid_v2.f
 	ar $(AR_OPTION) $(LIB) define_grid_v2.o
 
-$(LIB)(drhsdchi_pp.o) : drhsdchi_pp.f $(LIB)(mod_trap_derivatives.o)
+$(LIB)(drhsdchi_pp.o) : drhsdchi_pp.f $(LIB)(mod_trap_derivatives.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) drhsdchi_pp.f
 	ar $(AR_OPTION) $(LIB) drhsdchi_pp.o
 
-$(LIB)(edd_jrel_var_v3.o) : edd_jrel_var_v3.f $(LIB)(mod_var_jrel_v2.o)
+$(LIB)(edd_jrel_var_v3.o) : edd_jrel_var_v3.f $(LIB)(mod_var_jrel_v2.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) edd_jrel_var_v3.f
 	ar $(AR_OPTION) $(LIB) edd_jrel_var_v3.o
 
-$(LIB)(edd_jrel_var_mpi_v1.o) : edd_jrel_var_mpi_v1.f $(LIB)(mod_var_jrel_mpi_v1.o)
+$(LIB)(edd_jrel_var_mpi_v1.o) : edd_jrel_var_mpi_v1.f $(LIB)(mod_var_jrel_mpi_v1.o) $(MODS $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) edd_jrel_var_mpi_v1.f
 	ar $(AR_OPTION) $(LIB) edd_jrel_var_mpi_v1.o
 
-$(LIB)(fg_j_cmf_v12.o) : fg_j_cmf_v12.f $(LIB)(mod_ray_mom_store.o)
+$(LIB)(var_jrel_mpi_v1.o) : var_jrel_mpi_v1.f $(LIB)(mod_var_jrel_mpi_v1.o) $(LIB)(mod_trap_derivatives.o) $(LIB)(mod_ray_mom_store.o) \
+                                              $(MODS) $(LIB)(set_kind_module.o) 
+	$(F90) -c $(OPTION) var_jrel_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) var_jrel_mpi_v1.o
+
+$(LIB)(fg_j_cmf_v12.o) : fg_j_cmf_v12.f $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) fg_j_cmf_v12.f
 	ar $(AR_OPTION) $(LIB) fg_j_cmf_v12.o
 
-$(LIB)(get_moms_rel.o) : get_moms_rel.f $(LIB)(mod_ray_mom_store.o)
+$(LIB)(get_moms_rel.o) : get_moms_rel.f $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) get_moms_rel.f
 	ar $(AR_OPTION) $(LIB) get_moms_rel.o
 
-$(LIB)(get_moms_non_rel.o) : get_moms_non_rel.f $(LIB)(mod_ray_mom_store.o)
+$(LIB)(get_moms_non_rel.o) : get_moms_non_rel.f $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) get_moms_non_rel.f
 	ar $(AR_OPTION) $(LIB) get_moms_non_rel.o
 
-$(LIB)(mom_j_cmf_v8.o) : mom_j_cmf_v8.f $(LIB)(mod_ray_mom_store.o)
+$(LIB)(mom_j_cmf_v8.o) : mom_j_cmf_v8.f $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) mom_j_cmf_v8.f
 	ar $(AR_OPTION) $(LIB) mom_j_cmf_v8.o
 
-$(LIB)(mom_j_ddt_v2.o) : mom_j_ddt_v2.f $(LIB)(mod_ray_mom_store.o)
+$(LIB)(mom_j_ddt_v2.o) : mom_j_ddt_v2.f $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) mom_j_ddt_v2.f
 	ar $(AR_OPTION) $(LIB) mom_j_ddt_v2.o
 
-$(LIB)(mom_jrel_v9.o) : mom_jrel_v9.f $(LIB)(mod_ray_mom_store.o)
+$(LIB)(mom_jrel_v9.o) : mom_jrel_v9.f $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) mom_jrel_v9.f
 	ar $(AR_OPTION) $(LIB) mom_jrel_v9.o
 
-$(LIB)(mom_jrel_mpi_v1.o) : mom_jrel_mpi_v1.f $(LIB)(mod_ray_mom_store.o)
-	$(F90) -c $(OPTION) mom_jrel_mpi_v1.f
-	ar $(AR_OPTION) $(LIB) mom_jrel_mpi_v1.o
-
-$(LIB)(optdepth_v2.o) : optdepth_v2.f $(LIB)(mod_space_grid_v2.o)
+$(LIB)(optdepth_v2.o) : optdepth_v2.f $(LIB)(mod_space_grid_v2.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) optdepth_v2.f
 	ar $(AR_OPTION) $(LIB) optdepth_v2.o
 
-$(LIB)(optdepth_v2_gam.o) : optdepth_v2_gam.f $(LIB)(mod_space_grid_v2_gam.o)
+$(LIB)(optdepth_v2_gam.o) : optdepth_v2_gam.f $(LIB)(mod_space_grid_v2_gam.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) optdepth_v2_gam.f
 	ar $(AR_OPTION) $(LIB) optdepth_v2_gam.o
 
-$(LIB)(solve_cmf_formal_v2.o) : solve_cmf_formal_v2.f $(LIB)(mod_space_grid_v2.o)
+$(LIB)(solve_cmf_formal_v2.o) : solve_cmf_formal_v2.f $(LIB)(mod_space_grid_v2.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) solve_cmf_formal_v2.f
 	ar $(AR_OPTION) $(LIB) solve_cmf_formal_v2.o
 
-$(LIB)(var_mom_j_cmf_mpi_v1.o) : var_mom_j_cmf_mpi_v1.f $(LIB)(mod_ray_mom_store.o) $(LIB)(mod_var_mom_j_cmf_mpi_v1.o)
+$(LIB)(var_mom_j_cmf_mpi_v1.o) : var_mom_j_cmf_mpi_v1.f $(LIB)(mod_ray_mom_store.o) $(LIB)(mod_var_mom_j_cmf_mpi_v1.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) var_mom_j_cmf_mpi_v1.f
 	ar $(AR_OPTION) $(LIB) var_mom_j_cmf_mpi_v1.o
 
-$(LIB)(var_mom_j_cmf_v9.o) : var_mom_j_cmf_v9.f $(LIB)(mod_ray_mom_store.o) $(LIB)(mod_var_mom_j_cmf.o)
+$(LIB)(var_mom_j_cmf_v9.o) : var_mom_j_cmf_v9.f $(LIB)(mod_ray_mom_store.o) $(LIB)(mod_var_mom_j_cmf.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) var_mom_j_cmf_v9.f
 	ar $(AR_OPTION) $(LIB) var_mom_j_cmf_v9.o
 
-$(LIB)(var_mom_j_ddt_v2.o) : var_mom_j_ddt_v2.f $(LIB)(mod_ray_mom_store.o)
+$(LIB)(var_mom_j_ddt_v2.o) : var_mom_j_ddt_v2.f $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) var_mom_j_ddt_v2.f
 	ar $(AR_OPTION) $(LIB) var_mom_j_ddt_v2.o
 
-$(LIB)(var_jrel_v5.o) : var_jrel_v5.f $(LIB)(mod_var_jrel_v2.o) $(LIB)(mod_ray_mom_store.o) $(LIB)(mod_trap_derivatives.o) 
+$(LIB)(var_jrel_v5.o) : var_jrel_v5.f $(LIB)(mod_var_jrel_v2.o) $(LIB)(mod_ray_mom_store.o) $(LIB)(mod_trap_derivatives.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) var_jrel_v5.f
 	ar $(AR_OPTION) $(LIB) var_jrel_v5.o
 
-$(LIB)(var_mom_jext_cmf_v3.o) : var_mom_jext_cmf_v3.f $(LIB)(mod_ray_mom_store.o)
+$(LIB)(var_mom_jext_cmf_v3.o) : var_mom_jext_cmf_v3.f $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) var_mom_jext_cmf_v3.f
 	ar $(AR_OPTION) $(LIB) var_mom_jext_cmf_v3.o
 
 $(LIB)(mod_trap_derivatives.o) :
 	(cd ../subs; make)
+
+$(LIB)(set_kind_module.o):
+	(cd ../tools; make)
 
 $(MODS):
 	(cd  ../new_main/mod_subs; make)

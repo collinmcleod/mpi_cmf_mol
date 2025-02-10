@@ -4,6 +4,8 @@ include ../Makefile_definitions
 
 OPTION=$(FG)
 
+LIB=$(LIB_DIR)libsubs.a
+
 #
 # These names are for the fortran linker
 #
@@ -59,7 +61,7 @@ $(EXE_DIR)obs_frame.exe :  $(OBJ2) $(FN1) $(FN2)
 
 # General rule to compile a fortran ".f" file.
 
-%.o : %.f
+%.o : %.f  $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION)  $<
 
 #
@@ -117,9 +119,12 @@ lib5:
 lib6:
 	(cd ../new_main/mod_subs; make)
 
+$(LIB)(mod_trap_derivatives.o) :
+	(cd ../subs; make)
+
 clean :
 	rm -f *.o
 
-mod_freq_obs.o : mod_freq_obs.f
+mod_freq_obs.o : mod_freq_obs.f $(LIB_DIR)libsubs.a
 mod_freq:
 	$(F90) -c $(OPTION) mod_freq_obs.f 

@@ -23,8 +23,15 @@ all : info d_tools d_blas d_dust d_lpack d_nm_subs d_stark d_unix d_subs d_plane
 
 # We now MAKE the required libraries and executables.
 
-info: 
-	@echo $(HOST)
+info:
+	@echo " "
+	@echo " Host         = "$(HOST)
+	@echo " Compile opt. = "$(COMPILE_OPT)
+	@echo " Install dir. = "$(INSTALL_DIR)
+	@echo " (F90)        = "$(F90)
+	@echo " (FG)         = "$(FG)
+	@echo " ar. option   = "$(AR_OPTION)
+	@echo " "
 
 d_blas:
 	(cd blas; make)

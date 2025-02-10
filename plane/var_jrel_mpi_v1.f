@@ -291,6 +291,7 @@
         CALL NORDTAU(DTAU_J,TA,R,R,TB,ND)
 	CALL dSPHEREdCHI(dTAUdCHI_J,DTAU_J,R,Q,ND)
 !
+	SET_UP_VECS=0.0_LDP
 	IF(.NOT. INIT)THEN
 !
 ! We are integrating from blue to red. dLOG_NU is define as vd / dv which is
@@ -299,7 +300,6 @@
 ! EPS is used if we define N in terms of J rather than H, This is sometimes
 ! useful as H can approach zero, and hence N/H is undefined.
 !
-	  SET_UP_VECS=0.0_LDP
 	  DO I=DST,MIN(DEND,ND-1)
 	    DELTAH(I)=CON_DELTAH(I)/dLOG_NU/(CHI_H(I)+CHI_H(I+1))
 	    W(I)=DELTAH(I)*(1.0_LDP+CON_dNdNUH(I)*NMID_ON_HMID(I))
@@ -369,12 +369,12 @@
 ! We know dlnJdlnR, so we don't need to iterate.
 !
 	IF(INCL_ADVEC_TERMS)THEN
-	  DO I=MDST,MDEND
+	  DO I=1,ND
 	    VdJdR_TERM(I)=CON_DELTA(I)*dlnGRSQJdlnR(I)/CHI_J(I)
 	    P_J(I)=1.0_LDP+VdJdR_TERM(I)
 	  END DO
 	ELSE
-	  DO I=MDST,MDEND
+	  DO I=1,ND
 	    VdJdR_TERM(I)=0.0_LDP
 	    P_J(I)=1.0_LDP
 	  END DO
@@ -520,7 +520,7 @@
 !
 ! Solve for the radiation field along ray for this frequency.
 !
-	I=4*ND
+	I=NTRI_VECS*ND
         CALL MPI_ALLREDUCE(MPI_IN_PLACE,TRI_VECS,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	TRI_VECS_SAVE=TRI_VECS
 !	IF(MYPE .EQ. 0)THEN

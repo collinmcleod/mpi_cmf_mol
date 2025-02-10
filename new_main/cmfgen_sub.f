@@ -45,7 +45,8 @@
 	USE MOD_J_TWO_PHOT_MPI_V1, ONLY : SET_POP_FOR_TWOJ, INIT_GET_J_FOR_TWO_PHOT
 	IMPLICIT NONE
 !
-! Altered 02-Aug-2024 Minor cleaning. Changed minimum valuer for RLUMST & warning output.
+! Altered 10-Feb-2025 : SCRTEMO+P writes only done by process 0.
+! Altered 02-Aug-2024 : Minor cleaning. Changed minimum valuer for RLUMST & warning output.
 ! Altered 17-Aug-2019 : Default for DO_T_AUTO is now TRUE. Incorporated into IBIS versions.
 ! Altered 16-Aug-2019 : Now output Planck mean to RVTJ.
 ! Altered Jul/Aug 2019: Extensive changes to treat electron energy balance equation (done on OSIRIS),
@@ -89,7 +90,7 @@
 	INTEGER NCF
 	LOGICAL, PARAMETER :: IMPURITY_CODE=.FALSE.
 !
-	CHARACTER(LEN=12), PARAMETER :: PRODATE='10-Nov-2023'		!Must be changed after alterations
+	CHARACTER(LEN=12), PARAMETER :: PRODATE='10-Feb-2025'		!Must be changed after alterations
 !
 ! 
 !
@@ -1226,6 +1227,7 @@
 	    IF(MYPE .EQ. 0)THEN
 	      CALL SCR_RITE_V2(R,V,SIGMA,POPS,IREC,MAIN_COUNTER,RITE_N_TIMES,
 	1                   LAST_NG,WRITE_RVSIG,NT,ND,LUSCR,NEWMOD)
+	      CALL MPI_BCAST(IREC,IONE,MPI_INTEGER,IZERO,MPI_COMM_WORLD,IERR)
 	    END IF
 	  END IF
 	  LST_ITERATION=.TRUE.
