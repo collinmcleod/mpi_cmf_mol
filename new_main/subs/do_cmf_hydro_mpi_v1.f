@@ -314,12 +314,6 @@
 	IF(HYDRO_OPT .EQ. 'FIXED_V_FLUX')THEN
 	  CALL RD_STORE_DBLE(OLD_TEFF,'OLD_TEFF',L_TRUE,'Effective temperatre of input model')
 	END IF
-	IF(TAU_REF .GT. 0.668_LDP .AND. HYDRO_OPT .EQ. 'DEFAULT')THEN
-	  HYDRO_OPT='FIXED_R_REF' 
-	  IF(MYPE .EQ. 0)THEN
-	    WRITE(6,*)'As TAU_REF > 2/3 HYDRO_DEFAULT is being set to FIXED_R_REF in DO_CMF_HYDRO_MPI_V1'
-	  END IF
-	END IF
 	CALL CLEAN_RD_STORE()
 !
         CLOSE(UNIT=LUIN)
@@ -332,6 +326,20 @@
 	IF(MAIN_COUNTER .LT. STRT_HYDRO_ITS)RETURN
 	IF( MOD( (MAIN_COUNTER-STRT_HYDRO_ITS),FREQ_HYDRO_ITS ) .NE. 0)RETURN
 !
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,'(/,A)')' Updating hydrostatic structure of the model'
+	  FLUSH(UNIT=6)
+	END IF
+!
+! Moved to after iteartion check (11-Feb-2025).
+!
+	IF(TAU_REF .GT. 0.668_LDP .AND. HYDRO_OPT .EQ. 'DEFAULT')THEN
+	  HYDRO_OPT='FIXED_R_REF' 
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(6,'(1X,A)')'As TAU_REF > 2/3 HYDRO_DEFAULT is being set to FIXED_R_REF in DO_CMF_HYDRO_MPI_V1'
+	  END IF
+	END IF
+!
 ! Begin Hydro computation.
 !
 	IF(MYPE .EQ. 0 .AND. VERBOSE_OUTPUT)THEN
@@ -342,11 +350,6 @@
 	CALL GET_LU(LU)				!For files open/shut immediately
 !
 ! In TORSCL_V3, TA is TAU, TB is dTAU, and TC is used fro dCHIdR.
-!
-	IF(MYPE .EQ. 0)THEN
-	  WRITE(6,'(/,A)')' Updating hydrostatic structure of the model'
-	  FLUSH(UNIT=6)
-	END IF
 !
 	IF(HYDRO_OPT .EQ. 'FIXED_R_REF')THEN
 !

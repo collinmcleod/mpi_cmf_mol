@@ -40,7 +40,7 @@
 ! The following table gives IP in eV. Grabbed off the web.
 ! As its only used to guide the user, the IP's need not be very accurate.
 !
-	INTEGER, PARAMETER :: NUM_IP_SPECIES=30
+	INTEGER, PARAMETER :: NUM_IP_SPECIES=92
 	INTEGER, PARAMETER :: NUM_IP_IONS=20
 	REAL(KIND=LDP) IP(NUM_IP_IONS,NUM_IP_SPECIES)
 	DATA IP(1:1,1)/    13.60_LDP/
@@ -108,7 +108,11 @@
 	DATA IP(1:20,30)/  9.39_LDP,   17.96_LDP,  39.72_LDP,   59.57_LDP,  82.6_LDP,  108.0_LDP,   133.9_LDP,  173.9_LDP,
 	1                 203.0_LDP,   238.0_LDP,  274.4_LDP,   310.8_LDP,  417.6_LDP,  453.4_LDP,  490.6_LDP,  540.0_LDP,
 	1                 577.8_LDP,   613.3_LDP,  697.5_LDP,  737.37_LDP/
-
+	DATA IP(1:20,31:55)/500*0.0_LDP/ 
+	DATA IP(1:20,56)/ 5.21_LDP,   10.00_LDP,   35.84_LDP,    47.0_LDP,  58.0_LDP,    71.0_LDP,   86.0_LDP,  101.0_LDP,
+	1                 130.5_LDP, 146.52_LDP,   241.0_LDP,   267.1_LDP, 296.0_LDP,   325.0_LDP,  354.0_LDP,  390.0_LDP,
+	1                 422.0_LDP,  455.0_LDP ,  488.0_LDP,   520.0_LDP/
+	DATA IP(1:20,57:92)/720*0.0_LDP/  
 !
 	MAX_RATIO=1.0_LDP
 	LUER=ERROR_LU()
@@ -118,18 +122,17 @@
 !
 	DO ISPEC=1,NUM_SPECIES
 	  K=NINT(AT_NO(ISPEC))
-	  IF(SPECIES_PRES(ISPEC) .AND. K .GT. NUM_IP_SPECIES)THEN
+	  IF(IP(1,K) .EQ. 0.0_LDP)THEN
 	    WRITE(LUER,*)'Error in CHECK_IONS_PRESENT'
-	    WRITE(LUER,*)'Data for atomic species with atomic no not availabe'
+	    WRITE(LUER,*)'Requested ionization data for atomic species is not availabe'
 	    WRITE(LUER,*)'Requested atomic No is ',K
-	    WRITE(LUER,*)'Maximum atomic No is ',NUM_IP_SPECIES
+	    WRITE(LUER,*)'Need to add requested data to check_ions_present'
 	    STOP
 	  END IF
 	END DO
 !
 ! Determine ionization fractions.
 !
-	
 	DO ISPEC=1,NUM_SPECIES
 	  IF(SPECIES_PRES(ISPEC))THEN
 	    DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
@@ -237,6 +240,13 @@
 	    K=NINT(AT_NO(ISPEC))
 	    ION_FRAC=1.0_LDP
 	    DO ID=J,MIN(K,NUM_IP_IONS)
+	       IF(IP(ID,K) .EQ. 0.0_LDP)THEN
+	         WRITE(LUER,*)'Error in CHECK_IONS_PRESENT'
+	         WRITE(LUER,*)'Requested ionization data for atomic species is not availabe'
+	         WRITE(LUER,*)'Requested atomic No and ioization stage are ',K,ID
+	         WRITE(LUER,*)'Need to add requested data to check_ions_present'
+	         STOP
+	       END IF  
 	       ION_FRAC=ION_FRAC*(T_VAL**1.5_LDP)*EXP(-HDKT_EV*IP(ID,K)/T_VAL)/2.07E-22_LDP/ED_VAL
 	       IF(ION_FRAC .GT. HIGH_LIMIT)THEN
 	         IF(FIRST_TIME)THEN

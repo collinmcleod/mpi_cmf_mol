@@ -160,7 +160,7 @@
 !
 	INTEGER IERR
 	INTEGER ERRORCODE
-	INTEGER NUM_RAYS_PER_CORE
+	INTEGER NUM_RAYS_PER_THREAD
 !
 	SAVE
 	END MODULE FG_J_CMF_MOD_MPI_V1
@@ -204,6 +204,7 @@
 	USE FG_J_CMF_MOD_MPI_V1
 	IMPLICIT NONE
 !
+! Altered 16-Feb-2025 : Fixed bug with computation of NUM_RAYS_PER_THREAD.
 	INTEGER NC,NP,ND
 	REAL(KIND=LDP) ETA(ND),CHI(ND),ESEC(ND)
 	REAL(KIND=LDP) V(ND),SIGMA(ND),R(ND),P(NP)
@@ -328,13 +329,13 @@
 	CALL TUNE(1,'FG_FULL')
 !
 	CALL MPI_COMM_SIZE(MPI_COMM_WORLD,NTHREAD,IERR)
-	NUM_RAYS_PER_CORE=NP/(NTHREAD-1)+1
+	NUM_RAYS_PER_THREAD=(NP+NTHREAD-1)/NTHREAD
 !
 	IF(FIRST_TIME .AND. MYPE .EQ. 0)THEN
 	  WRITE(6,'(3(2X,A3,I5))')'NC=',NC,'ND=',ND,'NP=',NP
 	  WRITE(6,*)'R(1), R(ND)=',R(1),R(ND)
-	  WRITE(6,*)'P(1), R(NP)=',P(1),P(ND)
-	  WRITE(6,*)'Use trapazoidal rules for quadrature weights?',TRAPFORJ
+	  WRITE(6,*)'P(1), P(NP)=',P(1),P(NP)
+	  WRITE(6,*)'Using trapazoidal rules for quadrature weights?',TRAPFORJ
 	END IF
 !
 ! Allocate data for moments which will be used to construct the Eddington factors.
@@ -389,13 +390,19 @@
 	END IF
 !
 	IF(NEW_R_GRID .OR. (INIT .AND. FIRST_TIME))THEN
-	  IF(MYPE .EQ. 0)WRITE(6,*)'About to compute SET_ANG_QW'; FLUSH(UNIT=6)
+	  IF(MYPE .EQ. 0)WRITE(6,*)'About to compute angular quadratue weights'; FLUSH(UNIT=6)
 	  CALL SET_ANG_QW_MPI(R,P,NC,ND,NP,TRAPFORJ)
 	END IF
+	IF(FIRST_TIME .AND. MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Ray assignments to thread 0 for ray integrations'
+	  WRITE(6,'(4A10)')'LS','MYPE','NTHREAD','Loop'
+	END IF
 !
-	DO IPROC=1,NUM_RAYS_PER_CORE
+	DO IPROC=1,NUM_RAYS_PER_THREAD
 	  LS=GET_LS(MYPE,NTHREAD,IPROC)
-	  IF(FIRST_TIME .AND. MYPE .EQ. 0)WRITE(6,*)LS,MYPE,NTHREAD,IPROC; FLUSH(UNIT=6)
+	  IF(FIRST_TIME .AND. MYPE .EQ. 0)THEN
+	    WRITE(6,'(4I10)')LS,MYPE,NTHREAD,IPROC; FLUSH(UNIT=6)
+	  END IF
 	  IF(LS .GT. NP)EXIT
 !
 ! This association was done to save time, and could probably beimproved.
@@ -459,7 +466,7 @@
 	  DEALLOCATE ( dCHIdR )
 	  DEALLOCATE ( Q )
 !
-	  DO IPROC=1,NUM_RAYS_PER_CORE
+	  DO IPROC=1,NUM_RAYS_PER_THREAD
 	    LS=GET_LS(MYPE,NTHREAD,IPROC)
 	    IF(LS .GT. NP)EXIT
 !
@@ -627,7 +634,7 @@
 ! This will allow us to allocate the required memory.
 !
 	  NRAY_MAX=0
-	  DO IPROC=1,NUM_RAYS_PER_CORE
+	  DO IPROC=1,NUM_RAYS_PER_THREAD
 	    LS=GET_LS(MYPE,NTHREAD,IPROC)
 	    IF(LS .GT. NP)EXIT
 	    NI_SMALL=ND_EXT-(LS-NC-1)
@@ -820,7 +827,7 @@
 ! Allocation of ray variables. The use of te funtion GET_LS ensures we always allocate
 ! the same processor to the same rays.
 !
-	  DO IPROC=1,NUM_RAYS_PER_CORE
+	  DO IPROC=1,NUM_RAYS_PER_THREAD
 	    LS=GET_LS(MYPE,NTHREAD,IPROC)
 	    IF(LS .GT. NP)EXIT
 	    NI=RAY(LS)%NI_RAY 
@@ -888,7 +895,7 @@
 	    END IF
 	  END DO
 !
-	  DO IPROC=1,NUM_RAYS_PER_CORE
+	  DO IPROC=1,NUM_RAYS_PER_THREAD
 	    LS=GET_LS(MYPE,NTHREAD,IPROC)
 	    IF(LS .GT. NP)EXIT
 	    NI=RAY(LS)%NI_RAY  
@@ -933,7 +940,7 @@
 !
 !
 	ELSE IF(NEW_FREQ)THEN
-	  DO IPROC=1,NUM_RAYS_PER_CORE
+	  DO IPROC=1,NUM_RAYS_PER_THREAD
 	    LS=GET_LS(MYPE,NTHREAD,IPROC)
 	    IF(LS .GT. NP)EXIT
 	    NI=RAY(LS)%NI_RAY 

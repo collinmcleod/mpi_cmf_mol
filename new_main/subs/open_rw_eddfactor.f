@@ -50,11 +50,12 @@
 	INTEGER, PARAMETER :: IZERO=0
 	EXTERNAL ERROR_LU
 !
+	LOGICAL FILE_OPEN
 	CHARACTER(LEN=11) FILE_DATE
 !
 !	include 'mpif.h'
 !
-	ACCESS_F=0
+	ACCESS_F=INITIAL_ACCESS_REC
 	LUER=ERROR_LU()
 	CALL DIR_ACC_PARS(REC_SIZE,UNIT_SIZE,WORD_SIZE,N_PER_REC)
 	RECORD_SIZE=WORD_SIZE*(ND_EXT+1)/UNIT_SIZE
@@ -90,7 +91,7 @@
 	      IF(T1 .EQ. 0.0_LDP .OR. IOS .NE. 0)THEN
 	        WRITE(LUER,'(/,A)')' Warning --- All values not'//
 	1                      ' computed - will compute new F'
-	        WRITE(LUER,'(A)')'Currently trying to read '//TRIM(FILENAME)
+	        WRITE(LUER,'(A)')' Currently trying to read '//TRIM(FILENAME)
 	        COMPUTE_EDDFAC=.TRUE.
 	      END IF
 	    END IF
@@ -145,15 +146,19 @@
 !
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	IF(MYPE .NE. 0)THEN
+	  INQUIRE(UNIT=LU_EDD,OPENED=FILE_OPEN)
+	  IF(FILE_OPEN)THEN
+	    CLOSE(LU_EDD)
+	  END IF
 	  OPEN(UNIT=LU_EDD,FILE=FILENAME,FORM='UNFORMATTED',ACTION='READ',
-	1       ACCESS='DIRECT',STATUS='OLD',RECL=RECORD_SIZE,IOSTAT=IOS)
-	  IF(IOS .NE. 0)THEN
-	    WRITE(6,*)'Unable to open EDDFACTOR file for non-root processors.'
-	    WRITE(6,*)'MYPE,IOS=',MYPE,IOS
-	    STOP
-	  END IF 
-	  ACCESS_F=INITIAL_ACCESS_REC
+	1         ACCESS='DIRECT',STATUS='OLD',RECL=RECORD_SIZE,IOSTAT=IOS)
+	    IF(IOS .NE. 0)THEN
+	      WRITE(6,*)'Unable to open EDDFACTOR file for non-root processors.'
+	      WRITE(6,*)'MYPE,IOS=',MYPE,IOS
+	      STOP
+	    END IF
 	END IF
+	ACCESS_F=INITIAL_ACCESS_REC
 !
 	RETURN
 	END

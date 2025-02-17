@@ -1,8 +1,10 @@
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
-      SUBROUTINE SOLVE_CMF_FORMAL_V3(CHI,ETA_M,ETA_P,IP,FREQ,NU_DNU,
+      SUBROUTINE SOLVE_CMF_FORMAL_MPI_V1(CHI,ETA,IP,FREQ,NU_DNU,
      *                     INNER_BND_METH,B_NUE,dBDTAU,ND,NP,NC)
 	USE SET_KIND_MODULE
+      USE MOD_SPACE_GRID_MPI_V1
+      IMPLICIT NONE
 !
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
@@ -34,8 +36,6 @@
 ! Altered 02-Apr-2018: Changed from nc+1 : if(ip .gt. nc+1 .or. INNER_BND_METH .eq. 'ZERO_FLUX')then
 !--------------------------------------------------------------------
 !
-      USE MOD_SPACE_GRID_MPI_V1
-      IMPLICIT NONE
 !
 ! Grid size variables
 !
@@ -44,7 +44,7 @@
 !
 ! Opacity and emissivity variables
 !
-      REAL(KIND=LDP), dimension(nd) :: chi,eta_m, eta_p
+      REAL(KIND=LDP), dimension(nd) :: chi,eta
 !
 ! Frequency variable
 !
@@ -78,6 +78,8 @@
       integer :: luer,error_lu
       external error_lu
 !
+      nzz=ray(ip)%nz
+	if(ip .eq. 89)write(6,*)'befrel89,s_p',RAY(IP)%S_P(1:nzz)
 !--------------------------------------------------------------------
 !
 ! Determine transfer variables.
@@ -93,19 +95,12 @@
 !
 !         where: _* is _p or _m for ray in plus or minus direction
 !
-!	WRITE(6,*)ND,NU_DNU
-!	WRITE(6,*)IP,RAY(IP)%NZ
-!	WRITE(6,*)ETA(1),CHI(1)
-!	WRITE(6,*)RAY(IP)%B_M(1)
-!	WRITE(6,*)RAY(IP)%I_M_PREV(1)
-!	WRITE(6,*)CHI_TAU(1)
-!	WRITE(6,*)SOURCE_PRIME(1)
-!
-      CALL REL_VARIABLES(ND,CHI,ETA_M,NU_DNU,RAY(IP)%B_M,RAY(IP)%I_M_PREV,CHI_TAU,SOURCE_PRIME)
+      CALL REL_VARIABLES(ND,CHI,ETA,NU_DNU,RAY(IP)%B_M,RAY(IP)%I_M_PREV,CHI_TAU,SOURCE_PRIME)
 !
 ! Determine "optical depth" from outside to center (s_m,mu_m)
 !
-      CALL OPTDEPTH_V4(DTAU_LOC,CHI_TAU,RAY(IP)%NZ,IP,L_FALSE,'ZERO')
+	if(ip .eq. 89)write(6,*)'befopt89,s_p',RAY(IP)%S_P(1:nzz)
+      CALL OPTDEPTH_MPI_V1(DTAU_LOC,CHI_TAU,RAY(IP)%NZ,IP,L_FALSE,'ZERO')
 !
 ! Calculate transfer in inward direction, I- (mu=-1)
 !
@@ -118,6 +113,10 @@
 !---------------------------------------------------------------
 !
       nzz=ray(ip)%nz
+	if(ip .eq. 89)write(6,*)'ip89,s_p',RAY(IP)%S_P(1:nzz)
+	if(ip .eq. 89)write(6,*)'ip89,chi_tau',chi_tau(1:nzz)
+	if(ip .eq. 89)write(6,*)'ip89,dtau_loc',dtau_loc(1:nzz-1),nd
+	if(ip .eq. 89)write(6,*)'ip89,srce-prime',source_prime(1:nzz)
       do iz=2,ray(ip)%nz-1
 !
         t1=dtau_loc(iz-1)
@@ -230,12 +229,12 @@
 !
 ! Determine transfer variables.
 !
-      call rel_variables(nd,chi,eta_p,nu_dnu,ray(ip)%b_p,
+      call rel_variables(nd,chi,eta,nu_dnu,ray(ip)%b_p,
      *       ray(ip)%I_p_prev,chi_tau,source_prime)
 !
 ! Determine "optical depth" from outside to center (s_m,mu_m)
 !
-      CALL OPTDEPTH_V4(DTAU_LOC,CHI_TAU,RAY(IP)%NZ,IP,L_TRUE,'ZERO')
+      CALL OPTDEPTH_MPI_V1(DTAU_LOC,CHI_TAU,RAY(IP)%NZ,IP,L_TRUE,'ZERO')
 !
 !---------------------------------------------------------------
 !
@@ -294,6 +293,26 @@
         gamma=e0-e1/dtau_loc(iz)
         ray(ip)%I_p(iz)=ray(ip)%I_p(iz+1)*ee+beta*source_prime(iz)+gamma*source_prime(iz+1)
        end do
+!
+	do iz=1,nd
+	  if(ray(ip)%I_m(iz) .ne. ray(ip)%I_m(iz))THEN
+	    write(6,*)'invalid ray(ip)%I_m(i))',iz,ip,nd
+	    write(6,*)ip,ray(ip)%I_p
+	    write(6,*)ip,ray(ip)%I_m
+	    call sleep(2)
+	    STOP
+	  end if
+	end do
+!
+	do iz=1,nd
+	  if(ray(ip)%I_p(iz) .ne. ray(ip)%I_p(iz))THEN
+	    write(6,*)'invalid ray(ip)%I_p(i))',iz,ip,nd
+	    write(6,*)ip,ray(ip)%I_p
+	    write(6,*)ip,ray(ip)%I_m
+	    call sleep(2)
+	    STOP
+	  end if
+	end do
 !     if(ip .le. nc)write(166,*)freq,ray(ip)%I_p(nzz),ray(ip)%I_m(nzz)
 !
       return

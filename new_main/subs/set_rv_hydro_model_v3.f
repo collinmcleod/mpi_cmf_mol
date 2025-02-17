@@ -357,7 +357,10 @@
 	  END IF
 	  RMAX=R(1); RCORE=R(ND)
 	  dLOGR=0.0_LDP; dTAU=0.0_LDP		!Set for diagnostic output file.
-	  WRITE(LUER,*)'Read in R grid from RDINR in SET_RV_HYDRO_MODEL'
+	  IF(MYPE .EQ. 0)THEN
+	     WRITE(LUER,*)'Read in R grid from RDINR in SET_RV_HYDRO_MODEL'
+	     FLUSH(UNIT=6)
+	  END IF
 !
 	ELSE
 !

@@ -18,6 +18,19 @@
 	  REAL(KIND=LDP), ALLOCATABLE :: CHI_RAY(:)
 	  REAL(KIND=LDP), ALLOCATABLE :: ETA_RAY(:)
 !
+! PAR_MOM will be used to store all summed moments for each process.
+! We use the pointer to point to a specifc location in PAR_MOM. See
+! below.
+!
+	REAL(KIND=LDP), TARGET, ALLOCATABLE :: PAR_MOM(:)
+	REAL(KIND=LDP), POINTER :: PAR_JNU(:)
+	REAL(KIND=LDP), POINTER :: PAR_HNU(:)
+	REAL(KIND=LDP), POINTER :: PAR_KNU(:)
+	REAL(KIND=LDP), POINTER :: PAR_NNU(:)
+!
+	REAL(KIND=LDP), POINTER :: PAR_IB_VEC(:)
+	REAL(KIND=LDP), POINTER :: PAR_OB_VEC(:)
+!
 	  INTEGER ND_EXT
 	  INTEGER ND_ADD
 	  INTEGER NP_MAX
@@ -37,8 +50,8 @@
 	1            METHOD,INITIALIZE,NEW_FREQ,
 	1            NC,NP,DST,DEND,ND)
 	USE SET_KIND_MODULE
-        USE EXT_REL_GRID_MP_V1
-	USE MOD_SPACE_GRID_V2
+        USE EXT_REL_GRID_MPI_V1
+	USE MOD_SPACE_GRID_MPI_V1
 	USE MOD_RAY_MOM_STORE
 	USE MPI
 	IMPLICIT NONE
@@ -132,7 +145,8 @@
 	CHARACTER(LEN=20) BOUNDARY
 !
 	INTEGER NDM1
-	INTEGER I,J,K,IP,ID,IOS
+	INTEGER I,J,IERR
+	INTEGER K,IP,ID,IOS
 	INTEGER NP_LIMIT
 	INTEGER NRAY
 !
@@ -144,8 +158,9 @@
 	LOGICAL NEW_R_GRID
 	LOGICAL REALLOCATE_GRID
 !
-	INTEGER NUM_RAYS_PER_CORE
+	INTEGER NUM_RAYS_PER_THREAD
 	INTEGER GET_IP
+	INTEGER IPROC
 	GET_IP(MYPE,NTHREAD,I)=MOD(I,2)*(MYPE+(I-1)*NTHREAD+1)+MOD(I+1,2)*(I*NTHREAD-MYPE)
 !
 !
@@ -155,6 +170,7 @@
 	ELSE
 	  NU_ON_dNU=1.0_LDP/dLOG_NU
 	END IF
+	NUM_RAYS_PER_THREAD=(NP+NTHREAD-1)/NTHREAD
 !
 ! Allocate data for moments which will be used to construct the Eddington
 ! factors.
@@ -288,6 +304,27 @@
 	  END IF
 	  C_KMS=1.0E-05_LDP*SPEED_OF_LIGHT()
 !
+! Set up stodarge and pointers for computation of the moments, and
+! partial moments
+! at the outer boudaries.
+!
+	  IF(FIRST_TIME)THEN
+            IOS=0
+	    ALLOCATE ( PAR_MOM(4*ND+16),STAT=IOS )
+	    ALLOCATE ( PAR_IB_VEC(8),STAT=IOS )
+	    ALLOCATE ( PAR_OB_VEC(8),STAT=IOS )
+            PAR_JNU=>PAR_MOM(1:ND)
+            PAR_HNU=>PAR_MOM(ND+1:2*ND)
+            PAR_KNU=>PAR_MOM(2*ND+1:3*ND)
+            PAR_NNU=>PAR_MOM(3*ND+1:4*ND)
+            PAR_IB_VEC=>PAR_MOM(4*ND+1:4*ND+8)
+            PAR_OB_VEC=>PAR_MOM(4*ND+9:4*ND+16)
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(6,*)'PAR_MOM allocated in CMF_REL...'
+	      FLUSH(UNIT=6)
+	    END IF
+	  END IF
+!
 !
 ! Compute VEXT and R_EXT. We assume a BETA velocity law at large R.
 !
@@ -386,27 +423,33 @@
 ! This must be after the call to DEFINE_GRID so that RAY_POINTS_INSERTED is defined.
 !
 	IF(FIRST_TIME .OR. NEW_R_GRID)THEN
-	  CALL DEFINE_GRID_V2(R_EXT,V_EXT,VDOP_VEC_EXT,VDOP_FRAC,ND_EXT,R,P,ND,NC,NP)
+	  CALL DEFINE_GRID_MPI_V1(R_EXT,V_EXT,VDOP_VEC_EXT,VDOP_FRAC,ND_EXT,R,P,ND,NC,NP)
 	  J=0
 	  OPEN(UNIT=7,FILE='MU_VALUE_CHK',STATUS='UNKNOWN')
-	  WRITE(7,'(A)')' '
-	  WRITE(7,'(A)')' Comparison of MU(cmf) and MU(obs) at outer boundary (CMF_FORMAL_REL_V4)'
-	  WRITE(7,'(A)')' The  first MU(obs) is the transformed value of MU(cmf)'
-	  WRITE(7,'(A)')' The second MU(obs) is simply computed from P(ip) and RMAX'
-	  WRITE(7,'(A)')' '
-	  WRITE(7,'(2X,A,4(6X,A,2X))')'IP',' MU(cmf)',' HQW(cmf)',' MU(obs)',' MU(obs)'
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(7,'(A)')' '
+	    WRITE(7,'(A)')' Comparison of MU(cmf) and MU(obs) at outer boundary (CMF_FORMAL_REL_V4)'
+	    WRITE(7,'(A)')' The  first MU(obs) is the transformed value of MU(cmf)'
+	    WRITE(7,'(A)')' The second MU(obs) is simply computed from P(ip) and RMAX'
+	    WRITE(7,'(A)')' '
+	    WRITE(7,'(2X,A,4(6X,A,2X))')'IP',' MU(cmf)',' HQW(cmf)',' MU(obs)',' MU(obs)'
+	    FLUSH(UNIT=6)
+	  END IF
 	  T1=0.0_LDP
-	  DO IP=1,NP
+	  DO IPROC=1,NUM_RAYS_PER_THREAD
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. NP)EXIT
 	    J=MAX(J,RAY(IP)%NZ)
 	    MU_AT_RMAX=RAY(IP)%MU_P(RAY(IP)%LNK(1))
-	    HQW_AT_RMAX=2.0_LDP*HQW_P(1,IP)
-	    WRITE(7,'(I4,4ES16.6)')IP,MU_AT_RMAX,HQW_AT_RMAX,
-	1                 (MU_AT_RMAX+V(1)/C_KMS)/(1.0D0+MU_AT_RMAX*V(1)/C_KMS),
-	1                 SQRT( (R(1)-P(IP))*(R(1)+P(IP)) )/R(1)
+	    HQW_AT_RMAX=2.0_LDP*ray(ip)%HQW_P(1)
+!	    WRITE(7,'(I4,4ES16.6)')IP,MU_AT_RMAX,HQW_AT_RMAX,
+!	1                 (MU_AT_RMAX+V(1)/C_KMS)/(1.0D0+MU_AT_RMAX*V(1)/C_KMS),
+!	1                 SQRT( (R(1)-P(IP))*(R(1)+P(IP)) )/R(1)
 	  END DO
-	  CLOSE(UNIT=7)
+	  IF(MYPE .EQ. 0)CLOSE(UNIT=7)
 	  IF( ALLOCATED(CHI_RAY) ) DEALLOCATE (CHI_RAY)
 	  IF( ALLOCATED(ETA_RAY) ) DEALLOCATE (ETA_RAY)
+	  CALL MPI_ALLREDUCE(MPI_IN_PLACE,J,IONE,MPI_INTEGER,MPI_MAX,MPI_COMM_WORLD,IERR)
 	  ALLOCATE (CHI_RAY(J),ETA_RAY(J))
 !
 	  IF(USE_HEN_GREEN)THEN
@@ -414,9 +457,11 @@
 	    CALL CMF_REL_DUST_QW(G_HEN_GREEN,ND,NP)
 	  END IF
 !
-          DO IPROC=1,NUM_RAYS_PER_CORE
-	    IP=GET_IP(MYPE,NTHREAD,ICORE)
+          DO IPROC=1,NUM_RAYS_PER_THREAD
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
 	    IF(IP .GT. NP)EXIT
+	      if(ip .eq.  88)write(6,*)'eta-slv-ip88,s_p',RAY(88)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
+              if(ip .eq.  89)write(6,*)'eta-slv-ip89,s_p',RAY(89)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
 	    IF(ALLOCATED(RAY(IP)%ETA_M))DEALLOCATE(RAY(IP)%ETA_M,RAY(IP)%ETA_P)
             NRAY=RAY(IP)%NZ
             ALLOCATE (RAY(IP)%ETA_M(NRAY))
@@ -468,9 +513,11 @@
 	END IF
 !
 	IF(INITIALIZE .AND. NEW_FREQ)THEN
-          DO IPROC=1,NUM_RAYS_PER_CORE
-	    IP=GET_IP(MYPE,NTHREAD,ICORE)
+          DO IPROC=1,NUM_RAYS_PER_THREAD
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
 	    IF(IP .GT. NP)EXIT
+	      if(ip .eq.  88)write(6,*)'nf-slv-ip88,s_p',RAY(88)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
+              if(ip .eq.  89)write(6,*)'bf-slv-ip89,s_p',RAY(89)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
 	    RAY(IP)%I_P=0.0_LDP; RAY(IP)%I_M=0.0_LDP
 	    RAY(IP)%I_P_PREV=0.0_LDP; RAY(IP)%I_M_PREV=0.0_LDP
 	    RAY(IP)%I_P_SAVE=0.0_LDP; RAY(IP)%I_M_SAVE=0.0_LDP
@@ -478,8 +525,8 @@
 	  HNU_AT_OB_PREV=0.0_LDP; NNU_AT_OB_PREV=0.0_LDP
 	  HNU_AT_IB_PREV=0.0_LDP; NNU_AT_IB_PREV=0.0_LDP
 	ELSE IF(NEW_FREQ)THEN
-          DO IPROC=1,NUM_RAYS_PER_CORE
-	    IP=GET_IP(MYPE,NTHREAD,ICORE)
+          DO IPROC=1,NUM_RAYS_PER_THREAD
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
 	    IF(IP .GT. NP)EXIT
 	    RAY(IP)%I_P=0.0_LDP; RAY(IP)%I_M=0.0_LDP
 	    RAY(IP)%I_P_PREV=RAY(IP)%I_P_SAVE
@@ -498,12 +545,7 @@
 	  ETA_RAY(1:ND_EXT)=ETA_EXT(1:ND_EXT)
 	END IF
 !
-	Jnu_store=0.0_LDP; Hnu_store=0.0_LDP
-	Knu_store=0.0_LDP; Nnu_store=0.0_LDP
-	JPLUS_IB=0.0_LDP; HPLUS_IB=0.0_LDP; KPLUS_IB=0.0_LDP
-	JMIN_IB=0.0_LDP;  HMIN_IB=0.0_LDP; KMIN_IB=0.0_LDP
-	JPLUS_OB=0.0_LDP;  HPLUS_OB=0.0_LDP; KPLUS_OB=0.0_LDP
-	JMIN_OB=0.0_LDP;   HMIN_OB=0.0_LDP;  KMIN_OB=0.0_LDP
+	PAR_MOM=0.0_LDP	
 !
 ! If using the HOLLOW core option, we need to determine location to
 ! store inner boundary intensity. We do it here, since the storage
@@ -518,6 +560,8 @@
             FREQ_STORE(CUR_LOC)=FREQ
 	  END IF
 	END IF
+	WRITE(6,*)'Before rad transefer loop',MYPE; FLUSH(UNIT=6)
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Determine radiative transfer along each p-ray
 !
@@ -527,9 +571,9 @@
 	IPLUS=0.0_LDP
 !
 	IF(RAY_POINTS_INSERTED)THEN
-          DO IPROC=1,NUM_RAYS_PER_CORE
-	    IP=GET_IP(MYPE,NTHREAD,ICORE)
-	    IF(IP .GT. NP)EXIT
+          DO IPROC=1,NUM_RAYS_PER_THREAD
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. NP_LIMIT)EXIT
 !
 	    NRAY=RAY(IP)%NZ
 	    IF(RAY_POINTS_INSERTED)THEN
@@ -559,104 +603,148 @@
               CALL SOLVE_CMF_FORMAL_V3(CHI_RAY,RAY(IP)%ETA_M,RAY(IP)%ETA_P,
 	1               IP,FREQ,NU_ON_dNU,INNER_BND_METH,b_planck,dBdTAU,NRAY,NP,NC)
 	    ELSE
-              CALL SOLVE_CMF_FORMAL_V2(CHI_RAY,ETA_RAY,IP,FREQ,NU_ON_dNU,INNER_BND_METH,b_planck,dBdTAU,NRAY,NP,NC)
+              CALL SOLVE_CMF_FORMAL_MPI_V1(CHI_RAY,ETA_RAY,IP,FREQ,NU_ON_dNU,INNER_BND_METH,b_planck,dBdTAU,NRAY,NP,NC)
 	    END IF
 	  END DO
 !
 	ELSE
+!
+	   DO IPROC=1,NUM_RAYS_PER_THREAD
+              IP=GET_IP(MYPE,NTHREAD,IPROC)
+              IF(IP .GT. NP_LIMIT)EXIT
+	      if(ip .eq.  88)write(6,*)'tst-ip88,s_p',RAY(88)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
+              if(ip .eq.  89)write(6,*)'tst-ip89,s_p',RAY(89)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
+	   END DO
+	   CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	   CALL SLEEP(2)
+
+	  WRITE(6,*)'About FG solver loop',MYPE,USE_HEN_GREEN; FLUSH(UNIT=6)
 	  CALL TUNE(1,'FG_SOLVE')
-          DO IPROC=1,NUM_RAYS_PER_CORE
-	    IP=GET_IP(MYPE,NTHREAD,ICORE)
-	    IF(IP .GT. NP)EXIT
+          DO IPROC=1,NUM_RAYS_PER_THREAD
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
+	    IF(IP .GT. NP_LIMIT)EXIT
 	    NRAY=RAY(IP)%NZ
 	    IF(USE_HEN_GREEN)THEN
 	      CALL ADD_ETA_DUST(DUST_SCAT_OPAC,ETA_RAY,RAY(IP)%ETA_M,RAY(IP)%ETA_P,IP,NRAY,R,ND,NP)
               CALL SOLVE_CMF_FORMAL_V3(CHI_RAY,RAY(IP)%ETA_M,RAY(IP)%ETA_P,
 	1               IP,FREQ,NU_ON_dNU,INNER_BND_METH,b_planck,dBdTAU,NRAY,NP,NC)
             ELSE
-	      CALL SOLVE_CMF_FORMAL_V2(CHI_RAY,ETA_RAY,IP,FREQ,NU_ON_dNU,INNER_BND_METH,b_planck,dBdTAU,NRAY,NP,NC)
+	      if(ip .eq.  88)write(6,*)'slv-ip88,s_p',RAY(88)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
+              if(ip .eq.  89)write(6,*)'slv-ip89,s_p',RAY(89)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
+	      WRITE(6,*)'SCF=',MYPE,IP; FLUSH(UNIT=6)
+	      CALL SOLVE_CMF_FORMAL_MPI_V1(CHI_RAY,ETA_RAY,IP,FREQ,NU_ON_dNU,INNER_BND_METH,b_planck,dBdTAU,NRAY,NP,NC)
 	    END IF
 	  END DO
 	  CALL TUNE(2,'FG_SOLVE')
 	END IF
+	WRITE(6,*)'Doine I solution ',MYPE; FLUSH(UNIT=6)
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+
 !
 ! Integrate over p to get J and K.
 !
 	CALL TUNE(1,'JVAL')
-        DO IPROC=1,NUM_RAYS_PER_CORE
-	  IP=GET_IP(MYPE,NTHREAD,ICORE)
+        DO IPROC=1,NUM_RAYS_PER_THREAD
+	  IP=GET_IP(MYPE,NTHREAD,IPROC)
 	  IF(IP .GT. NP)EXIT
 	  DO ID=1,MIN(ND,NP-IP+1)
 	    T1=RAY(IP)%I_P(RAY(IP)%LNK(ID))
 	    T2=RAY(IP)%I_M(RAY(IP)%LNK(ID))
-            Jnu_store(ID)=Jnu_store(ID)+T1*ray(ip)%Jqw_p(ID)+T2*ray(ip)%Jqw_m(ID,ip)
-            Hnu_store(ID)=Hnu_store(ID)+T1*ray(ip)%Hqw_p(ID)+T2*ray(ip)%Hqw_m(ID,ip)
-            Knu_store(ID)=Knu_store(ID)+T1*ray(ip)%Kqw_p(ID)+T2*ray(ip)%Kqw_m(ID,ip)
-            Nnu_store(ID)=Nnu_store(ID)+T1*ray(ip)%Nqw_p(ID)+T2*ray(ip)%Nqw_m(ID,ip)
+	    IF(T1 .NE. T1 .OR. T2 .NE. T2)THEN
+	      WRITE(6,*)'Invalid T1,T2',ID,IP
+	      WRITE(6,*)T1,T2
+	      FLUSH(UNIT=6)
+	      CALL SLEEP(2)
+	      STOP
+	    END IF
+            PAR_Jnu(ID)=PAR_Jnu(ID)+T1*ray(ip)%Jqw_p(ID)+T2*ray(ip)%Jqw_m(ID)
+            PAR_Hnu(ID)=PAR_Hnu(ID)+T1*ray(ip)%Hqw_p(ID)+T2*ray(ip)%Hqw_m(ID)
+            PAR_Knu(ID)=PAR_Knu(ID)+T1*ray(ip)%Kqw_p(ID)+T2*ray(ip)%Kqw_m(ID)
+            PAR_Nnu(ID)=PAR_Nnu(ID)+T1*ray(ip)%Nqw_p(ID)+T2*ray(ip)%Nqw_m(ID)
+	    IF(PAR_Jnu(ID) .NE. PAR_Jnu(ID))THEN
+	      WRITE(6,*)'Invalid PAR_JU',ID,IP,ray(ip)%Jqw_p(ID),ray(ip)%Jqw_m(ID)
+	      FLUSH(UNIT=6)
+	      CALL SLEEP(2)
+	      STOP
+	    END IF
 	  END DO
 	END DO
 	CALL TUNE(2,'JVAL')
 !
 	IF(USE_HEN_GREEN)THEN
 	  ETA_SCAT=0.0_LDP
-          DO IPROC=1,NUM_RAYS_PER_CORE
-	    IP=GET_IP(MYPE,NTHREAD,ICORE)
+          DO IPROC=1,NUM_RAYS_PER_THREAD
+	    IP=GET_IP(MYPE,NTHREAD,IPROC)
 	    IF(IP .GT. NP_LIMIT)EXIT
 	    DO ID=1,MIN(ND,NP-IP+1)
 	      T1=RAY(IP)%ETA_P(RAY(IP)%LNK(ID))-ETA_RAY(RAY(IP)%LNK(ID))
 	      T2=RAY(IP)%ETA_M(RAY(IP)%LNK(ID))-ETA_RAY(RAY(IP)%LNK(ID))
-              ETA_SCAT(ID)=ETA_SCAT(ID)+T1*ray(ip)%Jqw_p(ID)+T2*Jqw_m(ID,ip)
+              ETA_SCAT(ID)=ETA_SCAT(ID)+T1*ray(ip)%Jqw_p(ID)+T2*ray(Ip)%Jqw_m(ID)
 	    END DO
 	  END DO
 	END IF
 !
 	ID=ND
-         DO IPROC=1,NUM_RAYS_PER_CORE
-	   IP=GET_IP(MYPE,NTHREAD,ICORE)
+         DO IPROC=1,NUM_RAYS_PER_THREAD
+	   IP=GET_IP(MYPE,NTHREAD,IPROC)
 	   IF(IP .GT. NC+1)EXIT
 	   T1=RAY(IP)%I_P(RAY(IP)%LNK(ID))
 	   T2=RAY(IP)%I_M(RAY(IP)%LNK(ID))
-	   JPLUS_IB=JPLUS_IB+T1*ray(ip)%*Jqw_p(ND)
-	   HPLUS_IB=HPLUS_IB+T1*ray(ip)%*Hqw_p(ND)
-	   KPLUS_IB=KPLUS_IB+T1*ray(ip)%*Kqw_p(ND)
-	   NPLUS_IB=NPLUS_IB+T1*ray(ip)%*Nqw_p(ND)
-	   JMIN_IB =JMIN_IB +T2*ray(ip)%2*Jqw_m(ND)
-	   HMIN_IB =HMIN_IB -T2*ray(ip)%2*Hqw_m(ND)    !- to make +ve
-	   KMIN_IB =KMIN_IB +T2*ray(ip)%2*Kqw_m(ND)
-	   NMIN_IB =NMIN_IB -T2*ray(ip)%2*Nqw_m(ND)
+	   PAR_IB_VEC(1)=PAR_IB_VEC(1)+T1*ray(ip)%Jqw_p(ND)
+	   PAR_IB_VEC(2)=PAR_IB_VEC(2)+T1*ray(ip)%Hqw_p(ND)
+	   PAR_IB_VEC(3)=PAR_IB_VEC(3)+T1*ray(ip)%Kqw_p(ND)
+	   PAR_IB_VEC(4)=PAR_IB_VEC(4)+T1*ray(ip)%Nqw_p(ND)
+	   PAR_IB_VEC(5)=PAR_IB_VEC(5) +T2*ray(ip)%Jqw_m(ND)
+	   PAR_IB_VEC(6)=PAR_IB_VEC(6) -T2*ray(ip)%Hqw_m(ND)    !- to make +ve
+	   PAR_IB_VEC(7)=PAR_IB_VEC(7) +T2*ray(ip)%Kqw_m(ND)
+	   PAR_IB_VEC(8)=PAR_IB_VEC(8) -T2*ray(ip)%Nqw_m(ND)
 	END DO
 !
 ! Evaluate half moments at outer boundary, and store intensity at the outer boundary.
 !
 	ID=1
-        DO IPROC=1,NUM_RAYS_PER_CORE
-	  IP=GET_IP(MYPE,NTHREAD,ICORE)
-	  IF(IP .GT. MP_LIMIT)EXIT
+        DO IPROC=1,NUM_RAYS_PER_THREAD
+	  IP=GET_IP(MYPE,NTHREAD,IPROC)
+	  IF(IP .GT. NP)EXIT                  !?MP_LIMIT
 	  T1=RAY(IP)%I_P(RAY(IP)%LNK(ID))
 	  T2=RAY(IP)%I_M(RAY(IP)%LNK(ID))
-	  JPLUS_OB=JPLUS_OB+T1*ray(ip)%*Jqw_p(1)
-	  HPLUS_OB=HPLUS_OB+T1*ray(ip)%*Hqw_p(1)
-	  KPLUS_OB=KPLUS_OB+T1*ray(ip)%*Kqw_p(1)
-	  NPLUS_OB=NPLUS_OB+T1*ray(ip)%*Nqw_p(1)
-	  JMIN_OB =JMIN_OB +T2*ray(ip)%*Jqw_m(1)
-	  HMIN_OB =HMIN_OB -T2*ray(ip)%*Hqw_m(1)    !- to make +ve
-	  KMIN_OB =KMIN_OB +T2*ray(ip)%*Kqw_m(1)
-	  NMIN_OB =NMIN_OB -T2*ray(ip)%*Nqw_m(1)
-	  IPLUS(IP)=T1-T2
+	  PAR_OB_VEC(1) = PAR_OB_VEC(1)  + T1*ray(ip)%Jqw_p(1)
+	  PAR_OB_VEC(2) = PAR_OB_VEC(2) + T1*ray(ip)%Hqw_p(1)
+	  PAR_OB_VEC(3) = PAR_OB_VEC(3) + T1*ray(ip)%Kqw_p(1)
+	  PAR_OB_VEC(4) = PAR_OB_VEC(4) + T1*ray(ip)%Nqw_p(1)
+	  PAR_OB_VEC(5) = PAR_OB_VEC(5) + T2*ray(ip)%Jqw_m(1)
+	  PAR_OB_VEC(6) = PAR_OB_VEC(6) - T2*ray(ip)%Hqw_m(1)    !- to make +ve
+	  PAR_OB_VEC(7) = PAR_OB_VEC(7) + T2*ray(ip)%Kqw_m(1)
+	  PAR_OB_VEC(8) = PAR_OB_VEC(8) - T2*ray(ip)%Nqw_m(1)
+	  IPLUS(IP) = T1-T2
 	END DO
+!
+	I=4*ND+16
+	CALL MPI_ALLREDUCE(MPI_IN_PLACE,PAR_MOM,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+        JNU_STORE(:)=PAR_MOM(1:ND)
+        HNU_STORE(:)=PAR_MOM(ND+1:2*ND)
+        KNU_STORE(:)=PAR_MOM(2*ND+1:3*ND)
+        NNU_STORE(:)=PAR_MOM(3*ND+1:4*ND)
+!
+        K=4*ND
+        JPLUS_IB=PAR_MOM(K+1);  HPLUS_IB=PAR_MOM(K+2);  KPLUS_IB=PAR_MOM(K+3);    NPLUS_IB=PAR_MOM(K+4)
+        JMIN_IB=PAR_MOM(K+5);   HMIN_IB=PAR_MOM(K+6);   KMIN_IB=PAR_MOM(K+7);     NMIN_IB=PAR_MOM(K+8)
+        JPLUS_OB=PAR_MOM(K+9);  HPLUS_OB=PAR_MOM(K+10); KPLUS_OB=PAR_MOM(K+11);   NPLUS_OB=PAR_MOM(K+12)
+        JMIN_OB=PAR_MOM(K+13);  HMIN_OB=PAR_MOM(K+14);  KMIN_OB=PAR_MOM(K+15);    NMIN_OB=PAR_MOM(K+16)
 !
 ! Save intensity for integration at next frequency.
 !
 	CALL TUNE(1,'FGP_SAVE')
-        DO IPROC=1,NUM_RAYS_PER_CORE
-	  IP=GET_IP(MYPE,NTHREAD,ICORE)
-	  IF(IP .GT. MP_LIMIT)EXIT
+        DO IPROC=1,NUM_RAYS_PER_THREAD
+	  IP=GET_IP(MYPE,NTHREAD,IPROC)
+	  IF(IP .GT. NP)EXIT                   !?MP_LIMIT
 	  DO ID=1,RAY(IP)%NZ
 	    RAY(IP)%I_P_SAVE(ID)=RAY(IP)%I_P(ID)
 	    RAY(IP)%I_M_SAVE(ID)=RAY(IP)%I_M(ID)
 	  END DO
 	END DO
 	CALL TUNE(2,'FGP_SAVE')
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 	JNU=JNU_STORE
 	FEDD=KNU_STORE/JNU_STORE

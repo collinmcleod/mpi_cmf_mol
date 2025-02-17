@@ -143,10 +143,10 @@
 	  END DO
 !
 	  DO ID=NUM_IONS-1,1,-1
-            CALL FULL_TO_SUP(
+            CALL FULL_TO_SUP_MPI_V1(
 	1        ROOT(ID)%XzV,   ROOT(ID)%NXzV,       ROOT(ID)%DXzV,  ATM(ID)%XzV_PRES,
 	1        ROOT(ID)%XzV_F, ROOT(ID)%F_TO_S_XzV, ATM(ID)%NXzV_F, ROOT(ID)%DXzV_F,
-	1        ROOT(ID+1)%XzV, ATM(ID+1)%NXzV,      ATM(ID+1)%XzV_PRES, ND)
+	1        ROOT(ID+1)%XzV, ATM(ID+1)%NXzV,      ATM(ID+1)%XzV_PRES, IONE, ND)
           END DO
 !
 ! Store all quantities in POPS array. This is done here as it enables POPION

@@ -149,12 +149,12 @@
 	  IF(MYPE .EQ. 0 .AND. I .EQ. MYPE)THEN
 	    WRITE(LUER,'(/,A,I4)')' Start of GIT loop -- MYPE =',MYPE
 	    WRITE(LUER,'(A,/)')' Variable summary for each thread follows:'
-	    WRITE(LUER,'(8A10)')'MYPE','IT_COUNT','RD_LAM','LAMBDA','FIXED_T',
+	    WRITE(LUER,'(9A10)')'MYPE','IT_COUNT','IREC','RD_LAM','LAMBDA','FIXED_T',
 	1                       'COMP._BA','COH._ES','SN_MODEL'
 	  END IF
 	  IF(MYPE .EQ. I)THEN
-	    WRITE(LUER,'(2I10,6(9X,L1))')MYPE,MAIN_COUNTER,RD_LAMBDA,LAMBDA_ITERATION,FIXED_T,
-	1                   COMPUTE_BA,COHERENT_ES,SN_MODEL
+	    WRITE(LUER,'(3I10,6(9X,L1))')MYPE,MAIN_COUNTER,IREC,RD_LAMBDA,LAMBDA_ITERATION,
+	1                   FIXED_T,COMPUTE_BA,COHERENT_ES,SN_MODEL
 	    IF(MYPE .EQ. NTHREAD-1)WRITE(LUER,*)' '
 	  END IF
 	  FLUSH(LUER)
@@ -292,11 +292,13 @@
 	CALL TUNE(IONE,'DTDR')
 	DTDR=0.0_LDP
 	SECTION='DTDR'
-	IF(IMPURITY_CODE .OR. USE_FIXED_J .OR. FLUX_CAL_ONLY .OR. (RD_LAMBDA .AND. NEWMOD .AND. .NOT. SN_MODEL))THEN
+	IF(IMPURITY_CODE .OR. USE_FIXED_J .OR. FLUX_CAL_ONLY .OR. 
+	1                     (RD_LAMBDA .AND. NEWMOD .AND. .NOT. SN_MODEL))THEN
 	  DTDR=(T(ND)-T(ND-1))/(R(ND-1)-R(ND))
 	  DIFFW(1:NT)=0.0_LDP
 	ELSE 
-	  IF(MYPE .EQ. 0)WRITE(6,*)'Starting DTDR calculation: MYPE =', MYPE; FLUSH(UNIT=6)
+!
+	  IF(MYPE .EQ. 0)WRITE(6,'(1X,A,I4)')'Starting DTDR calculation: MYPE =', MYPE; FLUSH(UNIT=6)
 !
 ! We only need to compute the opacity at the innermost depth, but to save
 ! programing we will compute it at all depths. As this is only done once
@@ -446,8 +448,8 @@
 !
 	LST_DEPTH_ONLY=.FALSE.
 	IF(MYPE .EQ. 0)THEN
-	  WRITE(LUER,'(/,1X,A,ES16.8)')'The value of DTDR is:',DTDR
-	  WRITE(LUER,*)'We will now zero the BA matrices'
+	  WRITE(LUER,'(1X,A,ES16.8)')'The value of DTDR is:',DTDR
+	  WRITE(LUER,*)'We will now zero the variation (BA) matrices'
 	  WRITE(LUER,'(A)')' '
 	END IF
 !
@@ -866,6 +868,8 @@
 	    READ(LU_EDD,REC=EDD_CONT_REC)ACCESS_F
 	  END IF
 	END IF
+!
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	DO I=0,NTHREAD-1
 	  IF(I .EQ. 0 .AND. MYPE .EQ. I)THEN
 	    FLUSH(UNIT=6); WRITE(6,'(A)')' '
@@ -878,6 +882,8 @@
 	  END IF
 	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	END DO
+	FLUSH(UNIT=6)
+	CALL SLEEP(2)
 !
 ! Decide whether to use an file with old J values to provide an initial
 ! estimate of J with incoherent electron scattering. The options
@@ -945,7 +951,9 @@
 	CALL TUNE(IONE,'MLCF')
 	CALL TUNE(IONE,'10000')
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-	IF(MYPE .EQ. 0)WRITE(6,*)'Starting 10000 loop', WRITE_JH; FLUSH(6)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LUER,*)'Starting main CMF frequency loop (10000)'; FLUSH(UNIT=LUER)
+	END IF
 !
 !	WRITE(STRING,*)ML; STRING='ML='//ADJUSTL(TRIM(STRING))
 !	CALL WRITV(T,ND,TRIM(STRING),852+MYPE); FLUSH(852+MYPE)
@@ -2068,9 +2076,9 @@
 	  TCHI(1:ND)=PLANCK_MEAN(1:ND)*CLUMP_FAC(1:ND)
 	  IF(COMP_GREY_LST_IT)THEN
 	    CALL COMP_GREY_V4(POPS,TGREY,TA,CHI,TCHI,CHK,LUER,NC,ND,NP,NT)
-	    IF(CHK)THEN
+	    IF(CHK .AND. MYPE .EQ. 0)THEN
 	      WRITE(LUER,'(/,1X,A,/)')'Grey solution was successfully computed'
-	    ELSE
+	    ELSE IF(MYPE .EQ. 0)THEN
 	      WRITE(LUER,'(/,1X,A,/)')'Grey solution was NOT successfully computed'
 	    END IF
 	  END IF
@@ -2601,7 +2609,7 @@
 	    ELSE
 	      CALL WIND_SCALE_POPS_MPI_V1(POPS,R_OLD,Z_POP,DO_LEV_DISSOLUTION,ND,NT)
 	    END IF
-	    IF(MYPE .EQ. 0THEN
+	    IF(MYPE .EQ. 0)THEN
 	      CALL SCR_RITE_V2(R,V,SIGMA,POPS,IREC,MAIN_COUNTER,RITE_N_TIMES,
 	1                 LAST_NG,WRITE_RVSIG,NT,ND,LUSCR,NEWMOD)
 	      CALL MPI_BCAST(IREC,IONE,MPI_INTEGER,IZERO,MPI_COMM_WORLD,IERR)
@@ -2613,7 +2621,7 @@
 	  CALL AUTO_CLUMP_REV(POPS,CLUMP_LAW,CLUMP_PAR,N_CLUMP_PAR,CHK,ND,NT,LUIN)
 	  IF(CHK)THEN
 	    CALL SET_ABUND_CLUMP(MEAN_ATOMIC_WEIGHT,ABUND_SUM,LUER,ND)
-	    IF(MYPE .EQ. 0THEN
+	    IF(MYPE .EQ. 0)THEN
 	      CALL SCR_RITE_V2(R,V,SIGMA,POPS,IREC,MAIN_COUNTER,RITE_N_TIMES,
 	1                LAST_NG,WRITE_RVSIG,NT,ND,LUSCR,NEWMOD)
 	      CALL MPI_BCAST(IREC,IONE,MPI_INTEGER,IZERO,MPI_COMM_WORLD,IERR)

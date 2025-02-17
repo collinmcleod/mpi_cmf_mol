@@ -36,8 +36,6 @@
 !
 ! Local variables.
 !
-        REAL(KIND=LDP) WRK_RHS(ND-1,ND)
-        REAL(KIND=LDP) WRK_MAT(ND,ND)
 	INTEGER ERROR_LU
 	EXTERNAL ERROR_LU
 !
@@ -47,20 +45,18 @@
 	REAL(KIND=LDP) dTBdCHI_J,dTBdCHI_I,dTBdCHI_K,dTBdCHI
 	REAL(KIND=LDP) dXM_EPS_J,dXM_EPS_I,dXM_EPS_K
 	REAL(KIND=LDP) T1,T2
-	INTEGER MDST,MDEND,IERR
+	INTEGER IERR
 	INTEGER I,J,K,L
 !
 ! 
 !
 	KI=0.0_LDP;          RHS_dHdCHI=0.0_LDP
-	WRK_RHS=0.0_LDP;     WRK_MAT=0.0_LDP
-	MDST=MAX(1,DST-1);   MDEND=MIN(DEND+1,ND)
 !
 ! NB: The dTAUdCHI_J & dTAUdCHI_H matrices were computed in the calling routine..
 !
 ! The following derivatives are valid for all ML.
 !
-	DO I=MDST,MIN(MDEND,ND-1)
+	DO I=1,ND-1
 	  T1=(P_H(I)+W(I))*(CHI_H(I)+CHI_H(I+1))
 	  dHUdCHI(I)=HU(I)*W(I)/T1
 	  dHUdTAU(I)=-HU(I)/DTAU_H(I)
@@ -77,7 +73,7 @@
 !
 ! DTAU_H terms
 !
-	DO I=MAX(2,DST),MIN(DEND,ND-1)
+	DO I=2,ND-1
 	  J=I-1
 	  K=I+1
 	  dTAdCHI_J=-dHLdTAU(J)
@@ -88,21 +84,20 @@
 	  dRHSdI(I)=  - dTCdCHI_I*JNU(K) - dTBdCHI_I*JNU(I)
 	END DO
 !
-	DO I=MAX(2,DST),MIN(DEND,ND-1)
+	DO I=2,ND-1
 	  J=I-1
-	  DO L=1,ND
-	    WRK_MAT(I,L)=WRK_MAT(I,L)+dRHSdJ(I)*dTAUdCHI_H(J,L)
-	    WRK_MAT(I,L)=WRK_MAT(I,L)+dRHSdI(I)*dTAUdCHI_H(I,L)
+	  DO L=VDST,VDEND
+	    KI(I,L,1)=KI(I,L,1)+dRHSdJ(I)*dTAUdCHI_H(J,L)
+	    KI(I,L,1)=KI(I,L,1)+dRHSdI(I)*dTAUdCHI_H(I,L)
 	  END DO
 	END DO
 !
 ! DTAU_J terms
 !
-	DO I=MAX(2,DST),MIN(DEND,ND-1)
+	DO I=2,ND-1
 	  J=I-1
 	  T1=0.5_LDP*R(I)*R(I)/Q(I)
-	  dTBdCHI=PSI(I)/(DTAU_J(J)+DTAU_J(I)) +
-	1          T1*(P_J(I)-COH_VEC(I))*GAM_REL(I)
+	  dTBdCHI=PSI(I)/(DTAU_J(J)+DTAU_J(I)) + T1*(P_J(I)-COH_VEC(I))*GAM_REL(I)
 !
 ! dDELUB is use as correction because UB(I)=-TB(I)-PSI(I)-PSIPREV(I)
 !
@@ -112,17 +107,17 @@
 !
 	END DO
 !
-	DO I=MAX(2,DST),MIN(DEND,ND-1)
+	DO I=2,ND-1
 	  J=I-1
-	  DO L=1,ND
-	    WRK_MAT(I,L)=WRK_MAT(I,L)+dRHSdJ(I)*dTAUdCHI_J(J,L)
-	    WRK_MAT(I,L)=WRK_MAT(I,L)+dRHSdI(I)*dTAUdCHI_J(I,L)
+	  DO L=VDST,VDEND
+	    KI(I,L,1)=KI(I,L,1)+dRHSdJ(I)*dTAUdCHI_J(J,L)
+	    KI(I,L,1)=KI(I,L,1)+dRHSdI(I)*dTAUdCHI_J(I,L)
 	  END DO
 	END DO
 !
 ! Can now update KI for direct opacity variation due to CHI_H.
 !
-	DO I=MAX(2,DST),MIN(DEND,ND-1)
+	DO I=MAX(2,VDST-1),MIN(VDEND+1,ND-1)
 	  J=I-1
 	  K=I+1
 !
@@ -143,26 +138,32 @@
 !
 ! NB  :  VB(I)=-HS(J) and VC(I)=HS(I)
 !
-	  WRK_MAT(I,J)=WRK_MAT(I,J)
-	1             - (dTAdCHI_J*JNU(J)+dTBdCHI_J*JNU(I))
-	1             - DERIV_SCL_FAC(I)*dHSDCHI(J)*GAM_RSQHNU_PREV(J)
-	1             + dXM_EPS_J
+	  IF(J .GE. VDST)THEN
+	    KI(I,J,1)=KI(I,J,1)
+	1               - (dTAdCHI_J*JNU(J)+dTBdCHI_J*JNU(I))
+	1               - DERIV_SCL_FAC(I)*dHSDCHI(J)*GAM_RSQHNU_PREV(J)
+	1               + dXM_EPS_J
+	  END IF
 !
-	  WRK_MAT(I,K)=WRK_MAT(I,K)
+	  IF(K .LE. VDEND)THEN
+	    KI(I,K,1)=KI(I,K,1)
 	1             - (dTCdCHI_K*JNU(K)+dTBdCHI_K*JNU(I))
 	1             + DERIV_SCL_FAC(I)*dHSDCHI(I)*GAM_RSQHNU_PREV(I)
 	1             + dXM_EPS_K
+	  END IF
 !
-	  WRK_MAT(I,I)=WRK_MAT(I,I)
-	1             - (dTAdCHI_I*JNU(J)+dTCdCHI_I*JNU(K)+dTBdCHI_I*JNU(I))
-	1             + DERIV_SCL_FAC(I)*(dHSDCHI(I)*GAM_RSQHNU_PREV(I)-dHSDCHI(J)*GAM_RSQHNU_PREV(J))
-	1             + dXM_EPS_I
+	  IF(I .GE. VDST .AND. I .LE. VDEND)THEN
+	    KI(I,I,1)=KI(I,I,1)
+	1               - (dTAdCHI_I*JNU(J)+dTCdCHI_I*JNU(K)+dTBdCHI_I*JNU(I))
+	1               + DERIV_SCL_FAC(I)*(dHSDCHI(I)*GAM_RSQHNU_PREV(I)-dHSDCHI(J)*GAM_RSQHNU_PREV(J))
+	1               + dXM_EPS_I
+	  END IF
 !
 	END DO
 !
 ! Can now update KI for direct opacity variation due to CHI_J.
 !
-	DO I=MAX(2,DST),MIN(DEND,ND-1)
+	DO I=MAX(2,VDST),MIN(VDEND,ND-1)
 	  J=I-1
 	  T1=0.5_LDP*R(I)*R(I)/Q(I)
 !
@@ -170,7 +171,7 @@
 	  dUdCHI=-PSIPREV(I)/CHI_J(I)
 !
 	  T1=T1*(DTAU_J(J)+DTAU_J(I))/CHI_J(I)
-	  WRK_MAT(I,I)=WRK_MAT(I,I)
+	  KI(I,I,1)=KI(I,I,1)
 	1             + (dUdCHI*JNU_PREV(I)-dTBdCHI*JNU(I))
 	1             - T1*SOURCE(I)
 !
@@ -179,66 +180,60 @@
 !
 ! Now do the boundary conditions.
 !
-	IF(DST .EQ. 1)THEN
+	IF(VDST .EQ. 1)THEN
 	  T1=  ( (FEDD(1)+VdHdR_TERM(1))*Q(1)*JNU(1)*GAM_RSQ(1) -
 	1      (FEDD(2)+VdHdR_TERM(2))*Q(2)*JNU(2)*GAM_RSQ(2) )/DTAU_H(1)/DTAU_H(1)
-	  DO L=1,ND
-	    WRK_MAT(1,L)=WRK_MAT(1,L)+T1*dTAUdCHI_H(1,L)
+	  DO L=VDST,VDEND
+	    KI(1,L,1)=KI(1,L,1)+T1*dTAUdCHI_H(1,L)
 	  END DO
-	  WRK_MAT(1,1)=WRK_MAT(1,1)+ (PSI(1)*JNU(1)- PSIPREV(1)*JNU_PREV(1))/CHI_H(1)
+	  KI(1,1,1)=KI(1,1,1)+ (PSI(1)*JNU(1)- PSIPREV(1)*JNU_PREV(1))/CHI_H(1)
 	END IF
 !!
 ! NB: We multiply DBB by GAM_REL, as we will divid KI by GAM_REL later.
 ! The DBB derivative is with  respect to CHI, where as the other derivatives
 ! were donie with respect to CHI_J or CHI_H.
 !
-	IF(DEND .EQ. ND)THEN
+	IF(VDEND .EQ. ND)THEN
 	  IF(INNER_BND_METH .EQ. 'JEQB')THEN
 	
 	  ELSE IF(INNER_BND_METH .EQ. 'DIFFUSION')THEN
 	    T1= ( GAM_RSQ(ND)*(FEDD(ND)+VdHdR_TERM(ND))*JNU(ND) -
 	1          GAM_RSQ(ND-1)*(FEDD(ND-1)+VdHdR_TERM(ND-1))*Q(ND-1)*JNU(ND-1) )
 	1           / DTAU_H(ND-1)/DTAU_H(ND-1)
-	    DO L=1,ND
-	      WRK_MAT(ND,L)=WRK_MAT(ND,L)+T1*dTAUdCHI_H(ND-1,L)
+	    DO L=VDST,VDEND
+	      KI(ND,L,1)=KI(ND,L,1)+T1*dTAUdCHI_H(ND-1,L)
 	    END  DO
-	    WRK_MAT(ND,ND)=WRK_MAT(ND,ND)-GAM_RSQ(ND)*GAM_REL(ND)*DBB/3.0_LDP/CHI(ND)/CHI(ND)
+	    KI(ND,ND,1)=KI(ND,ND,1)-GAM_RSQ(ND)*GAM_REL(ND)*DBB/3.0_LDP/CHI(ND)/CHI(ND)
 !
 	  ELSE IF(INNER_BND_METH .EQ. 'ZERO_FLUX')THEN
 	    T1 = GAM_RSQ(ND-1)*(FEDD(ND-1)+VdHdR_TERM(ND-1))*Q(ND-1)
 	    T2 = GAM_RSQ(ND)*(FEDD(ND)+VdHdR_TERM(ND))
 	    T2 = (T2*JNU(ND)-T1*JNU(ND-1)) + IB_STAB_FACTOR*T2*(JNU(ND)-RHS_JNU)
 	    T2 = T2/ DTAU_H(ND-1)/DTAU_H(ND-1)
-	    DO L=1,ND
-	      WRK_MAT(ND,L)=WRK_MAT(ND,L)+T2*dTAUdCHI_H(ND-1,L)
+	    DO L=VDST,VDEND
+	      KI(ND,L,1)=KI(ND,L,1)+T2*dTAUdCHI_H(ND-1,L)
 	    END DO
 !
 	  ELSE IF(INNER_BND_METH .EQ. 'HOLLOW')THEN
-	      WRK_MAT(ND,ND)=WRK_MAT(ND,ND)+dIBCHI_A
-	      WRK_MAT(ND,ND-1)=WRK_MAT(ND,ND-1)+dIBCHI_B
+	      KI(ND,ND,1)=KI(ND,ND,1)+dIBCHI_A
+	      KI(ND,ND-1,1)=KI(ND,ND-1,1)+dIBCHI_B
 !
 	  ELSE
 	    T1= ( GAM_RSQ(ND)*(FEDD(ND)+VdHdR_TERM(ND))*JNU(ND) -
 	1           GAM_RSQ(ND-1)*(FEDD(ND-1)+VdHdR_TERM(ND-1))*Q(ND-1)*JNU(ND-1) )
 	1           / DTAU_H(ND-1)/DTAU_H(ND-1)
-	    DO L=1,ND
-	      WRK_MAT(ND,L)=WRK_MAT(ND,L)+T1*dTAUdCHI_H(ND-1,L)
+	    DO L=VDST,VDEND
+	      KI(ND,L,1)=KI(ND,L,1)+T1*dTAUdCHI_H(ND-1,L)
 	    END DO
 	  END IF
 	END IF
 !
 ! Divide KI(:,:,1) by GAM_REL since dCHI_J/dCHI=dCHI_H/dCHI=1/GAM_REL
 !
-	DO J=1,ND
-	  DO I=DST,DEND
-	    WRK_MAT(I,J)=WRK_MAT(I,J)/GAM_REL(J)
-	  END DO
-	END DO
-!
-	I=ND*ND
-	CALL MPI_ALLREDUCE(MPI_IN_PLACE,WRK_MAT,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	DO J=VDST,VDEND
-	  KI(:,J,1)=WRK_MAT(:,J)
+	  DO I=1,ND
+	    KI(I,J,1)=KI(I,J,1)/GAM_REL(J)
+	  END DO
 	END DO
 !
 ! 
@@ -248,31 +243,28 @@
 ! we would the require two matrices. Note that HU(I), HL(I) and
 ! HS(I) depend directly on CHI(I) and CHI(I+1).
 !
-	DO I=DST,MIN(DEND,ND-1)
+	DO I=1,ND-1
 	  T1=dHUdTAU(I)*JNU(I+1)-dHLdTAU(I)*JNU(I)
-	  DO L=1,ND
-	    WRK_RHS(I,L)=WRK_RHS(I,L)+T1*dTAUdCHI_H(I,L)
+	  DO L=VDST,VDEND
+	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)+T1*dTAUdCHI_H(I,L)
 	  END DO
+	END DO
+!
+	DO I=MAX(1,VDST-1),MIN(VDEND,ND-1)
 	  T1=dHUdCHI(I)*JNU(I+1) - dHLdCHI(I)*JNU(I)
 	1                       + dHSdCHI(I)*GAM_RSQHNU_PREV(I) +
 	1     EPS_FAC(I)*( EPS_PREV_A(I)*JNU_PREV(I)-EPS_A(I)*JNU(I) +
 	1                  EPS_PREV_B(I)*JNU_PREV(I+1)-EPS_B(I)*JNU(I+1) )
-	  WRK_RHS(I,I)=WRK_RHS(I,I) + T1
-	  WRK_RHS(I,I+1)=WRK_RHS(I,I+1) + T1
+	  IF(I .GE. VDST)RHS_dHdCHI(I,I)=RHS_dHdCHI(I,I) + T1
+	  IF(I+1 .LE. VDEND)RHS_dHdCHI(I,I+1)=RHS_dHdCHI(I,I+1) + T1
 	END DO
 !
 ! Recall dCHI_H/dCHI=1/GAM_REL
 !
 	DO L=VDST,VDEND
-	  DO I=DST,MIN(DEND,ND-1)
-	    WRK_RHS(I,L)=WRK_RHS(I,L)/GAM_REL(L)
+	  DO I=1,ND-1
+	    RHS_dHdCHI(I,L)=RHS_dHdCHI(I,L)/GAM_REL(L)
 	  END DO
-	END DO
-!
-	I=(ND-1)*ND
-	CALL MPI_ALLREDUCE(MPI_IN_PLACE,WRK_RHS,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
-	DO J=VDST,VDEND
-	  RHS_dHdCHI(:,J)=WRK_RHS(:,J)
 	END DO
 !
 	RETURN

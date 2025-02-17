@@ -3,7 +3,7 @@
 
 include ../Makefile_definitions
 
-OPTION=$(FG)
+OPTION=$(FD)
 
 # Library where object files will/are stored
 
@@ -27,15 +27,18 @@ MODS= $(LIB_MOD)(gam_mu_mod.o)\
 
 OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(comp_add_edd_facs.o)\
+      $(LIB)(characteristics_mpi_v1.o)\
       $(LIB)(characteristics_v2.o)\
       $(LIB)(characteristics_v2_gam.o)\
       $(LIB)(cmf_formal_rel_v4.o)\
       $(LIB)(cmf_formal_rel_v5.o)\
+      $(LIB)(cmf_formal_rel_mpi_v1.o)\
       $(LIB)(cmf_formal_rel_v4_gam.o)\
       $(LIB)(cmf_rel_dust_qw.o)\
       $(LIB)(derivr.o)\
       $(LIB)(derivs.o)\
       $(LIB)(drhsdchi_pp_mpi_v1.o)\
+      $(LIB)(define_grid_mpi_v1.o)\
       $(LIB)(define_grid_v2.o)\
       $(LIB)(define_grid_v2_gam.o)\
       $(LIB)(expn.o)\
@@ -74,6 +77,7 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(mom_jrel_v9.o)\
       $(LIB)(mom_jrel_grey_v1.o)\
       $(LIB)(mom_jrel_grey_v2.o)\
+      $(LIB)(optdepth_mpi_v1.o)\
       $(LIB)(optdepth_v4.o)\
       $(LIB)(optdepth_v4_gam.o)\
       $(LIB)(out_jh.o)\
@@ -83,6 +87,7 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(pp_mom_cmf_v1.o)\
       $(LIB)(rel_variables.o)\
       $(LIB)(runge_kutta.o)\
+      $(LIB)(solve_cmf_formal_mpi_v1.o)\
       $(LIB)(solve_cmf_formal_v2.o)\
       $(LIB)(solve_cmf_formal_v3.o)\
       $(LIB)(solve_cmf_formal_v3_gam.o)\
@@ -117,6 +122,10 @@ $(LIB)(%.o) : %.f $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) $<
 	ar $(AR_OPTION) $(LIB) $*.o
 
+$(LIB)(characteristics_mpi_v1.o) : characteristics_mpi_v1.f $(LIB)(mod_space_grid_mpi_v1.o) $(LIB)(set_kind_module.o) 
+	$(F90) -c $(OPTION) characteristics_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) characteristics_mpi_v1.o
+
 $(LIB)(characteristics_v2.o) : characteristics_v2.f $(LIB)(mod_space_grid_v2.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) characteristics_v2.f
 	ar $(AR_OPTION) $(LIB) characteristics_v2.o
@@ -132,6 +141,10 @@ $(LIB)(cmf_formal_rel_v4.o) : cmf_formal_rel_v4.f $(LIB)(mod_space_grid_v2.o) $(
 $(LIB)(cmf_formal_rel_v5.o) : cmf_formal_rel_v5.f $(LIB)(mod_space_grid_v2.o) $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) cmf_formal_rel_v5.f
 	ar $(AR_OPTION) $(LIB) cmf_formal_rel_v5.o
+
+$(LIB)(cmf_formal_rel_mpi_v1.o) : cmf_formal_rel_mpi_v1.f $(LIB)(mod_space_grid_mpi_v1.o) $(LIB)(mod_ray_mom_store.o) $(LIB)(set_kind_module.o) 
+	$(F90) -c $(OPTION) cmf_formal_rel_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) cmf_formal_rel_mpi_v1.o
 
 $(LIB)(cmf_rel_dust_qw.o) : cmf_rel_dust_qw.f $(LIB)(mod_space_grid_v2.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) cmf_rel_dust_qw.f
@@ -153,6 +166,10 @@ $(LIB)(define_grid_v2_gam.o) : define_grid_v2_gam.f $(LIB)(mod_space_grid_v2_gam
 $(LIB)(define_grid_v2.o) : define_grid_v2.f $(LIB)(mod_space_grid_v2.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) define_grid_v2.f
 	ar $(AR_OPTION) $(LIB) define_grid_v2.o
+
+$(LIB)(define_grid_mpi_v1.o) : define_grid_mpi_v1.f $(LIB)(mod_space_grid_mpi_v1.o) $(LIB)(set_kind_module.o) 
+	$(F90) -c $(OPTION) define_grid_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) define_grid_mpi_v1.o
 
 $(LIB)(drhsdchi_pp.o) : drhsdchi_pp.f $(LIB)(mod_trap_derivatives.o) $(LIB)(set_kind_module.o) 
 	$(F90) -c $(OPTION) drhsdchi_pp.f
@@ -206,6 +223,10 @@ $(LIB)(optdepth_v2_gam.o) : optdepth_v2_gam.f $(LIB)(mod_space_grid_v2_gam.o) $(
 $(LIB)(solve_cmf_formal_v2.o) : solve_cmf_formal_v2.f $(LIB)(mod_space_grid_v2.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) solve_cmf_formal_v2.f
 	ar $(AR_OPTION) $(LIB) solve_cmf_formal_v2.o
+
+$(LIB)(solve_cmf_formal_mpi_v1.o) : solve_cmf_formal_mpi_v1.f $(LIB)(mod_space_grid_mpi_v1.o) $(LIB)(set_kind_module.o)
+	$(F90) -c $(OPTION) solve_cmf_formal_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) solve_cmf_formal_mpi_v1.o
 
 $(LIB)(var_mom_j_cmf_mpi_v1.o) : var_mom_j_cmf_mpi_v1.f $(LIB)(mod_ray_mom_store.o) $(LIB)(mod_var_mom_j_cmf_mpi_v1.o) $(LIB)(set_kind_module.o)
 	$(F90) -c $(OPTION) var_mom_j_cmf_mpi_v1.f

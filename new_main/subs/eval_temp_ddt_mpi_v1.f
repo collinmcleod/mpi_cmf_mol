@@ -139,7 +139,9 @@
 	    OLD_POP_ATOM(I)=OLD_POP_ATOM(I)+OLD_POPS(J,I)
 	  END DO
 	END DO
-	WRITE(6,*)'Set OLD_POP';FLUSH(UNIT=6)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Set OLD_POP';FLUSH(UNIT=6)
+	END IF
 !
 	DO ISPEC=1,NUM_SPECIES
 	  DO J=DST,DEND
@@ -160,7 +162,9 @@
 	    END IF
 	  END DO
 	END DO
-	WRITE(6,*)'Set CHECK';FLUSH(UNIT=6)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Set CHECK';FLUSH(UNIT=6)
+	END IF
 !
 ! Compute time step. The factor of 10^5 arises because R is in units of 10^10 cm, and
 ! V is in units of km/s.

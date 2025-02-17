@@ -6,9 +6,6 @@ include ../Makefile_definitions
 
 OPTIONS=$(FG)
 
-$(LIB)(mod_trap_derivatives.o) :
-	(cd ../subs; make)
-
 # These names are for the fortran linker
 
 LN1=subs
@@ -89,6 +86,9 @@ lib3:
 
 $(LIB)(mod_trap_derivatives.o) :
 	(cd ../subs; make)
+
+$(LIB)(set_kind_module.o) :
+	(cd ../tools; make)
 
 
 clean :

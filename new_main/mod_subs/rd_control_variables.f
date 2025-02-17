@@ -2,6 +2,7 @@
 	USE SET_KIND_MODULE
 	USE MOD_CMFGEN
 	USE CONTROL_VARIABLE_MOD
+	USE MPI
 	IMPLICIT NONE
 !
 ! Altered : 13-Jan-2024 : Added MAX_NO_GREY_ITERATIONS
@@ -731,6 +732,13 @@
 !
 	  CALL RD_STORE_LOG(INCL_RAY_SCAT,'INC_RAY',L_TRUE,
 	1           'Include opacity due to Rayleigh scattering?')
+
+!
+	  INCL_DUST=.FALSE.; USE_HEN_GREEN=.FALSE.; G_HEN_GREEN=0.0_LDP
+	  CALL RD_STORE_LOG(INCL_DUST,'INC_DUST',L_FALSE,'Include dust?')
+	  CALL RD_STORE_LOG(USE_HEN_GREEN,'USE_HG',INCL_DUST,'Use Henyey-Greenstein phase function?')
+	  CALL RD_STORE_DBLE(G_HEN_GREEN,'G_HEN_GREEN',USE_HEN_GREEN,'G value in Henyey-Greenstein phase function?')
+!
 	  CALL RD_STORE_LOG(INCL_ADVECTION,'INC_ADV',L_TRUE,
 	1           'Include advection terms in rate equations?')
 	  CALL RD_STORE_LOG(INCL_ADIABATIC,'INC_AD',L_TRUE,
@@ -987,13 +995,14 @@
 	  CALL RD_STORE_NCHAR(METH_SOL,'SOL_METH',ISIX,L_TRUE,
 	1            'Which Method To solve Matrix Equations'//
 	1            ' DIAG, TRI, PEN, GSIT or MIN')
-	  IF(NUM_BNDS .EQ. 1 .AND. METH_SOL .NE. 'DIAG' .AND. MYPE .EQ.  0)THEN
-	    WRITE(LUER,*)'****************************************'
-	    WRITE(LUER,*)'******WARNING in CMFGEN*****************'
+	  I=3; IF(METH_SOL .EQ. 'DIAG')I=1
+	  IF(NUM_BNDS .NE.  I .AND. MYPE .EQ. 0)THEN
+	    WRITE(LUER,*)'******************************************'
+	    WRITE(LUER,*)'****************In CMFGEN*****************'
 	    WRITE(LUER,*)'Solution method inconsistent with NUM_BNDS'
 	    WRITE(LUER,*)'METH_SOL=',METH_SOL,'NUM_BNDS=',NUM_BNDS
-	    WRITE(LUER,'(X,A,/)')'Using diagnoal solution'
-	    METH_SOL='DIAG'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
+	    STOP
 	  END IF
 	  CALL RD_STORE_NCHAR(SCALE_OPT,'SCALE_OPT',ISIX,L_TRUE,
 	1           'Scale option (LOCAL, NONE or GLOBAL) ? ')

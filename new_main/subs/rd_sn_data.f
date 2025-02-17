@@ -280,8 +280,10 @@
 	  ELEC_DEN_HYDRO=LOG(ELEC_DEN_HYDRO)
 	  CALL MON_INTERP(ED,ND,IONE,LOG_R,ND,ELEC_DEN_HYDRO,NX,LOG_R_HYDRO,NX)
 	  ED=EXP(ED)
-	  WRITE(LUER,*)'   RD_SN_DATA has read ED and T'
-	  FLUSH(UNIT=LUER)
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LUER,*)'   RD_SN_DATA has read ED and T'
+	    FLUSH(UNIT=LUER)
+	  ENDIF
 	END IF
 !
 ! The code assumes the densities read in fron SN_HYDRO_DATA are already clumped.
@@ -602,7 +604,7 @@
 	            WRITE(LUER,*)'It may be unimportat if the species is an impurity ion, such as'
 	            WRITE(LUER,*)'  56Ni at > 100 days and you are using a time step > than the half life of 56Ni.'
 	            WRITE(LUER,'(3X,A,T12,I3)')TRIM(ISO(IS)%SPECIES),ISO(IS)%BARYON_NUMBER
-	          ELSE
+	          ELSE IF(MYPE .EQ. 0)THEN
 	            WRITE(LUER,'(3X,A,T12,I3)')TRIM(ISO(IS)%SPECIES),ISO(IS)%BARYON_NUMBER
 	          END IF
 	          FLUSH(LUER)

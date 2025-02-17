@@ -45,7 +45,7 @@
 	USE MOD_J_TWO_PHOT_MPI_V1, ONLY : SET_POP_FOR_TWOJ, INIT_GET_J_FOR_TWO_PHOT
 	IMPLICIT NONE
 !
-! Altered 10-Feb-2025 : SCRTEMO+P writes only done by process 0.
+! Altered 10-Feb-2025 : SCRTEMP writes only done by process 0.
 ! Altered 02-Aug-2024 : Minor cleaning. Changed minimum valuer for RLUMST & warning output.
 ! Altered 17-Aug-2019 : Default for DO_T_AUTO is now TRUE. Incorporated into IBIS versions.
 ! Altered 16-Aug-2019 : Now output Planck mean to RVTJ.
@@ -148,6 +148,7 @@
 	INTEGER, PARAMETER :: LU_EW=20     	!# EW data.
 	INTEGER, PARAMETER :: LU_REC_CHK=21	!# EW data.
 	INTEGER LU_T_EHB
+!
 ! For writing scratch file (SCRTEMP). Also used in reading in  MODEL data.
 !
 	INTEGER, PARAMETER :: LUSCR=26
@@ -486,7 +487,8 @@
 !
 	DO I=0,NTHREAD-1
 	 IF(MYPE .EQ. 0 .AND. MYPE .EQ. I)THEN
-	    WRITE(6,'(A,/,T20,3(3X,A))')' Top of CMFGEN_SUB:','MYPE',' DST','DEND'
+	    WRITE(6,'(/,A,/,A)')' Top of CMFGEN_SUB',' Processor depth allocations'
+	    WRITE(6,'(T20,3(3X,A))')'MYPE',' DST','DEND'
 	    WRITE(6,'(T20,3I7)')MYPE,DST,DEND; FLUSH(UNIT=6)
 	    FLUSH(UNIT=6)
 	  ELSE IF(MYPE .EQ. I)THEN
@@ -494,6 +496,7 @@
 	  END IF
 	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	END DO
+	IF(MYPE .EQ. 0)WRITE(6,*)' '; FLUSH(UNIT=6)
 !
 	LUER=ERROR_LU()
 	LUWARN=WARNING_LU()

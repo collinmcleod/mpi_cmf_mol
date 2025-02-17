@@ -65,19 +65,29 @@
 	        WRITE(6,*)'Maximum fractional difference is',MAXVAL(LOC_XKT)
 	        STOP
 	      END IF
-	      WRITE(6,*)'Read XKT'; FLUSH(UNIT=6)
+	      IF(MYPE .EQ. 0)THEN 
+	        WRITE(6,*)'Read XKT'; FLUSH(UNIT=6)
+	      END IF
 	    ELSE IF(INDEX(STRING,'Energy quadrature weights') .NE. 0)THEN
 	      READ(LU,*)(dXKT(I),I=1,NKT)
-	      WRITE(6,*)'Read dXKT'; FLUSH(UNIT=6)
+	      IF(MYPE .EQ. 0)THEN 
+	        WRITE(6,*)'Read dXKT'; FLUSH(UNIT=6)
+	      END IF
 	    ELSE IF(INDEX(STRING,'Fraction electron heating') .NE. 0)THEN
 	      READ(LU,*)(FRAC_ELEC_HEATING(I),I=1,ND)
-	      WRITE(6,*)'Read fraction electron heating'; FLUSH(UNIT=6)
+	      IF(MYPE .EQ. 0)THEN 
+	        WRITE(6,*)'Read fraction electron heating'; FLUSH(UNIT=6)
+	      END IF
 	    ELSE IF(INDEX(STRING,'Fraction ion heating') .NE. 0)THEN
 	      READ(LU,*)(FRAC_ION_HEATING(I),I=1,ND)
-	      WRITE(6,*)'Read fraction ion heating'; FLUSH(UNIT=6)
+	      IF(MYPE .EQ. 0)THEN 
+	        WRITE(6,*)'Read fraction ion heating'; FLUSH(UNIT=6)
+	      END IF
 	    ELSE IF(INDEX(STRING,'Fraction excitation heating') .NE. 0)THEN
 	      READ(LU,*)(FRAC_ELEC_HEATING(I),I=1,ND)
-	      WRITE(6,*)'Read fraction excitation heating'; FLUSH(UNIT=6)
+	      IF(MYPE .EQ. 0)THEN 
+	        WRITE(6,*)'Read fraction excitation heating'; FLUSH(UNIT=6)
+	      END IF
 	    ELSE IF(INDEX(STRING,'Depth:') .NE. 0)THEN
 	      I=INDEX(STRING,':')
 	      READ(STRING(I+1:),*)DPTH_INDX

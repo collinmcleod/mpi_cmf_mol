@@ -43,7 +43,10 @@
 	SUCCESSFUL_READ=.FALSE.
 	IF(SCRATCH_DIR .EQ. 'GARBAGE')THEN
 	  CALL GET_ENVIRONMENT_VARIABLE('SCRATCH_DIR',SCRATCH_DIR)
-	  IF(SCRATCH_DIR .NE. ' '. AND. MYPE .EQ. 0)WRITE(LUER,*)'Scratch directory is: ',TRIM(SCRATCH_DIR)
+	  IF(SCRATCH_DIR .NE. ' '. AND. MYPE .EQ. 0)THEN
+	    WRITE(LUER,'(\,1X,A)')'Scratch directory is: ',TRIM(SCRATCH_DIR)
+	    FLUSH(UNIT=LUER)
+	  END IF
 	END IF
 !
 ! If we are still computing the BA matrix, there is no need to read it in.
