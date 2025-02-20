@@ -26,7 +26,7 @@ DEBUG=nodebug
 COMPILE_OPT=$(HOST)_$(COMPILER)_$(DEBUG)
 
 ifeq ($(HOST),crc)
-INSTALL_DIR=$(HOME)/mpi_cmf_dev/
+INSTALL_DIR=$(HOME)/mpi_cmfgen/
 MOD_DIR=$(INSTALL_DIR)/mod
 LIB_DIR=$(INSTALL_DIR)lib/
 EXE_DIR=$(INSTALL_DIR)exe/

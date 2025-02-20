@@ -6,6 +6,8 @@
 	USE MPI
         IMPLICIT NONE
 !
+! Created 16-Feb-2025: Based on characteristics_v2.f.
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
 ! This subroutine uses the Runge-Kutta method (solves sets of ordinary
@@ -122,7 +124,6 @@
 	  WRITE(6,*)'Number of rays is=',NP
 	  WRITE(6,*)'(NRT-1)*NT=',(NUM_RAYS_PER_THREAD-1)*NTHREAD, 'NRT*NT=',NUM_RAYS_PER_THREAD*NTHREAD
 	END IF
-	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 	DO IPROC=1,NUM_RAYS_PER_THREAD
 	  IP=GET_IP(MYPE,NTHREAD,IPROC)
@@ -132,7 +133,6 @@
 	    DEALLOCATE (RAY(IP)%S_M, RAY(IP)%MU_M, RAY(IP)%B_M)
 	  END IF
 	END DO
-	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Allocate temporary storage used for each ray. This memory is deallocated at the
 ! end of the subroutine.
@@ -491,7 +491,6 @@
           END IF
 	END IF
 	END DO		!Loop over NP
-	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
       IP=GET_IP(MYPE,NTHREAD,NUM_RAYS_PER_THREAD)
       IF(NP .EQ. NC+ND .AND. IP .EQ. NP)THEN
@@ -546,7 +545,6 @@
 ! Free up memory.
 !
       DEALLOCATE (R,V,Z,S,MU,B)
-      WRITE(6,*)'Exiting CHARACTERISTICS_MPI_V1',MYPE; FLUSH(UNIT=6)
       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
       RETURN

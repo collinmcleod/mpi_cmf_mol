@@ -6,6 +6,8 @@
       USE MOD_SPACE_GRID_MPI_V1
       IMPLICIT NONE
 !
+! Created 16-FEb-2025: Based on solve_cmf_formal_v2.f
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
 ! Determine the transfer matrix along the given ip ray.  Formulation
@@ -79,7 +81,6 @@
       external error_lu
 !
       nzz=ray(ip)%nz
-	if(ip .eq. 89)write(6,*)'befrel89,s_p',RAY(IP)%S_P(1:nzz)
 !--------------------------------------------------------------------
 !
 ! Determine transfer variables.
@@ -99,7 +100,6 @@
 !
 ! Determine "optical depth" from outside to center (s_m,mu_m)
 !
-	if(ip .eq. 89)write(6,*)'befopt89,s_p',RAY(IP)%S_P(1:nzz)
       CALL OPTDEPTH_MPI_V1(DTAU_LOC,CHI_TAU,RAY(IP)%NZ,IP,L_FALSE,'ZERO')
 !
 ! Calculate transfer in inward direction, I- (mu=-1)
@@ -113,10 +113,6 @@
 !---------------------------------------------------------------
 !
       nzz=ray(ip)%nz
-	if(ip .eq. 89)write(6,*)'ip89,s_p',RAY(IP)%S_P(1:nzz)
-	if(ip .eq. 89)write(6,*)'ip89,chi_tau',chi_tau(1:nzz)
-	if(ip .eq. 89)write(6,*)'ip89,dtau_loc',dtau_loc(1:nzz-1),nd
-	if(ip .eq. 89)write(6,*)'ip89,srce-prime',source_prime(1:nzz)
       do iz=2,ray(ip)%nz-1
 !
         t1=dtau_loc(iz-1)
@@ -188,9 +184,9 @@
 	if(new_freq .ge. freq_store(k) .and. freq_store(n_store-1) .eq. 0.0_LDP)THEN
           ibound=ray(ip)%i_in_bnd_store(0)
 	else if(new_freq .GT. freq_store(k))then
-          write(6,*)'Error in solve_cmf_formal_v2: invalid frequency range'
-	  write(6,*)freq_store(k),new_freq,freq
-	  write(6,*)k,ist,iend
+          write(luer,*)'Error in solve_cmf_formal_v2: invalid frequency range'
+	  write(luer,*)freq_store(k),new_freq,freq
+	  write(luer,*)k,ist,iend
           stop
         else
           do while( iend-ist .gt. 1)
@@ -293,27 +289,6 @@
         gamma=e0-e1/dtau_loc(iz)
         ray(ip)%I_p(iz)=ray(ip)%I_p(iz+1)*ee+beta*source_prime(iz)+gamma*source_prime(iz+1)
        end do
-!
-	do iz=1,nd
-	  if(ray(ip)%I_m(iz) .ne. ray(ip)%I_m(iz))THEN
-	    write(6,*)'invalid ray(ip)%I_m(i))',iz,ip,nd
-	    write(6,*)ip,ray(ip)%I_p
-	    write(6,*)ip,ray(ip)%I_m
-	    call sleep(2)
-	    STOP
-	  end if
-	end do
-!
-	do iz=1,nd
-	  if(ray(ip)%I_p(iz) .ne. ray(ip)%I_p(iz))THEN
-	    write(6,*)'invalid ray(ip)%I_p(i))',iz,ip,nd
-	    write(6,*)ip,ray(ip)%I_p
-	    write(6,*)ip,ray(ip)%I_m
-	    call sleep(2)
-	    STOP
-	  end if
-	end do
-!     if(ip .le. nc)write(166,*)freq,ray(ip)%I_p(nzz),ray(ip)%I_m(nzz)
 !
       return
       end

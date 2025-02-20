@@ -343,8 +343,10 @@
 	END DO
 !
 	IF(.NOT. ACCURATE)THEN
-	  WRITE(LUER,*)'Error: too many iterations converging JGREY in MOM_JREL_GREY'
-	  WRITE(LUER,*)'Number of iterations is',MAX_IT_COUNT
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LUER,*)'Error: too many iterations converging JGREY in MOM_JREL_GREY'
+	    WRITE(LUER,*)'Number of iterations is',MAX_IT_COUNT
+	  END IF
 	  CONVERGED=.FALSE.
 	  RETURN
 	END IF

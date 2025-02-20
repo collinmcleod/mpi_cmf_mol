@@ -13,7 +13,7 @@ LIB_MOD=$(LIB_DIR)libmod.a
 # Entries for library
 #
 OBJ = $(LIB)(steq_ba_two_phot_rate_mpi_v1.o)\
-      $(LIB)(get_j_for_two_phot_mpi_v1.o)\
+      $(LIB)(mod_j_two_phot_mpi_v1.o)\
       $(LIB)(two_phot_rate.o)\
       $(LIB)(two_phot_rate_mpi_v1.o)\
       $(LIB)(set_two_phot_v2.o)\
@@ -44,6 +44,7 @@ $(LIB)(%.o) : %.f $(TWO) $(LIB)(set_kind_module.o)
 TWO = $(LIB_MOD)(two_phot_mod.o)
 ST = $(LIB_MOD)(steq_data_mod.o)
 VAR = $(LIB_MOD)(mod_var_opac_j.o)
+GETJ=$(LIB)(get_j_for_two_phot_mpi_v1.o)
 
 $(LIB)(steq_ba_two_phot_rate_v3.o) : steq_ba_two_phot_rate_v3.f $(TWO) $(ST) $(LIB)(set_kind_module.o) 
 	$(F90) -c  $(OPTION) steq_ba_two_phot_rate_v3.f
@@ -52,6 +53,11 @@ $(LIB)(steq_ba_two_phot_rate_v3.o) : steq_ba_two_phot_rate_v3.f $(TWO) $(ST) $(L
 $(LIB)(two_phot_var_opac_mpi_v1.o) : two_phot_var_opac_mpi_v1.f $(TWO) $(VAR) $(LIB)(set_kind_module.o)
 	$(F90) -c  $(OPTION) two_phot_var_opac_mpi_v1.f
 	ar $(AR_OPTION) $(LIB) two_phot_var_opac_mpi_v1.o
+
+GETJ:
+	$(F90) -c  $(OPTION)  mod_j_two_phot_mpi_v1.f
+	ar $(AR_OPTION) $(LIB)  mod_j_two_phot_mpi_v1.o
+	mv mod_j_two_phot_mpi_v1.mod ../../../mod
 
 $(TWO):
 	(cd ../../mod_subs ; make)

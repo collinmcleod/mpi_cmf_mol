@@ -460,14 +460,12 @@
           DO IPROC=1,NUM_RAYS_PER_THREAD
 	    IP=GET_IP(MYPE,NTHREAD,IPROC)
 	    IF(IP .GT. NP)EXIT
-	      if(ip .eq.  88)write(6,*)'eta-slv-ip88,s_p',RAY(88)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
-              if(ip .eq.  89)write(6,*)'eta-slv-ip89,s_p',RAY(89)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
 	    IF(ALLOCATED(RAY(IP)%ETA_M))DEALLOCATE(RAY(IP)%ETA_M,RAY(IP)%ETA_P)
             NRAY=RAY(IP)%NZ
             ALLOCATE (RAY(IP)%ETA_M(NRAY))
             ALLOCATE (RAY(IP)%ETA_P(NRAY))
 	  END DO
-	  WRITE(6,*)'Allocated RAY(IP)%ETA_M'; FLUSH(UNIT=6)
+	  IF(MYPE .EQ. 0)WRITE(6,*)'Allocated RAY(IP)%ETA_M'; FLUSH(UNIT=6)
 	END IF
 !
 ! For SN we can have a hollow core. In this case we need to store the
@@ -516,8 +514,6 @@
           DO IPROC=1,NUM_RAYS_PER_THREAD
 	    IP=GET_IP(MYPE,NTHREAD,IPROC)
 	    IF(IP .GT. NP)EXIT
-	      if(ip .eq.  88)write(6,*)'nf-slv-ip88,s_p',RAY(88)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
-              if(ip .eq.  89)write(6,*)'bf-slv-ip89,s_p',RAY(89)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
 	    RAY(IP)%I_P=0.0_LDP; RAY(IP)%I_M=0.0_LDP
 	    RAY(IP)%I_P_PREV=0.0_LDP; RAY(IP)%I_M_PREV=0.0_LDP
 	    RAY(IP)%I_P_SAVE=0.0_LDP; RAY(IP)%I_M_SAVE=0.0_LDP
@@ -560,7 +556,6 @@
             FREQ_STORE(CUR_LOC)=FREQ
 	  END IF
 	END IF
-	WRITE(6,*)'Before rad transefer loop',MYPE; FLUSH(UNIT=6)
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Determine radiative transfer along each p-ray
@@ -609,16 +604,6 @@
 !
 	ELSE
 !
-	   DO IPROC=1,NUM_RAYS_PER_THREAD
-              IP=GET_IP(MYPE,NTHREAD,IPROC)
-              IF(IP .GT. NP_LIMIT)EXIT
-	      if(ip .eq.  88)write(6,*)'tst-ip88,s_p',RAY(88)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
-              if(ip .eq.  89)write(6,*)'tst-ip89,s_p',RAY(89)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
-	   END DO
-	   CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-	   CALL SLEEP(2)
-
-	  WRITE(6,*)'About FG solver loop',MYPE,USE_HEN_GREEN; FLUSH(UNIT=6)
 	  CALL TUNE(1,'FG_SOLVE')
           DO IPROC=1,NUM_RAYS_PER_THREAD
 	    IP=GET_IP(MYPE,NTHREAD,IPROC)
@@ -629,17 +614,11 @@
               CALL SOLVE_CMF_FORMAL_V3(CHI_RAY,RAY(IP)%ETA_M,RAY(IP)%ETA_P,
 	1               IP,FREQ,NU_ON_dNU,INNER_BND_METH,b_planck,dBdTAU,NRAY,NP,NC)
             ELSE
-	      if(ip .eq.  88)write(6,*)'slv-ip88,s_p',RAY(88)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
-              if(ip .eq.  89)write(6,*)'slv-ip89,s_p',RAY(89)%S_P(1:RAY(IP)%NZ),RAY(IP)%NZ
-	      WRITE(6,*)'SCF=',MYPE,IP; FLUSH(UNIT=6)
 	      CALL SOLVE_CMF_FORMAL_MPI_V1(CHI_RAY,ETA_RAY,IP,FREQ,NU_ON_dNU,INNER_BND_METH,b_planck,dBdTAU,NRAY,NP,NC)
 	    END IF
 	  END DO
 	  CALL TUNE(2,'FG_SOLVE')
 	END IF
-	WRITE(6,*)'Doine I solution ',MYPE; FLUSH(UNIT=6)
-	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-
 !
 ! Integrate over p to get J and K.
 !
@@ -650,23 +629,10 @@
 	  DO ID=1,MIN(ND,NP-IP+1)
 	    T1=RAY(IP)%I_P(RAY(IP)%LNK(ID))
 	    T2=RAY(IP)%I_M(RAY(IP)%LNK(ID))
-	    IF(T1 .NE. T1 .OR. T2 .NE. T2)THEN
-	      WRITE(6,*)'Invalid T1,T2',ID,IP
-	      WRITE(6,*)T1,T2
-	      FLUSH(UNIT=6)
-	      CALL SLEEP(2)
-	      STOP
-	    END IF
             PAR_Jnu(ID)=PAR_Jnu(ID)+T1*ray(ip)%Jqw_p(ID)+T2*ray(ip)%Jqw_m(ID)
             PAR_Hnu(ID)=PAR_Hnu(ID)+T1*ray(ip)%Hqw_p(ID)+T2*ray(ip)%Hqw_m(ID)
             PAR_Knu(ID)=PAR_Knu(ID)+T1*ray(ip)%Kqw_p(ID)+T2*ray(ip)%Kqw_m(ID)
             PAR_Nnu(ID)=PAR_Nnu(ID)+T1*ray(ip)%Nqw_p(ID)+T2*ray(ip)%Nqw_m(ID)
-	    IF(PAR_Jnu(ID) .NE. PAR_Jnu(ID))THEN
-	      WRITE(6,*)'Invalid PAR_JU',ID,IP,ray(ip)%Jqw_p(ID),ray(ip)%Jqw_m(ID)
-	      FLUSH(UNIT=6)
-	      CALL SLEEP(2)
-	      STOP
-	    END IF
 	  END DO
 	END DO
 	CALL TUNE(2,'JVAL')

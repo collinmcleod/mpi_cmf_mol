@@ -64,6 +64,8 @@ OBJ = $(LIB)(adjust_r_grid_v4.o)\
       $(LIB)(wind_scale_pops_mpi_v1.o)\
       $(LIB)(sup_to_full_v4.o)
 
+GETJ = $(LIB)(mod_j_two_phot_mpi_v1.o)
+
 all : $(LIB)
 	cp -f $(INSTALL_DIR)perm_mod_file jnk.mod
 	mv -f *.mod $(MOD_DIR)
@@ -112,7 +114,7 @@ $(LIB)(comp_j_blank.o) : comp_j_blank.f $(LIB)(opac_mod.o) $(LIB_MOD)(control_va
 	$(F90) -c $(OPTION) comp_j_blank.f
 	ar $(AR_OPTION) $(LIB) comp_j_blank.o
 
-$(LIB)(comp_opac.o) : comp_opac.f $(LIB)(opac_mod.o) $(LIB_MOD)(control_variable_mod.o) $(LIB_MOD)(mod_cmfgen.o)
+$(LIB)(comp_opac.o) : comp_opac.f $(LIB)(opac_mod.o) $(LIB_MOD)(control_variable_mod.o) $(LIB_MOD)(mod_cmfgen.o) $(GETJ)
 	$(F90) -c $(OPTION) comp_opac.f
 	ar $(AR_OPTION) $(LIB) comp_opac.o
 
@@ -195,6 +197,9 @@ $(LIB)(sup_to_full_v4.o) : sup_to_full_v4.f $(LIB_MOD)(mod_cmfgen.o)
 
 $(UK):
 	(cd ../../tools ; make)
+
+$(GETJ):
+	(cd ../subs/two ; make GETJ)
 
 clean :
 	rm -f *.o 

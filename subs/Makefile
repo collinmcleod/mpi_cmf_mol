@@ -29,6 +29,9 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(comp_obs_v2.o)\
       $(LIB)(comp_var_jrec_mpi_v1.o)\
       $(LIB)(det_main_cont_freq.o)\
+      $(LIB)(det_r_grid_v1.o)\
+      $(LIB)(det_r_grid_v2.o)\
+      $(LIB)(det_r_grid_v3.o)\
       $(LIB)(dop_pro.o)\
       $(LIB)(do_de_split.o)\
       $(LIB)(do_sl_ls_split.o)\
@@ -83,6 +86,8 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(genangqw_v2.o)\
       $(LIB)(genosc_v5.o)\
       $(LIB)(genosc_v6.o)\
+      $(LIB)(get_lte_ross_v2.o)\
+      $(LIB)(get_lte_ross_v3.o)\
       $(LIB)(get_col_ref.o)\
       $(LIB)(getelec_v2.o)\
       $(LIB)(gff.o)\
@@ -281,8 +286,9 @@ OBJ = $(LIB)(add_par_to_full.o)\
       $(LIB)(voigt_1p0.o)\
       $(LIB)(vsebyj_multi_v4.o)\
       $(LIB)(weight.o)\
-      $(LIB)(wr2d_ma.o)\
+      $(LIB)(wind_vel_law_v3.o)\
       $(LIB)(wr2d.o)\
+      $(LIB)(wr2d_ma.o)\
       $(LIB)(wr2d_v2.o)\
       $(LIB)(wr_ad_cool.o)\
       $(LIB)(wr_art_heat.o)\

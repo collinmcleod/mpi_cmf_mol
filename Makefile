@@ -16,10 +16,9 @@ include Makefile_definitions
 # We will access the makefile in each local directory tp create the
 # libraries and executables.
 
-all : info d_tools d_blas d_dust d_lpack d_nm_subs d_stark d_unix d_subs d_plane d_newsubs d_pgplt \
-         d_lte d_mpi d_new_main d_obs 
+all : info d_tools d_blas d_dust d_lpack d_nm_subs d_stark d_unix d_subs d_plane d_newsubs \
+         d_mpi d_new_main 
      
-#    d_lte d_new_main d_disp d_spec_plt d_obs d_misc
 
 # We now MAKE the required libraries and executables.
 
@@ -55,8 +54,6 @@ d_unix:
 	(cd unix; make )
 d_newsubs:
 	(cd newsubs; make ) 
-d_pgplt:
-	(cd pgplt; make ) 
 
 # The following will create the executables
 
@@ -64,14 +61,6 @@ d_lte:
 	(cd lte_hydro; make)
 d_new_main:
 	(cd new_main; make )
-#d_disp:
-#	(cd disp; make ) 
-#d_spec_plt:
-#	(cd spec_plt; make )
-d_obs:
-	(cd obs; make )
-d_misc:
-	(cd misc; make)
 #
 # To use the following command enter"
 #         make -i clean

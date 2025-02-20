@@ -5,6 +5,8 @@
       USE MOD_SPACE_GRID_MPI_V1
       IMPLICIT NONE
 !
+! Created 16-Feb-2025: MPI versions -- based on optdepth_v4.f 
+!
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !
 ! Calculates dtau using a formula based on the Euler-Maclaurin

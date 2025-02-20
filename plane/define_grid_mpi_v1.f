@@ -5,17 +5,8 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered 16-Feb-2025 -- Extensive debugging.
 ! Created 19-Jan-2025 -- Under development.
-!
-!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-!
-! Determine radial grid from given input parameters
-! Written   11-94 DLM
-! Altered 2/21/96 DLM Updated to F90 standard
-! Altered 6/12/97 DLM Changed name from rpz.f
-! Altered 26/Nov/98 DJH: Changed to V2
-!                        Altered to allow an extended R_GRID (R_EXT).
-!--------------------------------------------------------------------
 !
 ! Grid size variables: passed from calling routine
 !
@@ -100,11 +91,6 @@
 	    NRAY=RAY(IP)%NZ
 	    J=MAX(J,NRAY)
 	    ALLOCATE (RAY(IP)%I_P(NRAY),STAT=IOS)
-	    IF(IOS .NE. 0)THEN
-	      FLUSH(UNIT=6)
-	      WRITE(6,*)'Error:',MYPE,IPROC,IP; FLUSH(UNIT=6)
-	      CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
-	    END IF
 	    ALLOCATE (RAY(IP)%I_M(NRAY))
 	    ALLOCATE (RAY(IP)%I_P_PREV(NRAY))
 	    ALLOCATE (RAY(IP)%I_M_PREV(NRAY))
@@ -115,7 +101,6 @@
 	  ALLOCATE (TAU(J))
 	  ALLOCATE (DTAU(J))
 	END IF
-	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Determine the links betweem the extended-fine grid and the original R grid.
 !
@@ -132,16 +117,12 @@
 	    END IF
 	  END DO
 	END DO
-	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Check all lnks allocated
 !
 	DO IPROC=1,NUM_RAYS_PER_THREAD
 	  IP=GET_IP(MYPE,NTHREAD,IPROC)
 	  IF(IP .GT. NP)EXIT
-!
-	IF(IP .EQ. 88)WRITE(6,*)'iNCH',IP,RAY(IP)%S_P(1:RAY(IP)%NZ)
-	IF(IP .EQ. 89)WRITE(6,*)'INCH',IP,RAY(IP)%S_P(1:RAY(IP)%NZ)
 !
 	  DO ID=1,MIN(ND,ND-(IP-NC-1))
 	    IF(RAY(IP)%LNK(ID) .EQ. 0)THEN
@@ -151,7 +132,6 @@
 	    END IF
 	  END DO
 	END DO
-	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 	DO IPROC=1,NUM_RAYS_PER_THREAD
 	  IP=GET_IP(MYPE,NTHREAD,IPROC)
@@ -265,14 +245,10 @@
 	  DO IPROC=1,NUM_RAYS_PER_THREAD
 	    IP=GET_IP(MYPE,NTHREAD,IPROC)
 	    IF(IP .GT. J)EXIT
-	    if(ip .eq.  88)write(6,*)'def-ip88,s_p',RAY(88)%S_P(1:RAY(IP)%NZ)
-	    if(ip .eq.  89)write(6,*)'def-ip89,s_p',RAY(89)%S_P(1:RAY(IP)%NZ)
 	    RAY(IP)%NQW_M(ID)=-TEMP_VEC(IP)
 	  END DO
-	  FLUSH(UNIT=6)
 !
 	END DO
-	CALL SLEEP(2)
 !
 	IF(NEW_GRID)THEN
 	  IF(ALLOCATED(R_EXT_SAV))DEALLOCATE(R_EXT_SAV)
@@ -282,8 +258,7 @@
 	  ND_SAV=ND
 	  NP_SAV=NP
 	END IF
-!
-	WRITE(6,*)MYPE,'Done define grid';FLUSH(UNIT=6)
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!
 	RETURN
 	END

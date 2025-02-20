@@ -9,13 +9,11 @@ OPTIONS=$(FG)
 # These names are for the fortran linker
 
 LN1=subs
-LN2=pgplt
 LN3=mod
 
 # These names refer to the full file name
 
 FN1=$(LIB_DIR)lib$(LN1).a
-FN2=$(LIB_DIR)lib$(LN2).a
 FN3=$(LIB_DIR)lib$(LN3).a
 
 # or if the libraries have changed since the last link.
@@ -26,9 +24,9 @@ UPDATE=$(LIB_DIR)libsubs.a(update_keyword.o)
 
 # Give the dependencies of dispgen.exe and how it is created.
 
-$(EXE_DIR)cmfgen_dev.exe : cmfgen.o cmfgen_sub.o  $(FN1) $(FN2) $(FN3) 
+$(EXE_DIR)cmfgen_dev.exe : cmfgen.o cmfgen_sub.o  $(FN1) $(FN3) 
 	$(F90) cmfgen.o cmfgen_sub.o \
-              -L$(LIB_DIR) -l$(LN1) -l$(LN2) -l$(LN3) \
+              -L$(LIB_DIR) -l$(LN1)  -l$(LN3) \
                $(LAPACK) $(BLAS) $(LOCLIB) \
               -o $(EXE_DIR)cmfgen_dev.exe
 
@@ -68,7 +66,6 @@ mod:
 # Otherwise Makfile simple checks date of library.
 
 $(FN1): lib1
-$(FN2): lib2
 $(FN3): lib3
 
 lib1:
@@ -79,8 +76,6 @@ lib1:
 	(cd subs; make )
 	(cd gam_transport; make )
 
-lib2:
-	(cd ../pgplt; make )
 lib3:
 	(cd  mod_subs; make)
 

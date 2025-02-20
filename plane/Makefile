@@ -3,7 +3,7 @@
 
 include ../Makefile_definitions
 
-OPTION=$(FD)
+OPTION=$(FG)
 
 # Library where object files will/are stored
 

@@ -176,8 +176,10 @@
 	  XM(1:ND)=0.0_LDP		!As grey solution, not needed (ETA)
 	  dlnJdlnR=0.0_LDP
 	  NEW_FREQ=.TRUE.
-	  WRITE(LUER,*)'Using MOM_JREL_GREY_V2 for grey solution'
-	  FLUSH(LUER)
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LUER,*)'Using MOM_JREL_GREY_V2 for grey solution'
+	    FLUSH(LUER)
+	  END IF
 !
 ! Note
 !   HFLUX=LUM*Lsun/16/(PI*PI)/10**2/R**2 (10**2 for 1/R**2).
