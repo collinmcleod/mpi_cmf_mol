@@ -12,6 +12,7 @@
 !
 ! Under devlopment.
 !
+! Altered: 21-FEb-2025 -- Fixex compile-check bug (incosistent calls to IONTOPOP)
 ! Created: 10-Feb-2025 -- Based on wind_scale_pops_v1.f
 !
 	INTEGER ND
@@ -155,7 +156,7 @@
 !
 	  DO ID=1,NUM_IONS-1
 	    CALL IONTOPOP(POPS,  ROOT(ID)%XzV, ROOT(ID)%DXzV, ED,T,
-	1           ATM(ID)%EQXzV, ATM(ID)%NXzV, NT,ND, ATM(ID)%XzV_PRES)
+	1           ATM(ID)%EQXzV, ATM(ID)%NXzV, NT, IONE, ND, ND, ATM(ID)%XzV_PRES)
 	  END DO
 	END IF
 !
