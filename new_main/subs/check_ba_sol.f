@@ -1,0 +1,170 @@
+!
+!
+	SUBROUTINE CHECK_BA_SOL(SOL_VEC,POPS,SOL_TYPE,
+	1                 DIAG_INDX,N,NION,NUM_BNDS,DST,DEND,ND)
+	USE SET_KIND_MODULE
+	USE MPI
+	IMPLICIT NONE
+!
+!******************************************************************************
+! 
+!
+	INTEGER N,NION,DST,DEND,ND,NUM_BNDS,DIAG_INDX
+	CHARACTER*(*) SOL_TYPE
+	REAL(KIND=LDP) SOL_VEC(N,ND)
+        REAL(KIND=LDP) POPS(N,ND)
+	LOGICAL FLAG
+!
+! Local variables
+!
+        REAL(KIND=LDP), ALLOCATABLE :: B_MAT(:,:)
+        REAL(KIND=LDP), ALLOCATABLE :: C_MAT(:,:)
+        REAL(KIND=LDP), ALLOCATABLE :: D_MAT(:,:)
+!
+	REAL(KIND=LDP), ALLOCATABLE :: STEQ(:,:)
+        REAL(KIND=LDP), ALLOCATABLE :: RHS(:,:)
+        REAL(KIND=LDP), ALLOCATABLE :: MAX_TERM(:,:)
+!
+	REAL(KIND=LDP) T1,T2,T3
+!
+        LOGICAL, PARAMETER :: L_TRUE=.TRUE.
+        LOGICAL REPLACE_EQ(NION)
+        LOGICAL ZERO_STEQ(N)
+        LOGICAL USE_PASSED_REP
+	LOGICAL FIRST_MATRIX,LAST_MATRIX
+!
+        INTEGER I,J,K,JJ
+	INTEGER DEPTH_INDX,BAND_INDX
+        INTEGER IOS,IFAIL,IERR,ITAG
+	INTEGER LUER,ERROR_LU
+	INTEGER REC_STATUS(MPI_STATUS_SIZE)
+!
+        CHARACTER(LEN=80) SOL_FILE
+	EXTERNAL ERROR_LU
+!
+	LUER=ERROR_LU()
+!
+!
+!
+! If we get here, we must be performing a TRI diagonal solution.
+!
+	IF(SOL_TYPE(1:3) .EQ. 'TRI')THEN
+	  IF(NUM_BNDS .LT. 3)THEN
+	    WRITE(LUER,*)'Error in CHECK_BA_SOL: NUM_BNDS too small for solution type'
+	    FLAG=.FALSE.
+	    STOP
+	  END IF
+	ELSE
+	  WRITE(LUER,*)'Error in CHECK_BA_SOL- invalid SOL_TYPE - SOLTYPE= ',SOL_TYPE
+	  STOP
+        END IF
+!
+! 
+!
+!
+	IF(MYPE .EQ. 0)WRITE(6,*)'Beginning TRI solution check in CHECK_BA_SOL'
+!
+	ALLOCATE (B_MAT(N,N),STAT=IOS)
+        IF(IOS .EQ. 0)ALLOCATE (C_MAT(N,N),STAT=IOS)
+        IF(IOS .EQ. 0)ALLOCATE (D_MAT(N,N),STAT=IOS)
+        IF(IOS .EQ. 0)ALLOCATE (STEQ(N,DST:DEND),STAT=IOS)
+        IF(IOS .EQ. 0)ALLOCATE (RHS(N,DST:DEND),STAT=IOS)
+        IF(IOS .EQ. 0)ALLOCATE (MAX_TERM(N,DST:DEND),STAT=IOS)
+        IF(IOS .NE. 0)THEN
+          WRITE(LUER,*)'Error in CHiECKK_BA_SOL'
+          WRITE(LUER,*)'Unable to allocate D_MAT etc'
+          WRITE(LUER,*)'STAT=',IOS
+          STOP
+        END IF
+	B_MAT=0.0_LDP; C_MAT=0.0_LDP;       D_MAT=0.0_LDP
+	RHS=0.0_LDP;   MAX_TERM=0.0_LDP;    STEQ=0.0_LDP
+!
+! 
+!
+	FIRST_MATRIX=.FALSE.
+	IF(MYPE .EQ. 0)FIRST_MATRIX=.TRUE.
+	LAST_MATRIX=.FALSE.
+	USE_PASSED_REP=.FALSE.
+	I=MAX(1,NTHREAD-2)
+!
+	DO K=DST,DEND
+! Map the small BA rray onto the full BA array (one depth at a time).
+!
+	  DEPTH_INDX=K
+	  CALL TUNE(1,'TRI_GEN')
+	  CALL GENERATE_FULL_MATRIX_V3(
+	1            C_MAT,STEQ(1,K),POPS,REPLACE_EQ,ZERO_STEQ,
+	1            N,ND,NION,NUM_BNDS,
+	1            DIAG_INDX,DIAG_INDX,DEPTH_INDX,
+	1            FIRST_MATRIX,LAST_MATRIX,USE_PASSED_REP)
+	  FIRST_MATRIX=.FALSE.
+	  IF(K .NE. 1)THEN
+	    IF(K .EQ. ND)LAST_MATRIX=.TRUE.
+	    BAND_INDX=DIAG_INDX-1
+	    CALL GENERATE_FULL_MATRIX_V3(
+	1             B_MAT,STEQ(1,K),POPS,REPLACE_EQ,ZERO_STEQ,
+	1             N,ND,NION,NUM_BNDS,
+	1             BAND_INDX,DIAG_INDX,DEPTH_INDX,
+	1           FIRST_MATRIX,LAST_MATRIX,USE_PASSED_REP)
+	  END IF
+	  IF(K .NE. ND)THEN
+	    BAND_INDX=DIAG_INDX+1
+	    CALL GENERATE_FULL_MATRIX_V3(
+	1             D_MAT,STEQ(1,K),POPS,REPLACE_EQ,ZERO_STEQ,
+	1             N,ND,NION,NUM_BNDS,
+	1             BAND_INDX,DIAG_INDX,DEPTH_INDX,
+	1             FIRST_MATRIX,LAST_MATRIX,USE_PASSED_REP)
+	  END IF
+	  CALL TUNE(2,'TRI_GEN')
+!
+! Now evaluate the RHS. To gauge the signicance on any discrpeancy, we
+! also compute the mx term that contributes to the RHS.
+!
+! RHS amd MAX_TERM have already been zeroed.
+!
+	  IF(DEPTH_INDX .EQ. 1)THEN
+	    DO J=1,N
+	      DO I=1,N
+	        T2=C_MAT(I,J)*SOL_VEC(J,K)
+	        T3=D_MAT(I,J)*SOL_VEC(J,K+1)
+	        MAX_TERM(I,K)=MAX(MAX_TERM(I,K),ABS(T2),ABS(T3))
+	        RHS(I,K)=RHS(I,K)+(T2+T3)
+	      END DO
+	    END DO
+	  ELSE IF(DEPTH_INDX .EQ. ND)THEN
+	    DO J=1,N
+	      DO I=1,N
+	        T1=B_MAT(I,J)*SOL_VEC(J,K-1)
+	        T2=C_MAT(I,J)*SOL_VEC(J,K)
+	        MAX_TERM(I,K)=MAX(MAX_TERM(I,K),ABS(T1),ABS(T2))
+	        RHS(I,K)=RHS(I,K)+(T1+T2)
+	      END DO
+	    END DO
+	  ELSE
+	    DO J=1,N
+	      DO I=1,N
+	        T1=B_MAT(I,J)*SOL_VEC(J,K-1)
+	        T2=C_MAT(I,J)*SOL_VEC(J,K)
+	        T3=D_MAT(I,J)*SOL_VEC(J,K+1)
+	        MAX_TERM(I,K)=MAX(MAX_TERM(I,K),ABS(T1),ABS(T2),ABS(T3))
+	        RHS(I,K)=RHS(I,K)+(T1+T2+T3)
+	      END DO
+	    END DO
+	  END IF
+!
+! We now check ths signicance of the differeces.
+!
+	  T1=0.0_LDP; T2=0.0_LDP
+	  WRITE(SOL_FILE,'(I3.3)')DEPTH_INDX
+	  SOL_FILE='SOL_CHK_'//TRIM(SOL_FILE)
+	  OPEN(UNIT=500+K,FILE=SOL_FILE,STATUS='UNKNOWN',ACTION='WRITE')
+	  DO I=1,N
+	    WRITE(500+K,'(I5,4ES16.5)')I,STEQ(I,K),RHS(I,K),MAX_TERM(I,K),
+	1                ABS(STEQ(I,K)-RHS(I,K))/MAX_TERM(I,K)
+	  END DO
+	  CLOSE(UNIT=500+K) 
+
+	END DO
+!
+	RETURN
+	END
