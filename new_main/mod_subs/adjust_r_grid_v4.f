@@ -92,7 +92,7 @@
 	LOGICAL ONLY_OB_DONE
 	CHARACTER(LEN=80) STRING
 !
-	WRITE(T_OUT,*)'Entering ADJUST_R_GRID_V4'
+	IF(MYPE .EQ. 0)WRITE(T_OUT,'(/,1X,A)')'Entering ADJUST_R_GRID_V4'
 !
 ! Set default parameters
 !
@@ -120,15 +120,17 @@
 !
 ! Decide here whether we will do an iteration or not.
 !
-	WRITE(T_OUT,'(A,I4)')'         Number of R revisons:',NO_R_REV
-	WRITE(T_OUT,'(A,I4)')'                 Main counter:',MAIN_COUNTER
-	WRITE(T_OUT,'(A,I4)')' Iteration to start revisions:',STRT_R_REV
-	WRITE(T_OUT,'(A,I4)')'       Fequency of iterations:',FREQ_R_REV
-        IF(NO_R_REV .EQ. 0 .OR. MAIN_COUNTER .LT. STRT_R_REV .OR.
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(T_OUT,'(A,I4)')'         Number of R revisons:',NO_R_REV
+	  WRITE(T_OUT,'(A,I4)')'                 Main counter:',MAIN_COUNTER
+	  WRITE(T_OUT,'(A,I4)')' Iteration to start revisions:',STRT_R_REV
+	  WRITE(T_OUT,'(A,I4)')'       Fequency of iterations:',FREQ_R_REV
+        END IF
+	IF(NO_R_REV .EQ. 0 .OR. MAIN_COUNTER .LT. STRT_R_REV .OR.
 	1  MOD( (MAIN_COUNTER-STRT_R_REV),FREQ_R_REV ) .NE. 0)THEN
-	   WRITE(T_OUT,'(A,I4)')' No R revision required on this iteration'
-	  CALL CLEAN_RD_STORE()
-	  RETURN
+	     IF(MYPE .EQ. 0)WRITE(T_OUT,'(A,I4)')' No R revision required on this iteration'
+	     CALL CLEAN_RD_STORE()
+	     RETURN
 	END IF
 !
         CALL GET_LU(LU)

@@ -22,6 +22,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(auto_clump_rev.o)\
       $(LIB)(auto_add_ion.o)\
       $(LIB)(ba_update_mpi_v1.o)\
+      $(LIB)(check_ba_sol.o)\
       $(LIB)(check_eq_in_ba.o)\
       $(LIB)(check_hydro_def.o)\
       $(LIB)(check_ions_present.o)\
@@ -30,7 +31,8 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(chk_cool_rates_consist.o)\
       $(LIB)(cmf_blkband_mpi_v1.o)\
       $(LIB)(cmf_diag_band_mpi_v1.o)\
-      $(LIB)(cmf_tri_band_mpi_v1.o)\
+      $(LIB)(cmf_tri_band_mpi_v2.o)\
+      $(LIB)(cmf_triband_thomas_mpi_v1.o)\
       $(LIB)(create_correction_sum_mpi_v1.o)\
       $(LIB)(create_iv_links_v2.o)\
       $(LIB)(def_new_rg_v1.o)\
@@ -181,6 +183,10 @@ $(LIB)(update_ba_for_line.o) : update_ba_for_line.f $(UP_MODS)
 $(LIB)(var_op_v10.o) : var_op_mpi_v1.f $(DIS)
 	$(F90) -c $(OPTION)  var_op_mpi_v1.f
 	ar $(AR_OPTION) $(LIB) var_op_mpi_v1.o
+
+$(LIB)(cmf_triband_thomas_mpi_v1.o) : cmf_triband_thomas_mpi_v1.f $(MOD)
+	$(F90) -c $(OPTION)  cmf_triband_thomas_mpi_v1.f
+	ar $(AR_OPTION) $(LIB) cmf_triband_thomas_mpi_v1.o
 
 $(LIB)(wr_level_links.o) : wr_level_links.f $(MOD)
 	$(F90) -c $(OPTION)  wr_level_links.f

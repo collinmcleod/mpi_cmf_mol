@@ -15,9 +15,9 @@
 ! This routine was desined specifically to handle BA_SM, while conserving
 ! memory.
 !
-	SUBROUTINE CMF_TRI_BAND_MPI_V1(STEQ,POPS,SOL_TYPE,FLAG,
+	SUBROUTINE CMF_TRI_BAND_MPI_V2(STEQ,POPS,SOL_TYPE,FLAG,
 	1                  DIAG_INDX,N,NION,NUM_BNDS,DST,DEND,ND,
-	1                  BA_COMPUTED,WR_BA_INV,WR_PRT_INV)
+	1                  BA_COMPUTED,WR_BA_INV,WR_PRT_INV,TRI_SOL_OPTIONS)
 	USE SET_KIND_MODULE
 	USE MPI
 	IMPLICIT NONE
@@ -168,7 +168,9 @@
 !
 	INTEGER N,NION,NUM_BNDS,DIAG_INDX
 	INTEGER DST,DEND,ND
-	CHARACTER*(*) SOL_TYPE
+	CHARACTER(LEN=*) SOL_TYPE
+	CHARACTER(LEN=*) TRI_SOL_OPTIONS
+!
 	REAL(KIND=LDP) STEQ_STORE(N,DST:DEND)
         REAL(KIND=LDP) STEQ(N,DST:DEND)
         REAL(KIND=LDP) POPS(N,ND)
@@ -195,6 +197,7 @@
 	INTEGER, ALLOCATABLE ::  IPIVOT(:,:)
 	REAL(KIND=LDP) ERR_EST(ND)
 	REAL(KIND=LDP) T1
+	REAL(KIND=LDP) RELAX_PARAM
 !
 	INTEGER, PARAMETER :: MAX_NUM_ITS=100
 	LOGICAL, PARAMETER :: L_TRUE=.TRUE.
@@ -225,32 +228,40 @@
         INTEGER,   PARAMETER :: NSNG=1
         CHARACTER*1, PARAMETER :: NO_TRANS='N'
 	CHARACTER(LEN=3) OUT_TYPE
+	CHARACTER(LEN=100) TMP_STR
+	LOGICAL UPDATE_RELAX
 !
 	INTEGER LUER,ERROR_LU
 	EXTERNAL ERROR_LU
 !
 !	INCLUDE 'mpif.h'
 !
+	RELAX_PARAM=0.8_LDP
 	LUER=ERROR_LU()
 	NG_CNT=30
+	IF( INDEX(TRI_SOL_OPTIONS,'UPDATE_RELAX') .NE. 0 )UPDATE_RELAX=.TRUE.
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'UPDATE_RELAX=',UPDATE_RELAX
+	  FLUSH(UNIT=6)
+	END IF
 !
 ! If we get here, we must be performing a TRI diagonal solution.
 !
 	IF(SOL_TYPE(1:3) .EQ. 'TRI')THEN
 	  IF(NUM_BNDS .LT. 3)THEN
-	    WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V1 : NUM_BNDS too small for solution type'
+	    WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V2 : NUM_BNDS too small for solution type'
 	    FLAG=.FALSE.
 	    STOP
 	  END IF
 	ELSE
-	  WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V1 - invalid SOL_TYPE - ','SOLTYPE= ',SOL_TYPE
+	  WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V2 - invalid SOL_TYPE - ','SOLTYPE= ',SOL_TYPE
 	  STOP
         END IF
 !
         IF(.NOT. ALLOCATED(OLD_EST))THEN
 	  ALLOCATE (OLD_EST(N,ND),STAT=IOS)
           IF(IOS .NE. 0)THEN
-            WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V1 -- unable to allocate OLD_EST etc'
+            WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V2 -- unable to allocate OLD_EST etc'
             WRITE(LUER,*)'STAT=',IOS
             STOP
           END IF
@@ -270,7 +281,7 @@
           IF(IOS .EQ. 0)ALLOCATE (IPIVOT(N,DST:DEND),STAT=IOS)
           IF(IOS .EQ. 0)ALLOCATE (NEW_EST(N,DST:DEND),STAT=IOS)
           IF(IOS .NE. 0)THEN
-            WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V1'
+            WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V2'
             WRITE(LUER,*)'Unable to allocate D_MAT etc'
             WRITE(LUER,*)'STAT=',IOS
             STOP
@@ -281,7 +292,7 @@
 	IF(.NOT. BA_COMPUTED .AND. WR_BA_INV)THEN
           ALLOCATE (ORIG_POPS(N,DST:DEND),STAT=IOS)
           IF(IOS .NE. 0)THEN
-            WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V1'
+            WRITE(LUER,*)'Error in CMF_TRI_BAMD_MPI_V2'
             WRITE(LUER,*)'Unable to allocate D_MAT etc: STAT=',IOS
              STOP
           END IF
@@ -439,7 +450,8 @@
 	END IF
 !
 	CALL TUNE(1,'IT_COUNTER')
-	DO IT_COUNTER=1,MAX_NUM_ITS
+	IT_COUNTER=1
+	DO WHILE(IT_COUNTER .LE. MAX_NUM_ITS)
 !
 	  ERR_EST=0.0_LDP
 	  CALL TUNE(1,'TRI_DGETRS')
@@ -460,11 +472,13 @@
 	    DO J=1,N
 	      NEW_EST(J,K)=STEQ(J,K)*COL_SF(J,K)
 	    END DO
-	    IF(IT_COUNTER .GE. 2)THEN
+	    IF(RELAX_PARAM .LT. 0.1_LDP)THEN
+	       
+	    ELSE IF(IT_COUNTER .GE. 2)THEN
 	      DO J=1,N
-	        NEW_EST(J,K)=OLD_EST(J,K)+0.5_LDP*(NEW_EST(J,K)-OLD_EST(J,K))
+	        NEW_EST(J,K)=OLD_EST(J,K)+RELAX_PARAM*(NEW_EST(J,K)-OLD_EST(J,K))
 	        ERR_EST(K)=MAX(ERR_EST(K),ABS(NEW_EST(J,K)-OLD_EST(J,K)) / 
-	1                               (ABS(NEW_EST(J,K))+ABS(OLD_EST(J,K))+1.0E-10_LDP))
+	1                               (ABS(NEW_EST(J,K))+ABS(OLD_EST(J,K))+1.0E-20_LDP))
 	      END DO
 	    ELSE
 	      ERR_EST(K)=1.0_LDP
@@ -480,13 +494,31 @@
 !
 	  CALL GATHER_SELF_VEC_MPI_V1(ERR_EST,DST,DEND,ND)
 	  J=0; CALL MPI_BCAST(ERR_EST,ND,MPI_DOUBLE_PRECISION,J,MPI_COMM_WORLD,IERR)
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(TMP_STR,'(I4)')IT_COUNTER
+	    TMP_STR='IT_CNT='//TRIM(TMP_STR)
+	    CALL WRITE_VEC(ERR_EST,ND,TMP_STR,275)
+	    FLUSH(UNIT=275)
+	  END IF
+!
 	  IF(MAXVAL(ERR_EST) .LT. 1.0D-06 .OR. IT_COUNTER .EQ. MAX_NUM_ITS)THEN
 	    STEQ(:,DST:DEND)=NEW_EST(:,DST:DEND)
 	    EXIT
+!
+! Check if converging. If not converging we restart the iterative procedure, and lower
+! the relaxation parameter.
+!
+	  ELSE IF(IT_COUNTER .GT. 30 .AND. MAXVAL(ERR_EST) .GT. 0.7_LDP .AND. UPDATE_RELAX)THEN
+	    RELAX_PARAM=RELAX_PARAM/2.0_LDP
+	    OLD_EST=0.0_LDP
+	    IT_COUNTER=0
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(6,'(A,F5.2)')' Updated relaxation paraemeter in CMF_TRI_BAMD_MPI_V2 to:',RELAX_PARAM
+	    END IF
 	  END IF
 	  IF(MYPE .EQ. 0)THEN
-	    WRITE(LU_IT,'(1X,A,I4,A,F10.5,2X,ES14.4)')'Maximum error and correction on CM_TRI_BAND iteration',
-	1                       IT_COUNTER,' is (in %): ',200.0_LDP*MAXVAL(ERR_EST),MAXVAL(OLD_EST)
+	    WRITE(LU_IT,'(1X,A,I4,A,F10.5,2X,ES14.4,F6.2)')'Maximum error and correction on CM_TRI_BAND iteration',
+	1                       IT_COUNTER,' is (in %): ',200.0_LDP*MAXVAL(ERR_EST),MAXVAL(OLD_EST),RELAX_PARAM
 	  END IF
 !	  IF(MYPE .EQ. 0)THEN
 !	    CALL WR2D_V2(OLD_EST,N,ND,'STEQ_ARRAY','*',L_TRUE,450)
@@ -521,6 +553,7 @@
 	      END DO  
 	    END IF
 	  END DO
+	  IT_COUNTER=IT_COUNTER+1
 	END DO
 	CALL TUNE(2,'IT_COUNTER')
 !
@@ -541,7 +574,7 @@
 ! Error handling setcion
 !
 9999	CONTINUE
-	WRITE(LUER,*)'Error in LINPAC (or BLAS) routine',DESC,' in CMF_TRI_BAMD_MPI_V1'
+	WRITE(LUER,*)'Error in LINPAC (or BLAS) routine',DESC,' in CMF_TRI_BAMD_MPI_V2'
 	WRITE(LUER,100)K,IFAIL
 100	FORMAT(1x,'depth=',I3,10x,'IFAIL=',I3)
 	FLAG=.FALSE.

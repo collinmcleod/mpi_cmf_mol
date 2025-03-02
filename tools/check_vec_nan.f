@@ -11,17 +11,17 @@
 	IF(SKIP)THEN
 	  IF(FIRST .AND. MYPE .EQ. 0)THEN
 	    FIRST=.FALSE.
-	    WRITE(6,'(//,A)')'Warning -- CHECK_VEC_NAN is swithched off'
+	    WRITE(6,'(//,1X,A)')'Warning -- CHECK_VEC_NAN is swithched off'
 	  END IF
 	  RETURN
 	END IF
 !
-	WRITE(6,*)'Currently doing the folloing NaN check',MYPE
+	WRITE(6,*)' Currently doing the folloing NaN check',MYPE
 	WRITE(6,*)TRIM(DESC); FLUSH(UNIT=6)
 !
 	DO I=1,ND
 	  IF(VEC(I) .NE. VEC(I))THEN
-	    WRITE(700+MYPE,*)'Error - NaN present for processor:',MYPE,ND,TRIM(DESC)
+	    WRITE(700+MYPE,*)' Error - NaN present for processor:',MYPE,ND,TRIM(DESC)
 	    FLUSH(UNIT=700+MYPE)
 	    WRITE(700+MYPE,'(I10,5ES14.4)')I,VEC(I)
 	    FLUSH(UNIT=700+MYPE)
@@ -37,4 +37,3 @@
 !
 	RETURN
 	END
-

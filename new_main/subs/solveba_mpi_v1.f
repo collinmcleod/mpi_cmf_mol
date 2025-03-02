@@ -6,7 +6,7 @@
 	1              MAIN_COUNTER,SET_POPS_D2_EQ_D1)
 	USE SET_KIND_MODULE
 	USE MPI
-	USE CONTROL_VARIABLE_MOD, ONLY: LTE_MODEL
+	USE CONTROL_VARIABLE_MOD, ONLY: LTE_MODEL, TRI_SOL_OPTIONS
 	IMPLICIT NONE
 !
 	INTEGER NT
@@ -46,6 +46,7 @@
 	INTEGER, PARAMETER :: NV=10
 	REAL(KIND=LDP) MAX_INC_VEC(NV)
 	REAL(KIND=LDP) MAX_DEC_VEC(NV)
+	REAL(KIND=LDP) ACTUAL_MAX_dT_COR
 !
 	REAL(KIND=LDP) SCALE,MINSCALE,T1,T2,T3
 	REAL(KIND=LDP) INCREASE,DECREASE
@@ -87,17 +88,32 @@
 !
 	ELSE IF( METH_SOL(1:3) .EQ. 'TRI')THEN
 !
+	IF(CHANGE_LIM .LE. 1.0_LDP)THEN
+          WRITE(LUER,'(A,1PE12.4)')' Error in SOLVEBA_MPI_V1 -bef triband'
+          WRITE(LUER,'(A,1PE12.4)')' Maximum change for normal iteration must be > 1.'
+	  FLUSH(UNIT=6)
+	  STOP
+	END IF
 	    CALL TUNE(IONE,'TRI_BAND')
 	    LOC_WR_BA_INV=WR_BA_INV
-	    IF(LAMBDA_IT)LOC_WR_BA_INV=.FALSE.
-	    CALL CMF_TRI_BAND_MPI_V1(SOL_MAT,POPS,METH_SOL,SUCCESS,
+	    CALL CMF_TRIBAND_THOMAS_MPI_V1(SOL_MAT,POPS,METH_SOL,SUCCESS,
 	1              DIAG_INDX,NT,NION,NUM_BNDS,DST,DEND,ND,
 	1              BA_COMPUTED,LOC_WR_BA_INV,WR_PRT_INV)
+!	    CALL CMF_TRI_BAND_MPI_V2(SOL_MAT,POPS,METH_SOL,SUCCESS,
+!	1              DIAG_INDX,NT,NION,NUM_BNDS,DST,DEND,ND,
+!	1              BA_COMPUTED,LOC_WR_BA_INV,WR_PRT_INV,TRI_SOL_OPTIONS)
 	    IF(.NOT. SUCCESS)THEN
 	      WRITE(LUER,*)'Error in CMF_TRI_BAND_MPI_V1 - shutting code down'
 	      STOP
 	    END IF
 	    CALL TUNE(ITWO,'TRI_BAND')
+	IF(CHANGE_LIM .LE. 1.0_LDP)THEN
+          WRITE(LUER,'(A,1PE12.4)')' Error in SOLVEBA_MPI_V1'
+          WRITE(LUER,'(A,1PE12.4)')' Maximum change for normal iteration must be > 1.'
+	  FLUSH(UNIT=6)
+	  CALL SLEEP(2)
+	  STOP
+	END IF
 !
 	ELSE
 	  WRITE(LUER,*)'Error - invalid solution method in SOLVEBA'
@@ -127,12 +143,12 @@
 	      END IF
 	    END DO
 	  END DO
-	  IF(COUNT(1) .NE. 0)WRITE(LUER,*)'Warning -- using  LIMIT option for LAMBDA iteration in SOLVEBA_V13.f'
+	  IF(COUNT(1) .NE. 0)WRITE(LUER,*)'Warning -- using  LIMIT option for LAMBDA iteration in SOLVEBA_MPI_V1.f'
 	END IF
 !
 ! Determine maximum corrections to the 'population parameters', and output summary file:
 !
-	CALL CREATE_CORRECTION_SUM_MPI_V1(SOL_MAT,DECREASE,INCREASE,MAX_dT_COR,IDEC,IINC,DST,DEND,ND,NT)
+	CALL CREATE_CORRECTION_SUM_MPI_V1(SOL_MAT,DECREASE,INCREASE,ACTUAL_MAX_dT_COR,IDEC,IINC,DST,DEND,ND,NT)
 !
 	INCREASE_SAVE=INCREASE; DECREASE_SAVE=DECREASE
 	DECREASE=100.0_LDP*DECREASE
@@ -185,7 +201,7 @@
 !**********************************************************************************
 
 	IF(CHANGE_LIM .LE. 1.0_LDP)THEN
-          WRITE(LUER,'(A,1PE12.4)')' Error in SOLVEBA_V13'
+          WRITE(LUER,'(A,1PE12.4)')' Error in SOLVEBA_MPI_V1'
           WRITE(LUER,'(A,1PE12.4)')' Maximum change for normal iteration must be > 1.'
 	  STOP
 	END IF
