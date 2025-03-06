@@ -1026,10 +1026,8 @@
 	  END IF
 	  CALL RD_STORE_DBLE(MAX_CHNG_LIM,'MAX_CHNG',L_TRUE,
 	1      'If maximum % fractional change > MAX_CHNG terminate model ')
-	  TMP_LOG=.FALSE.
-	  CALL RD_STORE_LOG(TMP_LOG,'UP_REL_PARAM',L_FALSE,'Update relax parameter automatically')
-	  TRI_SOL_OPTIONS=' '
-	  IF(TMP_LOG)TRI_SOL_OPTIONS='UPDATE_RELAX'
+          TRI_SOL_OPTIONS=' '
+          CALL RD_STORE_CHAR(TRI_SOL_OPTIONS,'TRI_SOL_OPT',L_FALSE,'THOMAS/CHECK_SOL or UPDATE_RELAX')
 !
 	  CALL RD_STORE_LOG(COMPUTE_BARDIN,'COMP_BA',L_TRUE,
 	1            'Compute BA matrix ?')

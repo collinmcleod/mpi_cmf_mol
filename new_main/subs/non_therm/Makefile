@@ -27,6 +27,8 @@ OBJ = $(LIB)(read_arnaud_ion_data.o)\
       $(LIB)(write_non_therm_mpi_v1.o)
 
 all : $(LIB)
+	cp -f $(INSTALL_DIR)perm_mod_file jnk.mod
+	mv -f *.mod $(MOD_DIR)
 	rm -f *.o
 
 $(LIB) : $(OBJ) $(NT)

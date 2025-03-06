@@ -17,13 +17,13 @@
 !
 	SUBROUTINE CMF_TRIBAND_THOMAS_MPI_V1(STEQ,POPS,SOL_TYPE,FLAG,
 	1                 DIAG_INDX,N,NION,NUM_BNDS,DST,DEND,ND,
-	1                 BA_COMPUTED,WR_BA_INV,WR_PRT_INV)
+	1                 BA_COMPUTED,WR_BA_INV,WR_PRT_INV,TRI_SOL_OPTIONS)
 	USE SET_KIND_MODULE
 	USE MPI
 	IMPLICIT NONE
 !
 ! 
-! The description here is from BLKBAND, which also allowed for a PENTDIAGONAL
+! The description here is from CMF_TRIBAND_THOMAS_MPI_V1, which also allowed for a PENTDIAGONAL
 ! matrix. FOr simplicity,w e retained the smae notation.
 !
 ! Let A[k], B[k], C[k], D[k], and E[k] be the sub-matrices (dimension N*N) of
@@ -187,6 +187,7 @@
 !
 	INTEGER N,NION,DST,DEND,ND,NUM_BNDS,DIAG_INDX
 	CHARACTER*(*) SOL_TYPE
+	CHARACTER*(*) TRI_SOL_OPTIONS
 	REAL(KIND=LDP) STEQ_STORE(N,DST:DEND)
         REAL(KIND=LDP) STEQ(N,DST:DEND)
         REAL(KIND=LDP) POPS(N,ND)
@@ -248,13 +249,13 @@
 !
 	IF(SOL_TYPE(1:3) .EQ. 'TRI')THEN
 	  IF(NUM_BNDS .LT. 3)THEN
-	    WRITE(LUER,*)'Error in CMF_BLKBAND : NUM_BNDS too small ',
+	    WRITE(LUER,*)'Error in CMF_TRIBAND_THOMAS_MPI_V1 : NUM_BNDS too small ',
 	1             'for solution type'
 	    FLAG=.FALSE.
 	    STOP
 	  END IF
 	ELSE
-	  WRITE(LUER,*)'Error in CMF_BLKBAND - invalid SOL_TYPE - ',
+	  WRITE(LUER,*)'Error in CMF_TRIBAND_THOMAS_MPI_V1 - invalid SOL_TYPE - ',
 	1          'SOLTYPE= ',SOL_TYPE
 	  STOP
         END IF
@@ -275,7 +276,7 @@
           IF(IOS .EQ. 0)ALLOCATE (ORIG_POPS(N,DST:DEND),STAT=IOS)
           IF(IOS .EQ. 0)ALLOCATE (STEQ_WRK_VEC(N),STAT=IOS)
           IF(IOS .NE. 0)THEN
-            WRITE(LUER,*)'Error in CMF_BLKBAND'
+            WRITE(LUER,*)'Error in CMF_TRIBAND_THOMAS_MPI_V1'
             WRITE(LUER,*)'Unable to allocate B_MAT, C_MAT & D_MAT'
             WRITE(LUER,*)'STAT=',IOS
             STOP
@@ -418,7 +419,7 @@
 !
 ! Perform the TRIDIAGONAL solution. If we reach here, we need to redo the LU decomposition of BA.
 !
-	IF(MYPE .EQ. 0)WRITE(6,*)'Beginning TRI solution in CMF_BLKBAND'
+	IF(MYPE .EQ. 0)WRITE(6,*)'Beginning TRI solution in CMF_TRIBAND_THOMAS_MPI_V1'
 !
 	ALLOCATE (B_MAT(N,N),STAT=IOS)
         IF(IOS .EQ. 0)ALLOCATE (C_MAT(N,N),STAT=IOS)
@@ -430,7 +431,7 @@
         IF(IOS .EQ. 0)ALLOCATE (IPIVOT(N),STAT=IOS)
         IF(IOS .EQ. 0)ALLOCATE (STEQ_WRK_VEC(N),STAT=IOS)
         IF(IOS .NE. 0)THEN
-          WRITE(LUER,*)'Error in CMF_BLKBAND'
+          WRITE(LUER,*)'Error in CMF_TRIBAND_THOMAS_MPI_V1'
           WRITE(LUER,*)'Unable to allocate D_MAT etc'
           WRITE(LUER,*)'STAT=',IOS
           STOP
@@ -447,7 +448,7 @@
 	IF(.NOT. WR_BA_INV .AND. .NOT. WR_PRT_INV)THEN
           ALLOCATE (D_MAT_STORE(N,N,DST:DEND),STAT=IOS)
           IF(IOS .NE. 0)THEN
-            WRITE(LUER,*)'Error in CMF_BLKBAND'
+            WRITE(LUER,*)'Error in CMF_TRIBAND_THOMAS_MPI_V1'
             WRITE(LUER,*)'Unable to allocate D_MAT_STORE etc'
             WRITE(LUER,*)'STAT=',IOS
             WR_D_MAT=.TRUE.
@@ -654,6 +655,10 @@
 	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	END DO
 	CALL OMP_SET_NUM_THREADS(1)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)' Obtained solutions of rate equations in CMF_TRIBAND_THOMAS_MPI_V1'
+	  FLUSH(UNIT=6)
+	END IF
 !
 ! Successfull solution obtained.
 !
@@ -665,12 +670,18 @@
         CALL WR2D_GATH_MPI_V1(STEQ_STORE,N,DST,DEND,ND,'STEQ_ARRAY','*',L_TRUE,16)
         CALL TUNE(2,'TRI_GATH')
 !
+	IF(INDEX(TRI_SOL_OPTIONS,'CHECK_SOL') .NE. 0)THEN
+	  IF(MYPE .EQ. 0)WRITE(6,*)TRIM(TRI_SOL_OPTIONS)
+	  CALL CHECK_BA_SOL(STEQ,POPS,SOL_TYPE,
+	1                 DIAG_INDX,N,NION,NUM_BNDS,DST,DEND,ND)
+	END IF
+!
 	RETURN
 !
 ! Error handling routine.
 !
 9999	CONTINUE
-	WRITE(LUER,*)'Error in LINPAC (or BLAS) routine',DESC,' in CMF_BLKBAND'
+	WRITE(LUER,*)'Error in LINPAC (or BLAS) routine',DESC,' in CMF_TRIBAND_THOMAS_MPI_V1'
 	WRITE(LUER,100)K,IFAIL
 100	FORMAT(1x,'depth=',I3,10x,'IFAIL=',I3)
 	FLAG=.FALSE.

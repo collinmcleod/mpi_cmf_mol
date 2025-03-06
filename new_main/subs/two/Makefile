@@ -57,7 +57,7 @@ $(LIB)(two_phot_var_opac_mpi_v1.o) : two_phot_var_opac_mpi_v1.f $(TWO) $(VAR) $(
 GETJ:
 	$(F90) -c  $(OPTION)  mod_j_two_phot_mpi_v1.f
 	ar $(AR_OPTION) $(LIB)  mod_j_two_phot_mpi_v1.o
-	mv mod_j_two_phot_mpi_v1.mod ../../../mod
+	mv mod_j_two_phot_mpi_v1.mod $(MOD_DIR)
 
 $(TWO):
 	(cd ../../mod_subs ; make)

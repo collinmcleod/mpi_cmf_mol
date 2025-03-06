@@ -88,32 +88,25 @@
 !
 	ELSE IF( METH_SOL(1:3) .EQ. 'TRI')THEN
 !
-	IF(CHANGE_LIM .LE. 1.0_LDP)THEN
-          WRITE(LUER,'(A,1PE12.4)')' Error in SOLVEBA_MPI_V1 -bef triband'
-          WRITE(LUER,'(A,1PE12.4)')' Maximum change for normal iteration must be > 1.'
-	  FLUSH(UNIT=6)
-	  STOP
-	END IF
 	    CALL TUNE(IONE,'TRI_BAND')
 	    LOC_WR_BA_INV=WR_BA_INV
-	    CALL CMF_TRIBAND_THOMAS_MPI_V1(SOL_MAT,POPS,METH_SOL,SUCCESS,
-	1              DIAG_INDX,NT,NION,NUM_BNDS,DST,DEND,ND,
-	1              BA_COMPUTED,LOC_WR_BA_INV,WR_PRT_INV)
-!	    CALL CMF_TRI_BAND_MPI_V2(SOL_MAT,POPS,METH_SOL,SUCCESS,
-!	1              DIAG_INDX,NT,NION,NUM_BNDS,DST,DEND,ND,
-!	1              BA_COMPUTED,LOC_WR_BA_INV,WR_PRT_INV,TRI_SOL_OPTIONS)
-	    IF(.NOT. SUCCESS)THEN
-	      WRITE(LUER,*)'Error in CMF_TRI_BAND_MPI_V1 - shutting code down'
-	      STOP
+	    IF(INDEX(TRI_SOL_OPTIONS,'THOMAS') .NE. 0)THEN
+	      CALL CMF_TRIBAND_THOMAS_MPI_V1(SOL_MAT,POPS,METH_SOL,SUCCESS,
+	1                DIAG_INDX,NT,NION,NUM_BNDS,DST,DEND,ND,
+	1                BA_COMPUTED,LOC_WR_BA_INV,WR_PRT_INV,TRI_SOL_OPTIONS)
+	    ELSE
+!
+! We use an iterative technique.
+!
+	      CALL CMF_TRI_BAND_MPI_V2(SOL_MAT,POPS,METH_SOL,SUCCESS,
+	1               DIAG_INDX,NT,NION,NUM_BNDS,DST,DEND,ND,
+	1               BA_COMPUTED,LOC_WR_BA_INV,WR_PRT_INV,TRI_SOL_OPTIONS)
+	      IF(.NOT. SUCCESS)THEN
+	        WRITE(LUER,*)'Error in CMF_TRI_BAND_MPI_V1 - shutting code down'
+	        STOP
+	      END IF
 	    END IF
 	    CALL TUNE(ITWO,'TRI_BAND')
-	IF(CHANGE_LIM .LE. 1.0_LDP)THEN
-          WRITE(LUER,'(A,1PE12.4)')' Error in SOLVEBA_MPI_V1'
-          WRITE(LUER,'(A,1PE12.4)')' Maximum change for normal iteration must be > 1.'
-	  FLUSH(UNIT=6)
-	  CALL SLEEP(2)
-	  STOP
-	END IF
 !
 	ELSE
 	  WRITE(LUER,*)'Error - invalid solution method in SOLVEBA'

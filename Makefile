@@ -30,6 +30,9 @@ info:
 	@echo " (F90)        = "$(F90)
 	@echo " (FG)         = "$(FG)
 	@echo " ar. option   = "$(AR_OPTION)
+	@echo " MOD direc.   = "$(MOD_DIR)
+	@echo " EXE direc.   = "$(EXE_DIR)
+	@echo " LIB direc.   = "$(LIB_DIR)
 	@echo " "
 
 d_blas:
@@ -68,9 +71,16 @@ d_new_main:
 
 clean:
 	rm -f lib/*.a
+	rm -f mod/*.mod
+	rm -f exe/*.exe
 	rm -f */*.o
 	rm -f */*/*.o
-	rm -f */*.mod
-	rm -f */*/*.mod
-	rm -f */*/*/*.mod
-	rm -f exe/*.exe
+	rm -f */*/*/*.o
+
+dbg_clean:
+	rm -f lib_dbg/*.a
+	rm -f mod_dbg/*.mod
+	rm -f exe_dbg//*exe
+	rm -f */*.o
+	rm -f */*/*.o
+	rm -f */*/*/*.o

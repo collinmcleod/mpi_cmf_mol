@@ -21,15 +21,24 @@ HOST :=$(shell hostname)
 
 HOST=crc
 COMPILER=intel
-DEBUG=nodebug
+DEBUG=debug
 
 COMPILE_OPT=$(HOST)_$(COMPILER)_$(DEBUG)
 
 ifeq ($(HOST),crc)
 INSTALL_DIR=$(HOME)/mpi_cmfgen/
-MOD_DIR=$(INSTALL_DIR)/mod
-LIB_DIR=$(INSTALL_DIR)lib/
-EXE_DIR=$(INSTALL_DIR)exe/
+endif
+
+ifeq ($(DEBUG),nodebug)
+ MOD_DIR=$(INSTALL_DIR)mod/
+ LIB_DIR=$(INSTALL_DIR)lib/
+ EXE_DIR=$(INSTALL_DIR)exe/
+endif
+
+ifeq ($(DEBUG),debug)
+ MOD_DIR=$(INSTALL_DIR)mod_dbg/
+ LIB_DIR=$(INSTALL_DIR)lib_dbg/
+ EXE_DIR=$(INSTALL_DIR)exe_dbg/
 endif
 
 ifeq ($(COMPILE_OPT),crc_gcc_nodebug)
