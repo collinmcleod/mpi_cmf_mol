@@ -31,12 +31,11 @@
 	REAL(KIND=LDP), POINTER :: DD(:)		!TB=-DD-TA-TC
 	REAL(KIND=LDP), POINTER :: TC(:)
 	REAL(KIND=LDP), POINTER :: XM(:)
+	REAL(KIND=LDP), POINTER :: DTAU(:)
 !
-	REAL(KIND=LDP), ALLOCATABLE :: DTAU(:)
 	REAL(KIND=LDP), ALLOCATABLE :: MID_DTAU(:)
 	REAL(KIND=LDP), ALLOCATABLE :: SOURCE(:)
-	REAL(KIND=LDP), ALLOCATABLE :: HU(:)
-	REAL(KIND=LDP), ALLOCATABLE :: HL(:)
+	REAL(KIND=LDP), ALLOCATABLE :: dCHIdR(:)
 	REAL(KIND=LDP), ALLOCATABLE :: COH_VEC(:)
 !
 	INTEGER ND
@@ -160,20 +159,20 @@
 	  DEALLOCATE ( CHI )
 	  DEALLOCATE ( F )
 !
-	  NULLIFY    (TA,DD,TC,XM)
+	  NULLIFY    (TA,DD,TC,XM,DTAU)
 	  DEALLOCATE ( THOM_VEC )
 !
-	  DEALLOCATE ( DTAU )
 	  DEALLOCATE ( MID_DTAU )
+	  DEALLOCATE ( dCHIdR )
 	  DEALLOCATE ( TC )
 	  DEALLOCATE ( XM )
 	  DEALLOCATE ( SOURCE )
-	  DEALLOCATE ( HU )
-	  DEALLOCATE ( HL )
 	  DEALLOCATE ( J_INDX )
 	  DEALLOCATE ( H_INDX )
 	END IF
 	NINS_SAV=NINS
+!
+!NB: DST, DEND refer to the new grid, which is not ncessarily the same as the old grid.
 !
 	CALL SET_DST_DEND(DST,DEND,ND,NTHREAD,MYPE)
 	M_DST=MAX(1,DST-1)
@@ -203,17 +202,16 @@
 	  ALLOCATE ( JNU(ND) )             ; JNU(1:ND)=0.0_LDP
 	  ALLOCATE ( HNU(ND) )             ; HNU(1:ND)=0.0_LDP
 !
-	  ALLOCATE ( THOM_VEC(4*ND) )
+	  ALLOCATE ( THOM_VEC(5*ND) )
 	  TA(1:ND)=>THOM_VEC(1:ND)
 	  DD(1:ND)=>THOM_VEC(ND+1:2*ND)
 	  TC(1:ND)=>THOM_VEC(2*ND+1:3*ND)
 	  XM(1:ND)=>THOM_VEC(3*ND+1:4*ND)
+	  DTAU(1:ND)=>THOM_VEC(4*ND+1:5*ND)
 !
-	  ALLOCATE ( DTAU(ND) )
 	  ALLOCATE ( MID_DTAU(ND) )
 	  ALLOCATE ( SOURCE(ND) )
-	  ALLOCATE ( HU(ND) )
-	  ALLOCATE ( HL(ND) )
+	  ALLOCATE ( dCHIdR(ND) )
 	  ALLOCATE ( COH_VEC(ND) )
 !
 	  ALLOCATE ( J_INDX(ND_SM) )
@@ -277,6 +275,7 @@
 !
 !	
 	IF(ND .GT. ND_SM)THEN
+	  NEW_DATA=0.0_LDP
 	  OLD_DATA(:,1)=LOG(CHI_SM)
 	  OLD_DATA(:,2)=LOG(ESEC_SM)
 	  OLD_DATA(:,3)=LOG(ETA_SM)
@@ -288,8 +287,8 @@
 	  NEW_DATA(DST:DEND,4)=NEW_DATA(DST:DEND,4)
 	  CALL MPI_ALLREDUCE(MPI_IN_PLACE,NEW_DATA,4*ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	ELSE
-	  ESEC(1:ND)=ESEC_SM(1:ND)
 	  CHI(1:ND)=CHI_SM(1:ND)
+	  ESEC(1:ND)=ESEC_SM(1:ND)
 	  ETA(1:ND)=ETA_SM(1:ND)
 	  F(1:ND)=F_SM(1:ND)
 	END IF
@@ -303,32 +302,29 @@
 	  MOM_ERR_CNT=0
 	END IF
 !
-	THOM_VEC=0.0_LDP
 	DO I=DST,DEND
 	  SOURCE(I)=ETA(I)/CHI(I)
 	  COH_VEC(I)=0.0_LDP
 	  IF(COHERENT)COH_VEC(I)=ESEC(I)/CHI(I)
 	END DO
 !
+! The statement zeros TA, DD, TB, XM and DTAU.
+!
+	THOM_VEC=0.0_LDP
+!
 ! NB: We solve J, not for r^2 J as in the spherical case.
 !
 ! Compute optical depth scale.
 !
-	CALL DERIVCHI_MPI_V1(DD,CHI,R,M_DST,M_DEND,ND,METHOD)
-	DO I=M_DST,MIN(ND-1,DEND)
+	CALL DERIVCHI_MPI_V1(dCHIdR,CHI,R,M_DST,M_DEND,ND,METHOD)
+	DO I=M_DST,DEND
 	  dR=R(I)-R(I+1)
-	  DTAU(I)=0.5_LDP*dR*(CHI(I)+CHI(I+1)+dR*(DD(I+1)-DD(I))/6.0_LDP)
+	  DTAU(I)=0.5_LDP*dR*(CHI(I)+CHI(I+1)+dR*(dCHIdR(I+1)-dCHIdR(I))/6.0_LDP)
         END DO
+	FLUSH(UNIT=550+MYPE)
 !
-	DO I=MAX(2,DST-1),DEND
+	DO I=MAX(2,DST),DEND
 	  MID_DTAU(I)=0.5_LDP*(DTAU(I)+DTAU(I-1))
-	END DO
-!
-! Compute vectors used to compute the flux vector H.
-!
-	DO I=DST,MIN(DEND,ND-1)
-	  HU(I)=F(I+1)/DTAU(I)
-	  HL(I)=F(I)/DTAU(I)
 	END DO
 !
 ! Compute the TRIDIAGONAL operators, and the RHS source vector.
@@ -364,8 +360,9 @@
 	END IF
 !
 ! Solve for the radiation field along ray for this frequency.
+! We set DTAU(DST-1)=0.0_LDP so we can use the MPI SUM option.
 !
-	I=4*ND
+	I=5*ND; IF(DST .NE. 1)DTAU(DST-1)=0.0_LDP
 	CALL MPI_ALLREDUCE(MPI_IN_PLACE,THOM_VEC,I,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 	CALL THOMAS_RH(TA,DD,TC,XM,ND,1)
 !
@@ -399,25 +396,31 @@
 	  END IF
 	END DO
 !
+! Compute vectors used to compute the flux vector H.
+! We compute over the full ND to save later data transfers for HNU.
+! 
+!	DO I=1,ND-1
+!	  HU(I)=F(I+1)/DTAU(I)
+!	  HL(I)=F(I)/DTAU(I)
+!	END DO
+!
 ! Save J and compute H.  Regrid derived J and H values onto small grid, as necessary.
 !
-	HNU_SM=0.0_LDP
 	IF(ND .EQ. ND_SM)THEN
 	  JNU_SM(1:ND)=XM(1:ND)
-	  DO I=DST,MIN(DEND,ND_SM-1)
-	    HNU_SM(I)=HU(I)*XM(I+1)-HL(I)*XM(I)
+	  DO I=1,ND_SM-1
+	    HNU_SM(I)=(F(I+1)*XM(I+1)-F(I)*XM(I))/DTAU(I)
 	  END DO
 	ELSE
-	  DO I=DST,DEND
+	  DO I=1,ND_SM
 	    K=J_INDX(I)
 	    JNU_SM(I)=JNU(K)
 	  END DO
-	  DO I=DST,MIN(DEND,ND_SM-1)
+	  DO I=1,ND_SM-1
 	    K=H_INDX(I)
-	    HNU_SM(I)=HU(K)*XM(K+1)-HL(K)*XM(K)
+	    HNU_SM(I)=(F(K+1)*XM(K+1)-F(K)*XM(K))/DTAU(K)
 	  END DO
 	END IF
-	CALL MPI_ALLREDUCE(MPI_IN_PLACE,HNU_SM,ND_SM,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
 !
 	RETURN
 	END

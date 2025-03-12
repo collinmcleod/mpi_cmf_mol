@@ -196,7 +196,11 @@
 	1             + DERIV_SCL_FAC(I)*(dHSDCHI(I)*RSQ_HNUM1(I)-dHSDCHI(J)*RSQ_HNUM1(J))
 	1             + (dHTDCHI(I)*RSQ_HNU_OLDt(I)-dHTDCHI(J)*RSQ_HNU_OLDt(J))
 	1             - T1*SOURCE(I)
+	END DO
+
 !
+	DO I=MAX(VDST,2),MIN(VDEND,ND-1)
+	  T1=0.5_LDP*R(I)*R(I)*(DTAU(I-1)+DTAU(I))/CHI(I)/Q(I)
 	  KI(I,I,2)=T1
 	END DO
 !

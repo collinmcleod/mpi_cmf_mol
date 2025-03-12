@@ -418,6 +418,7 @@
 !
 ! Keep frequencies in sync.
 !
+	    WRITE(6,*)'ML,MYPE',ML,MYPE,FL
 	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	  END DO
 !

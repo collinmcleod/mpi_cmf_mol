@@ -207,7 +207,7 @@ C
 	  IF(DST .EQ. 1)THEN
             dCHIdR(1)=SLOPE(1) +(SLOPE(1)-SLOPE(2))*H(1)/(H(1)+H(2))
 	  END IF
-	  DO I=MAX(2,DST),DEND
+	  DO I=MAX(2,DST),MIN(DEND,ND-1)
               dCHIdR(I)=(SLOPE(I-1)*H(I)+SLOPE(I)*H(I-1))/(H(I-1)+H(I))
 	  END DO
 	  IF(DEND .EQ. ND)THEN
@@ -238,7 +238,7 @@ C
 	    dCHIdR(1)=( SIGN(ONE,SLOPE(1))+SIGN(ONE,dCHIdR(1)) )*
 	1            MIN(ABS(SLOPE(1)),0.5_LDP*ABS(dCHIdR(1)))
 	  END IF
-	  DO I=MAX(2,DST),DEND-1
+	  DO I=MAX(2,DST),MIN(ND-1,DEND)
 	    dCHIdR(I)=( SIGN(ONE,SLOPE(I-1))+SIGN(ONE,SLOPE(I)) )*
 	1            MIN(ABS(SLOPE(I-1)),ABS(SLOPE(I)),0.5_LDP*ABS(dCHIdR(I)))
 	  END DO
