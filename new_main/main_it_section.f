@@ -418,7 +418,6 @@
 !
 ! Keep frequencies in sync.
 !
-	    WRITE(6,*)'ML,MYPE',ML,MYPE,FL
 	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	  END DO
 !
@@ -2273,7 +2272,7 @@
 	1    'Dielectronic and Implicit Recombination Line Emission',LU_FLUX)
 	  IF(SUM(LLUMST) .NE. 0.0_LDP)CALL WRITV(LLUMST,ND,'Line Emission',LU_FLUX)
 	  CALL WRITV(MECH_LUM,ND,'Mechanical Luminosity',LU_FLUX)
-	  IF(SUM(de_WORK) .NE. 0.0_LDP)CALL WRITV(dE_WORK,ND,'Internal/adiabatic term',LU_FLUX)
+	  IF(SUM(dE_WORK_LUM) .NE. 0.0_LDP)CALL WRITV(dE_WORK_LUM,ND,'Internal/adiabatic term',LU_FLUX)
 	  IF(SUM(DJDt_LUM) .NE. 0.0_LDP)CALL WRITV(DJDt_LUM,ND,'Flux arrising from Dr^3J/Dt term',LU_FLUX)
           IF(SUM(SHOCK_POWER_LUM) .NE. 0.0_LDP)
 	1      CALL WRITV(SHOCK_POWER_LUM,ND,'Energy deposited locally by the shock',LU_FLUX)

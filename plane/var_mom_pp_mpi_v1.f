@@ -13,7 +13,8 @@
 	USE MPI
 	IMPLICIT NONE
 !
-! Created 4-Jan-2005
+! Altered 18-Mar-2025 -- Fixed access error. 
+! Created  4-Jan-2005
 !
 	INTEGER ND
 	INTEGER DST,DEND
@@ -192,7 +193,7 @@
 	CALL TUNE(1,'ETA_TX')
         TX(:,:,2)=0.0_LDP
         IF(DST .EQ. 1)TX(1,1,2)=0.5_LDP*DTAU(1)/CHI(1)+HBC_S/CHI(1)
-        DO I=VDST,VDEND
+        DO I=MAX(2,VDST),VDEND
           TX(I,I,2)=0.5_LDP*(DTAU(I-1)+DTAU(I))/CHI(I)
         END DO
         IF(DEND .EQ. ND)TX(ND,ND,2)=0.5_LDP*DTAU(ND-1)/CHI(ND)		!Diff and non diff

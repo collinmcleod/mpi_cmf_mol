@@ -21,7 +21,7 @@ HOST :=$(shell hostname)
 
 HOST=crc
 COMPILER=intel
-DEBUG=debug
+DEBUG=nodebug
 
 COMPILE_OPT=$(HOST)_$(COMPILER)_$(DEBUG)
 

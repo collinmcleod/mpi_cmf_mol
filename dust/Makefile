@@ -2,6 +2,8 @@
 
 include ../Makefile_definitions
 
+OPTION=$(FG)
+
 # Library where object files will/are stored
 
 LIB=$(LIB_DIR)libsubs.a
@@ -22,16 +24,16 @@ all : $(LIB)
 
 $(LIB) : $(OBJ)	
 
-DUST = $(LIB_MOD)libmod.a(dust_mod.o)
+DUST = $(LIB_MOD)(dust_mod.o)
 
 # General rules to make obects in a library and object files
 
 $(LIB)(%.o) : %.f $(DUST)
-	$(F90) -c  $(FD) $< 
+	$(F90) -c  $(OPTION) $< 
 	ar $(AR_OPTION) $(LIB) $*.o
 
-$(DUST): 
-	$(F90) -c  $(FD) dust_mod.f 
+$(DUST): dust_mod.f
+	$(F90) -c  $(OPTION) dust_mod.f 
 	ar $(AR_OPTION) $(LIB_MOD) dust_mod.o
 
 # Specific dependency of source files which uses external 

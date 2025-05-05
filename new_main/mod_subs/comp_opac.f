@@ -12,6 +12,7 @@
 	USE OPAC_MOD
 	IMPLICIT NONE
 !
+! Altered 15-Mar-2025 : Fixed bug with dE__XRAY_TOT computation.
 ! Altered 26-Jun-2020 : Fixed bug related to Rayleigh scattering when H- is present.
 ! Altered 05-Apr-2011 : Now call GENOPAETA_V10 (6-Feb-2011)
 ! Altered 11-Jun-2006: Installed CHI_NOSCAT and ETA_NOSCAT. Scattering
@@ -351,19 +352,17 @@
 ! Changed 06-Aug-2003: Clumping was not beeing allowed for when computing the shock luminosity.
 ! Don't need all processes to know about X-ray flux, therefor no reduction.
 !
-	  IF(DST .EQ. 1)THEN
-	    T1=0.241838_LDP		!eV to 10^15Hz
-	    IF(SECTION .EQ. 'CONTINUUM')THEN
-	      IF(FREQ_INDX .EQ. 1)THEN
-	         dE_XRAY_TOT=0.0_LDP
-	         dE_XRAY_0P1=0.0_LDP
-	         dE_XRAY_1KEV=0.0_LDP
-	      END IF
-	      TA(DST:DEND)=ZETA(DST:DEND)*CLUMP_FAC(DST:DEND)*FQW(FREQ_INDX)
-	      dE_XRAY_TOT(DST:DEND)=dE_XRAY_TOT(DST:DEND)+TA(DST:DEND)
-	      IF(FL .GE. 100.0_LDP*T1)dE_XRAY_0P1(DST:DEND)=dE_XRAY_0P1(DST:DEND)+TA(DST:DEND)
-	      IF(FL .GE. 1000.0_LDP*T1)dE_XRAY_1KEV(DST:DEND)=dE_XRAY_1KEV(DST:DEND)+TA(DST:DEND)
+	  T1=0.241838_LDP		!eV to 10^15Hz
+	  IF(SECTION .EQ. 'CONTINUUM')THEN
+	    IF(FREQ_INDX .EQ. 1)THEN
+	      dE_XRAY_TOT=0.0_LDP
+	      dE_XRAY_0P1=0.0_LDP
+	       dE_XRAY_1KEV=0.0_LDP
 	    END IF
+	    TA(DST:DEND)=ZETA(DST:DEND)*CLUMP_FAC(DST:DEND)*FQW(FREQ_INDX)
+	    dE_XRAY_TOT(DST:DEND)=dE_XRAY_TOT(DST:DEND)+TA(DST:DEND)
+	    IF(FL .GE. 100.0_LDP*T1)dE_XRAY_0P1(DST:DEND)=dE_XRAY_0P1(DST:DEND)+TA(DST:DEND)
+	    IF(FL .GE. 1000.0_LDP*T1)dE_XRAY_1KEV(DST:DEND)=dE_XRAY_1KEV(DST:DEND)+TA(DST:DEND)
 	  END IF
 	ELSE
 	  ETA_MECH=0.0_LDP

@@ -137,6 +137,7 @@
 	IF(IOS .EQ. 0)ALLOCATE ( K_INT(ND),STAT=IOS )		!Frequency integrated K
 	IF(IOS .EQ. 0)ALLOCATE ( H_MOM(ND),STAT=IOS )		!Frequency dependent H moment
 	IF(IOS .EQ. 0)ALLOCATE ( K_MOM(ND),STAT=IOS )		!Frequency dependent K moment
+	IF(IOS .EQ. 0)ALLOCATE ( DJDt_TERM(ND),STAT=IOS )    	!DJDt correction to integrated flux.
 !
 ! Arrays for calculating mean opacities.
 !
@@ -145,7 +146,6 @@
 	IF(IOS .EQ. 0)ALLOCATE ( SOB(ND),STAT=IOS )   		!Used in computing continuum flux
 	IF(IOS .EQ. 0)ALLOCATE ( VDOP_VEC(ND),STAT=IOS )
 	IF(IOS .EQ. 0)ALLOCATE ( dE_DJDt(DST:DEND),STAT=IOS )    	!DJDt correction to integrated flux.
-	IF(IOS .EQ. 0)ALLOCATE ( DJDt_TERM(DST:DEND),STAT=IOS )    	!DJDt correction to integrated flux.
 	IF(IOS .EQ. 0)ALLOCATE ( DEP_RAD_EQ(DST:DEND),STAT=IOS )
 !
 ! Transfer equation vectors

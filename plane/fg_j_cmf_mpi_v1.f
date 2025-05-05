@@ -204,7 +204,10 @@
 	USE FG_J_CMF_MOD_MPI_V1
 	IMPLICIT NONE
 !
+! Altered 17-Mar-2025 : Bug fix when checking whether NI=1.
+!                       Error messages fixed to point to correct routines.
 ! Altered 16-Feb-2025 : Fixed bug with computation of NUM_RAYS_PER_THREAD.
+!
 	INTEGER NC,NP,ND
 	REAL(KIND=LDP) ETA(ND),CHI(ND),ESEC(ND)
 	REAL(KIND=LDP) V(ND),SIGMA(ND),R(ND),P(NP)
@@ -352,7 +355,7 @@
 	  IF(IOS .EQ. 0)ALLOCATE (RMID_STORE(ND),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (EXT_RMID_STORE(ND+1),STAT=IOS)
 	  IF(IOS .NE. 0)THEN
-	    WRITE(LUER,*)'Error allocating JNU_STORE block in FG_J_CMF_V13: Status=',IOS
+	    WRITE(LUER,*)'Error allocating JNU_STORE block in FG_J_CMF_MPI_V1: Status=',IOS
 	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP	
           END IF
@@ -381,7 +384,7 @@
 	    IF(R(I) .NE. R_EXT(ND_ADD+I))THEN
 	      NEW_R_GRID=.TRUE.
 	      J=ERROR_LU()
-	      IF(MYPE .EQ. 0)WRITE(J,*)'Warning: Updating RGRID in FG_J_CMF_V13'
+	      IF(MYPE .EQ. 0)WRITE(J,*)'Warning: Updating RGRID in FG_J_CMF_MPI_V1'
 	      EXIT
 	    END IF
 	  END DO
@@ -523,7 +526,7 @@
 	  ELSE
 	    IF(MYPE .EQ. 0)THEN
 	      J=ERROR_LU()
-	      WRITE(J,*)'Error in FG_J_CMF_V13: Invalid solution option'
+	      WRITE(J,*)'Error in FG_J_CMF_MPI_V1: Invalid solution option'
 	      WRITE(J,*)SOLUTION_OPTIONS
 	      CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	      STOP
@@ -535,7 +538,7 @@
 	1     INNER_BND_METH .NE. 'PNT_SRCE' .AND.
 	1     INNER_BND_METH .NE. 'SCHUSTER')THEN
 	    J=ERROR_LU()
-	    WRITE(J,*)'Error in FG_J_CMF_V13: Invalid inner boundary condition'
+	    WRITE(J,*)'Error in FG_J_CMF_MPI_V1: Invalid inner boundary condition'
 	    WRITE(J,*)INNER_BND_METH
 	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
@@ -555,7 +558,7 @@
 	  IF(IOS .EQ. 0)ALLOCATE ( LOG_ETA_EXT(ND_EXT),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE ( LOG_CHI_EXT(ND_EXT),STAT=IOS)
 	  IF(IOS .NE. 0)THEN
-	    WRITE(LUER,*)'Error allocating R_EXT block in FG_J_CMF_V13: Status=',IOS
+	    WRITE(LUER,*)'Error allocating R_EXT block in FG_J_CMF_MPI_V1: Status=',IOS
 	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP	
           END IF
@@ -601,7 +604,7 @@
 	    J=ERROR_LU()
 	    IF(MYPE .EQ. 0)THEN
 	      WRITE(J,'(A)')' '
-	      WRITE(J,*)'Using thick boundary condition in FG_J_CMF_V13'
+	      WRITE(J,*)'Using thick boundary condition in FG_J_CMF_MPI_V1'
 	      WRITE(J,'(2(A,ES16.8,3X))')' R(1)=',R(1),'RMAX=',RMAX
 	      WRITE(J,'(2(A,ES16.8,3X))')' V(1)=',V(1),'VMAX=',V_EXT(1)
 	    END IF
@@ -662,7 +665,7 @@
 	    IF(IOS .EQ. 0)ALLOCATE ( RAY(LS)%REXT_PNT(K),STAT=IOS)
 	    IF(IOS .EQ. 0)ALLOCATE ( RAY(LS)%R_RAY(K),STAT=IOS)
 	    IF(IOS .NE. 0)THEN
-	      WRITE(LUER,*)'Error allocating Z block in FG_J_CMF_V13: Status=',IOS
+	      WRITE(LUER,*)'Error allocating Z block in FG_J_CMF_MPI_V1: Status=',IOS
 	      CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	      STOP	
             END IF
@@ -708,14 +711,14 @@
 	    ALLOCATE ( RAY(LS)%J_PNT(ND),STAT=IOS); RAY(LS)%J_PNT(:)=0
 	    IF(IOS .EQ. 0)ALLOCATE ( RAY(LS)%H_PNT(ND),STAT=IOS); RAY(LS)%H_PNT(:)=0
 	    IF(IOS .NE. 0)THEN
-	      WRITE(LUER,*)'Error allocating J_PNT block in FG_J_CMF_V13: Status=',IOS
+	      WRITE(LUER,*)'Error allocating J_PNT block in FG_J_CMF_MPI_V1: Status=',IOS
 	      CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	      STOP	
             END IF
 !
 ! LS=NP with only 1 depth point must be treated separately.
 !
-	    IF(NI .EQ. 1)THEN
+	    IF(RAY(LS)%NI_RAY .EQ. 1)THEN
 	      RAY(LS)%J_PNT=1
 	    ELSE
 	      NI_SMALL=ND-(LS-NC-1);   IF(LS .LE. NC+1)NI_SMALL=ND
@@ -738,16 +741,20 @@
 	    DO I=1,NI_SMALL
 	      K=RAY(LS)%J_PNT(I)
 	      IF(RAY(LS)%J_PNT(I) .LT. 1 .OR. RAY(LS)%J_PNT(I) .GT. RAY(LS)%NI_RAY)THEN
-	        WRITE(LUER,*)'Error setting J_PNT in FG_J_CMF_V13 -- invalid values'
+	        WRITE(LUER,*)'Error setting J_PNT in FG_J_CMF_MPI_V1 -- invalid values: MYPE=',MYPE
 	        WRITE(LUER,*)'Depth=',I,'Ray=',LS,'J_PNT value=',RAY(LS)%J_PNT(I)
 	        WRITE(LUER,*)'NP=',NP,'R(1)=',R(1),'R_RAY(1,LS)=',RAY(LS)%R_RAY(1)
 	        WRITE(LUER,*)'NI_SMALL=',NI_SMALL
+	        FLUSH(LUER)
 	        CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	        STOP
 	      ELSE IF( ABS(RAY(LS)%R_RAY(K)-R(I))/R(I) .GT. 1.0E-12_LDP)THEN
-	        WRITE(LUER,*)'Error setting J_PNT in FG_JCMF_V12 -- invalid values'
+	        WRITE(LUER,*)'Error setting J_PNT in FG_JCMF_MPI_V1 -- invalid values: MYPE=',MYPE
 	        WRITE(LUER,*)'Fractional difference is',ABS(RAY(LS)%R_RAY(K)-R(I))/R(I)
 	        WRITE(LUER,*)'Depth=',I,'Ray=',LS,'J_PNT value=',RAY(LS)%J_PNT(I)
+	        WRITE(LUER,*)'RAY(LS)%R_RAY(K),R(I)=',RAY(LS)%R_RAY(K),R(I)
+	        WRITE(LUER,*)'NI_SMALL=',NI_SMALL,'NC,ND=',NC,ND
+	        FLUSH(LUER)
 	        CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	        STOP
 	      END IF
@@ -788,7 +795,7 @@
 	  IF(IOS .EQ. 0)ALLOCATE ( dCHIdR(K),STAT=IOS )
 	  IF(IOS .EQ. 0)ALLOCATE ( Q(K),STAT=IOS )
 	  IF(IOS .NE. 0)THEN
-	    WRITE(LUER,*)'Error allocating V_RAY etc in FG_J_CMF_V13: Status=',IOS
+	    WRITE(LUER,*)'Error allocating V_RAY etc in FG_J_CMF_MPI_V1: Status=',IOS
 	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP	
           END IF
@@ -804,7 +811,7 @@
 	  IF(IOS .EQ. 0)ALLOCATE (S(K),STAT=IOS )
 	  IF(IOS .EQ. 0)ALLOCATE (dS(K),STAT=IOS )
 	  IF(IOS .NE. 0)THEN
-	    WRITE(LUER,*)'Error allocating INTEGRAL block in FG_J_CMF_V13: Status=',IOS
+	    WRITE(LUER,*)'Error allocating INTEGRAL block in FG_J_CMF_MPI_V1: Status=',IOS
 	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP	
           END IF
@@ -858,7 +865,7 @@
 	ELSE
 	  IF(OLD_SOLUTION_OPTIONS .NE. SOLUTION_OPTIONS)THEN
 	    J=ERROR_LU()
-	    WRITE(J,*)'Error in FG_J_CMF_V13'
+	    WRITE(J,*)'Error in FG_J_CMF_MPI_V1'
 	    WRITE(J,*)'Can''t switch SOLUTION_OPTIONS while runing code'
 	    WRITE(J,*)'New setting:',SOLUTION_OPTIONS
 	    WRITE(J,*)'Old setting:',OLD_SOLUTION_OPTIONS
@@ -889,7 +896,7 @@
 !
 	  DO I=1,ND
 	    IF(SIGMA(I) .LT. -1.0_LDP)THEN
-	      WRITE(LUER,*)'Warnining Error in FG_J_CMF_V13 - SIGMA .LT. -1.0D0'
+	      WRITE(LUER,*)'Warnining Error in FG_J_CMF_MPI_V1 - SIGMA .LT. -1.0D0'
 	      WRITE(LUER,*)I,SIGMA(I)
 	      EXIT
 	    END IF
@@ -948,13 +955,13 @@
 	    RAY(LS)%I_M_PREV(:)=RAY(LS)%I_M_STORE(:)
 	  END DO 
 	  IF(FREQ .GE. PREVIOUS_FREQ)THEN
-	    WRITE(ERROR_LU(),*)'Error in FG_J_CMF_V13'
+	    WRITE(ERROR_LU(),*)'Error in FG_J_CMF_MPI_V1'
 	    WRITE(ERROR_LU(),*)'Frequencies must be monotonically decreasng'
 	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 	ELSE IF(FREQ .NE. PREVIOUS_FREQ)THEN
-	   WRITE(ERROR_LU(),*)'Error in FG_J_CMF_V13'
+	   WRITE(ERROR_LU(),*)'Error in FG_J_CMF_MPI_V1'
 	   WRITE(ERROR_LU(),*) 'Frequencies must not change if NEW_FREQ=.FALSE.'
 	   CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	   STOP
@@ -1475,7 +1482,7 @@ C
 	IF(MYPE .EQ. 0)THEN
 	  DO I=1,ND
 	    IF(JNU_STORE(I) .LT. 0)THEN
-	      OPEN(UNIT=7,FILE='FG_J_CMF_V13_ERRORS',STATUS='UNKNOWN')
+	      OPEN(UNIT=7,FILE='FG_J_CMF_MPI_V1_ERRORS',STATUS='UNKNOWN')
 	        WRITE(7,*)'FREQ=',FREQ
 	        WRITE(7,'(3X,A,5X,4(5X,A,5X))')'I','JNU_STORE','ETA','CHI','ESEC'
 	        DO J=1,ND
@@ -1483,8 +1490,8 @@ C
 	        END DO
 	      CLOSE(UNIT=7)
 	      J=ERROR_LU()
-	      WRITE(J,*)'Error on FG_J_CMF_V13 --- negative mean intensities.'
-	      WRITE(J,*)'Check out file FG_J_CMF_V13_ERRORS for aditional information.'
+	      WRITE(J,*)'Error on FG_J_CMF_MPI_V1 --- negative mean intensities.'
+	      WRITE(J,*)'Check out file FG_J_CMF_MPI_V1_ERRORS for aditional information.'
 	      WRITE(J,*)'Halting code execution.'
 	      CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	      STOP

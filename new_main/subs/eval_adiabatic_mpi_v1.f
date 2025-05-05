@@ -161,7 +161,7 @@
 	1               C(I)*T(I)*(GAMMA(I)-GAMMA(I+1)) +
 	1               D(I)*(COL_EN(I)-COL_EN(I+1))
 	END DO
-	IF((ND-DST)*(DEND-ND) .GE. 0)THEN	
+	IF(DEND .EQ. ND)THEN
 	  AD_CR_V(ND)=B(ND)*T(ND)
 	  AD_CR_DT(ND)=A(ND)*(T(ND-1)-T(ND))+
 	1               C(ND)*T(ND)*(GAMMA(ND-1)-GAMMA(ND)) +
@@ -211,8 +211,8 @@
 !
 	REAL(KIND=LDP) NEW_BA_T(NT,NUM_BNDS,DST:DEND)
 	REAL(KIND=LDP) NEW_STEQ_T(DST:DEND)
-	REAL(KIND=LDP) MEAN_EN(DST:DEND)
-	REAL(KIND=LDP) SUM_EN(DST:DEND)
+	REAL(KIND=LDP) MEAN_EN(DST:DEND+1)
+	REAL(KIND=LDP) SUM_EN(NT)
 !
 ! We now compute constants for each of the 4 terms. These make
 ! it simpler and cleaner for the evaluation of the linearization.
@@ -241,7 +241,7 @@
 	1              C(I)*T(I)*(GAMMA(I)-GAMMA(I+1)) +
 	1              D(I)*(INT_EN(I)-INT_EN(I+1))
 	  END DO
-	  IF((ND-DST)*(DEND-ND) .GE. 0)THEN
+	  IF(DEND .EQ. ND)THEN
  	    WORK(ND)=A(ND)*(T(ND-1)-T(ND)) + B(ND)*T(ND) +
 	1                C(ND)*T(ND)*(GAMMA(ND-1)-GAMMA(ND)) +
 	1                D(ND)*(MEAN_EN(ND-1)-MEAN_EN(ND))
@@ -280,7 +280,7 @@
 !
 ! Need to do special case of I=ND
 !
-	  IF((ND-DST)*(DEND-ND) .GE. 0)THEN
+	  IF(DEND .EQ. ND)THEN
 	    L=DIAG_INDX
 	    NEW_BA_T(NT,L,ND)=NEW_BA_T(NT,L,ND)+A(ND)-B(ND)-C(ND)*(GAMMA(ND-1)-GAMMA(ND))
 	    NEW_BA_T(NT-1,L,ND)=NEW_BA_T(NT-1,L,ND)-(A(ND)+B(ND))/(POP_ATOM(ND)+ED(ND)) +

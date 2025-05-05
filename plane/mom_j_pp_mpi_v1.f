@@ -6,6 +6,8 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered 18-Mar-2025 : Fixed (inconsequential) array access error.
+! 
 ! To be dimenensioned ND_SM where ND_SM is the size of the R grid
 ! as passed to MOM_J_CMF.
 !
@@ -317,11 +319,10 @@
 ! Compute optical depth scale.
 !
 	CALL DERIVCHI_MPI_V1(dCHIdR,CHI,R,M_DST,M_DEND,ND,METHOD)
-	DO I=M_DST,DEND
+	DO I=M_DST,MIN(DEND,ND-1)
 	  dR=R(I)-R(I+1)
 	  DTAU(I)=0.5_LDP*dR*(CHI(I)+CHI(I+1)+dR*(dCHIdR(I+1)-dCHIdR(I))/6.0_LDP)
         END DO
-	FLUSH(UNIT=550+MYPE)
 !
 	DO I=MAX(2,DST),DEND
 	  MID_DTAU(I)=0.5_LDP*(DTAU(I)+DTAU(I-1))

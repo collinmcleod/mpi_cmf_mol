@@ -6,7 +6,8 @@
 	LOGICAL NAN_PRES
 	CHARACTER(LEN=*) DESC
 	LOGICAL, SAVE :: FIRST=.TRUE.
-	LOGICAL, SAVE :: SKIP=.TRUE.     !FALSE.
+	LOGICAL, SAVE :: SKIP=.TRUE.
+	LOGICAL, SAVE :: DO_NAN_INFO=.FALSE.
 !
 	IF(SKIP)THEN
 	  IF(FIRST .AND. MYPE .EQ. 0)THEN
@@ -16,8 +17,10 @@
 	  RETURN
 	END IF
 !
-	WRITE(6,*)' Currently doing the folloing NaN check',MYPE
-	WRITE(6,*)TRIM(DESC); FLUSH(UNIT=6)
+	IF(DO_NAN_INFO)THEN
+	  WRITE(6,*)' Currently doing the folloing NaN check',MYPE
+	  WRITE(6,*)TRIM(DESC); FLUSH(UNIT=6)
+	END IF
 !
 	DO I=1,ND
 	  IF(VEC(I) .NE. VEC(I))THEN
@@ -32,8 +35,10 @@
 	END DO
 	NAN_PRES=.FALSE.
 !
-	WRITE(6,*)'Done the following NaN check',MYPE
-	WRITE(6,*)TRIM(DESC); FLUSH(UNIT=6)
+	IF(DO_NAN_INFO)THEN
+	  WRITE(6,*)'Done the following NaN check',MYPE
+	  WRITE(6,*)TRIM(DESC); FLUSH(UNIT=6)
+	END IF
 !
 	RETURN
 	END
