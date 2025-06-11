@@ -1132,11 +1132,15 @@
 ! needed for the line data, sets the line data, and puts the line data into
 ! numerical order.
 !
-	WRITE(6,*)'Calling routine to set the frequency grid.'; FLUSH(UNIT=6)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Calling routine to set the frequency grid.'; FLUSH(UNIT=6)
+	END IF
 	CALL SET_FREQUENCY_GRID_V2(NU,FQW,LINES_THIS_FREQ,NU_EVAL_CONT,
 	1               NCF,NCF_MAX,N_LINE_FREQ,ND,
 	1               OBS_FREQ,OBS,N_OBS,LUIN,IMPURITY_CODE)
-	WRITE(6,*)'Frequency grid set'; FLUSH(UNIT=6)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Frequency grid set'; FLUSH(UNIT=6)
+	END IF
 !
 ! 
 !

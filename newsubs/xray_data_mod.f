@@ -130,17 +130,17 @@
 	    READ(LU,'(A)',END=100)STRING
 	  END DO
 100	  CONTINUE
-	  IF(LAST_ATNO_RD .NE. ATNO_MAX_X .AND. MYPE .EQ. 0)THEN
-	    WRITE(LUER,*)' '
-	    WRITE(LUER,*)('*',I=1,80)
-	    WRITE(LUER,*)('*',I=1,80)
+	  IF(LAST_ATNO_RD .GT. ATNO_MAX_X .AND. MYPE .EQ. 0)THEN
+	    WRITE(LU_ER,*)' '
+	    WRITE(LU_ER,*)('*',I=1,80)
+	    WRITE(LU_ER,*)('*',I=1,80)
 	    WRITE(LU_ER,*)'Error reading photoionization data from XRAY_PHOT_FITS' 
 	    WRITE(LU_ER,*)'Insuffient atomic data'
 	    WRITE(LU_ER,*)'ATNO_MAX_X=',ATNO_MAX_X
 	    WRITE(LU_ER,*)'LAST_ATNO_RD=',LAST_ATNO_RD
-	    WRITE(LUER,*)('*',I=1,80)
-	    WRITE(LUER,*)('*',I=1,80)
-	    WRITE(LUER,*)' '
+	    WRITE(LU_ER,*)('*',I=1,80)
+	    WRITE(LU_ER,*)('*',I=1,80)
+	    WRITE(LU_ER,*)' '
 	  END IF
 	  XRAY_PHOT_RD_IN=.TRUE.
 !

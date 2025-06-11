@@ -12,6 +12,8 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered 02-Jun-2025: Removed backspace to unit 6 -- incompatible with access by multiple processes.
+!                         Updated warnig ouput (10-Jun-2025).
 ! Altered 01-Sep-2007: ELOG & TLOG inserted for diagnostic purposes (changed to V2).
 ! Altered 24-Sep-2003:  For symmetric profiles, normalization was being done twice.
 !                         This didn't effect the output, provided NORMALIZE_PROFILE
@@ -234,19 +236,22 @@
 	  IF(ABS(T1-1.0_LDP) .GT. 0.3_LDP)THEN
             LUER=ERROR_LU()
 	    IF(WAVE .NE. WAVE_SAVE)THEN
-	      BACKSPACE(LUER,IOSTAT=IOS)
-	      IF(IOS .EQ. 0)THEN
-	        READ(LUER,'(A)')STRING
-	        BACKSPACE(LUER)
-	        WRITE(LUER,'(/,A)')TRIM(STRING)
-	      END IF
-	      WRITE(LUER,*)'Possible error in CONV_STRK_V2'
+	      IOS=0
+!	      BACKSPACE(LUER,IOSTAT=IOS)
+!	      IF(IOS .EQ. 0)THEN
+!	        READ(LUER,'(A)')STRING
+!	        BACKSPACE(LUER)
+!	        WRITE(LUER,'(/,A)')TRIM(STRING)
+!	      END IF
+	      WRITE(LUER,*)'Possible error in CONV_STRK_V2, MYPE=', MYPE
 	      WRITE(LUER,*)'Profile normalization constant differs from 1 by more than 30%'
 	      IF(WAVE .GT. 100.0_LDP .AND. WAVE .LT. 1.0E+05_LDP)THEN
-	        WRITE(LUER,'(3(A,F15.8,A,3X))')' Wave=',WAVE,'A','Lam_ST(1)=',PROF_LAM(1),'A',
+!	        WRITE(LUER,'(3(A,F15.8,A,3X))')' Wave=',WAVE,'A','Lam_ST(1)=',PROF_LAM(1),'A',
+	        WRITE(LUER,*)' Wave=',WAVE,'A','Lam_ST(1)=',PROF_LAM(1),'A',
 	1                      'Lam_END(NF)=',PROF_LAM(NF),'A'
 	      ELSE
-	        WRITE(LUER,'(3(A,ES16.8,A,3X))')' Wave=',WAVE,'A','Lam_ST(1)=',PROF_LAM(1),'A',
+!	        WRITE(LUER,'(3(A,ES16.8,A,3X))')' Wave=',WAVE,'A','Lam_ST(1)=',PROF_LAM(1),'A',
+	        WRITE(LUER,*)' Wave=',WAVE,'A','Lam_ST(1)=',PROF_LAM(1),'A',
 	1                      'Lam_END(NF)=',PROF_LAM(NF),'A'
 	      END IF
 	      WAVE_SAVE=WAVE

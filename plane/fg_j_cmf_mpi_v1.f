@@ -204,6 +204,7 @@
 	USE FG_J_CMF_MOD_MPI_V1
 	IMPLICIT NONE
 !
+! Altered 18-May-2025 : Improved error checking for outer boundary condition (10-Jun-2025).
 ! Altered 17-Mar-2025 : Bug fix when checking whether NI=1.
 !                       Error messages fixed to point to correct routines.
 ! Altered 16-Feb-2025 : Fixed bug with computation of NUM_RAYS_PER_THREAD.
@@ -608,6 +609,11 @@
 	      WRITE(J,'(2(A,ES16.8,3X))')' R(1)=',R(1),'RMAX=',RMAX
 	      WRITE(J,'(2(A,ES16.8,3X))')' V(1)=',V(1),'VMAX=',V_EXT(1)
 	    END IF
+	  ELSE
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(J,'(A)')' '
+	      WRITE(J,*)'Using thin boundary condition in FG_J_CMF_MPI_V1'
+	    END IF
 	  END IF
 !
 ! Define zone used to extrapolate opacities and emissivities.
@@ -822,6 +828,12 @@
 	  IOS=0
 	  IF(IOS .EQ. 0)ALLOCATE ( PAR_MOM(4*ND+16),STAT=IOS )
 	  IF(IOS .EQ. 0)ALLOCATE ( MOM_STORE(4*ND+16),STAT=IOS )
+	  IF(IOS .NE. 0)THEN
+	    WRITE(6,*)'Error -- unable to allocate PAR_MOM or MOM_STORE: Error=',IOS
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
+	    CALL MPI_FINALIZE(IERR)
+	    STOP
+	  END IF
 	  PAR_JNU=>PAR_MOM(1:ND)
 	  PAR_HNU=>PAR_MOM(ND+1:2*ND)
 	  PAR_KNU=>PAR_MOM(2*ND+1:3*ND)

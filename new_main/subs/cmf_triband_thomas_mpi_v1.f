@@ -3,17 +3,7 @@
 !                 BA. X. = STEQ
 ! The solution X is returned in STEQ. BA is corrupted.
 !
-! The "BANDED" matrix can either be 'Diagonal' or 'Tridiagonal'
-!
-! Routine is currently designed to operate on the SMALL variation matrix
-! which is of dimension N.NIV.NUM_BNDS.ND where NUM_BNDS refers to the number
-! of bands.
-!
-! A integer matrix, LNK_IV_TO_F indicates how BA is expanded into BA_BIG,
-! which has dimension N,N,NUM_BNDS,ND.
-!
-! This routine was desined specifically to handle BA_SM, while conserving
-! memory.
+! The "BANDED" matrix is assumed to be 'Tridiagonal'
 !
 	SUBROUTINE CMF_TRIBAND_THOMAS_MPI_V1(STEQ,POPS,SOL_TYPE,FLAG,
 	1                 DIAG_INDX,N,NION,NUM_BNDS,DST,DEND,ND,
@@ -21,6 +11,9 @@
 	USE SET_KIND_MODULE
 	USE MPI
 	IMPLICIT NONE
+!
+! Altered 1-0Jun-2025 : Comments (partially fixed). Earlier a MPI_BARRIER statement was pu in its
+!                          correct location.
 !
 ! 
 ! The description here is from CMF_TRIBAND_THOMAS_MPI_V1, which also allowed for a PENTDIAGONAL
@@ -359,8 +352,8 @@
 	        END IF
 	      END DO 		!Loop over depth
 	    END IF		!Correct processors
-	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	  END DO		!Thread
+	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 !**************************************************************************
 !

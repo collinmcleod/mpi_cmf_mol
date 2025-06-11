@@ -7,6 +7,8 @@
 	USE PROF_MOD
 	IMPLICIT NONE
 !
+! Altered: 03-Jun-2025  Only allocate required number of depth points (for PROF_STORE).
+!
 ! Input: Note that NLINES only has to be large enough to handle overlapping
 !        HI and HeII profiles.
 !
@@ -16,6 +18,8 @@
 !
 	INTEGER IOS
 	INTEGER ERROR_LU
+	INTEGER DST,DEND
+	INTEGER ND_LOC
 	REAL(KIND=LDP) SPEED_OF_LIGHT
 	REAL(KIND=LDP) FUN_PI
 	EXTERNAL ERROR_LU,SPEED_OF_LIGHT
@@ -23,8 +27,11 @@
 ! Memory allocation. This should not be a problem, unless no more
 ! memory available. We simply insure all memory can be allocated.
 !
+	CALL SET_DST_DEND(DST,DEND,ND,NTHREAD,MYPE)
+        ND_LOC=DEND-DST+1
 	IOS=0
-	ALLOCATE (PROF_STORE(ND,NFREQ,NLINES),STAT=IOS)
+!
+	ALLOCATE (PROF_STORE(ND_LOC,NFREQ,NLINES),STAT=IOS)
 	IF(IOS .EQ. 0)ALLOCATE (NU_STORE(NFREQ,NLINES),STAT=IOS)
 	IF(IOS .EQ. 0)ALLOCATE (AMASS_STORE(NLINES),STAT=IOS)
 	IF(IOS .EQ. 0)ALLOCATE (NU_ZERO_STORE(NLINES),STAT=IOS)

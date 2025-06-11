@@ -20,7 +20,8 @@
 	USE LINE_MOD
         IMPLICIT NONE
 !
-! Altered 03-Dec-2023 : Improved rror message when the line opacity is zero.
+! Altered 02-Jun-2025: Fixed access error - ATM(ID)%DxzV(DST:DEND) -- not 1:ND (10-Jun-2025).
+! Altered 03-Dec-2023 : Improved error message when the line opacity is zero.
 ! Altered 26-Apr-2021 : Stark profile section now explictly allows for the case when LST_DEPTH_ONLY is true.
 !                          MOD_ED removed (was not being used). Upper ED
 !                          was already being controlled by MAX_PROF_ED.
@@ -403,8 +404,8 @@
 	  ELSE
 	    TB(1:ND)=0.0_LDP; TC(1:ND)=0.0_LDP
 	    DO ID=1,NUM_IONS
-	      IF(ATM(ID)%XzV_PRES .AND. ION_ID(ID) .EQ. 'HI')TB(1:ND)=ATM(ID)%DxzV(1:ND)
-	      IF(ATM(ID)%XzV_PRES .AND. ION_ID(ID) .EQ. 'HeI')TC(1:ND)=ATM(ID)%DxzV(1:ND)
+	      IF(ATM(ID)%XzV_PRES .AND. ION_ID(ID) .EQ. 'HI')TB(DST:DEND)=ATM(ID)%DxzV(DST:DEND)
+	      IF(ATM(ID)%XzV_PRES .AND. ION_ID(ID) .EQ. 'HeI')TC(DST:DEND)=ATM(ID)%DxzV(DST:DEND)
 	    END DO
 	    DO SIM_INDX=1,MAX_SIM
 	      IF(RESONANCE_ZONE(SIM_INDX))THEN

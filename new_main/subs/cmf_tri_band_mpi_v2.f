@@ -22,6 +22,8 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered 10-Jun-2024: Now use diagonal solution when tridiagonal solution fails.
+!                         Cleaning done earlier -- 12-May-2025.
 ! Created 24-Sep-2023: Based on CMF_BLK_BAND_V3
 !
 ! 
@@ -407,7 +409,7 @@
 ! If we have not computed BA, we are probably in a regime where we are converging. Since
 ! convergence is slow, previous estimates of the solution will generally be very close to
 ! the current estimates, so we can use them as a starting guess. We check the maximum 
-! value of OLD_EST to checkl wheteh this model has been restarted (in which case OLD will
+! value of OLD_EST to check whether this model has been restarted (in which case OLD will
 ! not be available).
 ! 
 	T1=MAXVAL(OLD_EST)
@@ -501,8 +503,40 @@
 	    FLUSH(UNIT=275)
 	  END IF
 !
-	  IF(MAXVAL(ERR_EST) .LT. 1.0D-06 .OR. IT_COUNTER .EQ. MAX_NUM_ITS)THEN
+	  IF(MAXVAL(ERR_EST) .LT. 1.0E-06_LDP)THEN
 	    STEQ(:,DST:DEND)=NEW_EST(:,DST:DEND)
+	    WRITE(6,*)'Solution of tri-diaginal equations converged'
+	    EXIT
+!
+	  ELSE IF(IT_COUNTER .EQ. MAX_NUM_ITS .AND. MAXVAL(ERR_EST) .LT. 1.0E-02_LDP)THEN
+	    WRITE(6,*)'Solution of tri-diaginal equations may not be full converged'
+	    STEQ(:,DST:DEND)=NEW_EST(:,DST:DEND)
+	    EXIT
+!
+	  ELSE IF(IT_COUNTER .EQ. MAX_NUM_ITS)THEN
+!
+! Use diagonal solution.
+!
+	    WRITE(6,'(/,A)')' Solution of tri-diagonal equations failed to converged'
+	    WRITE(6,'(A,/)')' Using diagonal solution'
+	    DO K=DST,DEND
+	      STEQ(:,K)=STEQ_STORE(:,K)
+	      DO J=1,N
+	        STEQ(J,K)=STEQ(J,K)*ROW_SF(J,K)
+	      END DO
+	      CALL DGETRS(NO_TRANS,N,NSNG,C_MAT(:,:,K),N,IPIVOT(:,K),STEQ(:,K),N,IFAIL)
+	      IF(IFAIL .NE. 0)THEN
+	        DESC='DGETRS_4'
+	        CALL TUNE(2,'TRI_DGETRS')
+	        CALL TUNE(2,'IT_COUNTER')
+	        GOTO 9999
+	      END IF
+!
+	      DO J=1,N
+	        NEW_EST(J,K)=STEQ(J,K)*COL_SF(J,K)
+	      END DO
+	      STEQ(:,DST:DEND)=NEW_EST(:,DST:DEND)
+            END DO
 	    EXIT
 !
 ! Check if converging. If not converging we restart the iterative procedure, and lower
@@ -564,7 +598,7 @@
 	END IF	
 	FLAG=.TRUE.
 !
-	DEALLOCATE (B_MAT,C_MAT,D_MAT,RUB)
+	DEALLOCATE (B_MAT,C_MAT,D_MAT,RUB,NEW_EST)
 	DEALLOCATE(IPIVOT,COL_SF,ROW_SF)
 	IF(ALLOCATED(ORIG_POPS))DEALLOCATE (ORIG_POPS)
 	IF(MYPE .EQ. 0)CLOSE(LU_IT)

@@ -16,6 +16,7 @@
 	USE UPDATE_KEYWORD_INTERFACE
 	IMPLICIT NONE
 !
+! Altered 02-Dec-2025 - Changed output accuracy for R &V in RVSIG_COL (10-Jun-2025). 
 ! Altered 17-Dec-2023 - HYDRO_OPT now automatically set to FIXED_R_REF when TAU_REF > 2/3.
 ! Altered 04-Jan-2023 - Changed was connection radius adjusted if excessive iteratons (> 50).
 !                           May need further work.
@@ -1056,19 +1057,19 @@
 	  WRITE(LU,'(3X,I5,10X,A)')NEW_ND,'!Number of depth points'
 	  WRITE(LU,'(A)')'!'
 	  IF(REV_R(1) .GT. 999999.0_LDP)THEN
-	    WRITE(LU,'(A,4X,A,3(7X,A),3X,A)')'!','R(10^10cm)','V(km/s)','  Sigma','    Tau','  Index'
+	    WRITE(LU,'(A,4X,A,2X,3(7X,A),3X,A)')'!','R(10^10cm)','V(km/s)','  Sigma','    Tau','  Index'
 	    DO I=1,NEW_ND
-	      WRITE(LU,'(F18.8,ES16.8,2ES14.6,6X,I4)')REV_R(I),REV_V(I),REV_SIGMA(I),EXP(REV_TAU(I)),I
+	      WRITE(LU,'(F18.8,ES18.10,2ES14.6,6X,I4)')REV_R(I),REV_V(I),REV_SIGMA(I),EXP(REV_TAU(I)),I
 	    END DO
 	  ELSE IF( (REV_R(1)-REV_R(NEW_ND)) .LT. 1.0_LDP)THEN
 	    WRITE(LU,'(A,10X,A,3(7X,A),3X,A)')'!','R(10^10cm)','V(km/s)','  Sigma','    Tau','  Index'
 	    DO I=1,NEW_ND
-	      WRITE(LU,'(F24.12,ES16.8,2ES14.6,6X,I4)')REV_R(I),REV_V(I),REV_SIGMA(I),EXP(REV_TAU(I)),I
+	      WRITE(LU,'(F24.12,ES18.10,2ES14.6,6X,I4)')REV_R(I),REV_V(I),REV_SIGMA(I),EXP(REV_TAU(I)),I
 	    END DO
 	  ELSE
 	    WRITE(LU,'(A,1X,A,3(7X,A),3X,A)')'!','R(10^10cm)','V(km/s)','  Sigma','    Tau','  Index'
 	    DO I=1,NEW_ND
-	      WRITE(LU,'(F15.8,ES16.8,2ES14.6,6X,I4)')REV_R(I),REV_V(I),REV_SIGMA(I),EXP(REV_TAU(I)),I
+	      WRITE(LU,'(F15.8,ES18.10,2ES14.6,6X,I4)')REV_R(I),REV_V(I),REV_SIGMA(I),EXP(REV_TAU(I)),I
 	    END DO
 	  END IF
 	CLOSE(UNIT=LU)
