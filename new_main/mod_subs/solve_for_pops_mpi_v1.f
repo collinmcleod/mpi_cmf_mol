@@ -1,4 +1,4 @@
-!
+
 ! Routine designed to solve the linearized statistical and radiative equilibrium
 ! equations for the new population estimates. Various tricks (e.g., NG Acceleration)
 ! are done to help ensure convergence. Routine was cut from CMFGEN_SUB in order
@@ -144,6 +144,8 @@
 	1       COMPUTE_BA,WR_BA_INV,WR_PART_OF_INV,LAMBDA_ITERATION,
 	1       MAIN_COUNTER,SET_POPS_D2_EQ_D1)
 !
+! This updates the solution vector and populations on processor 0 only.
+!
 	I=NT*ND
 	IF(MYPE .EQ. 0)ALLOCATE(SOL(NT,ND))
 	CALL GATHER_POPS_MPI_V1(LOC_SOL,SOL,NT,DST,DEND,ND)
@@ -214,8 +216,21 @@
           CALL WR2D_V2(SOL,NT,ND,'STEQ SOLUTION ARRAY','#',L_TRUE,LU_SE)
 	END IF
 !
+! This routine only operates on SOL for processor 0. It returns an
+! updated POPS for ALL processors. If we don't call SMOOOTH_POPS, we
+! make sure POPS is correct on all processors.
+!
 	IF(AUTO_SMOOTH_POPS)THEN
+	  IF(MYPE .EQ. 0)WRITE(6,*)'Entering SMOOTH_POPS_AS_WE_ITERATE'
 	  CALL SMOOTH_POPS_AS_WE_ITERATE(POPS,SOL,ND,NT)
+	ELSE 
+	  I=NT*ND
+	  CALL MPI_BCAST(POPS,I,MPI_DOUBLE_PRECISION,IZERO,MPI_COMM_WORLD,IERR)
+	END IF
+	FLUSH(UNIT=6)
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	IF(AUTO_SMOOTH_POPS .AND. MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Successfully exited SMOOTH_POPS_AS_WE_ITERATE'
 	END IF
 !
 ! NB: The call to SUM_STEQ_SOL corrupts SOL. I is used for output --
@@ -371,8 +386,8 @@
 !
 	IF(AVERAGE_DONE)THEN
 	  MAIN_COUNTER=MAIN_COUNTER+1
-	  POPS=SOL
 	  IF(MYPE .EQ. 0)THEN
+	    POPS=SOL
 	    CALL SCR_RITE_V2(R,V,SIGMA,POPS,IREC,MAIN_COUNTER,
 	1             RITE_N_TIMES,LAST_NG,WRITE_RVSIG,NT,ND,LUSCR,NEWMOD)
 	  END IF

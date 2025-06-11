@@ -16,9 +16,10 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered: 14-May-2025 -- ATNO_MAX_X updated from 28 to 60
 ! Altered: 28-Jul-2024 -- ATNO_MAX_X updated from 28 to 30
 !
-	INTEGER, PARAMETER :: ATNO_MAX_X=30
+	INTEGER, PARAMETER :: ATNO_MAX_X=60
 	INTEGER, PARAMETER :: PQN_MAX_X=3
 	INTEGER, PARAMETER :: ANG_MAX_X=2
 !
@@ -129,15 +130,19 @@
 	    READ(LU,'(A)',END=100)STRING
 	  END DO
 100	  CONTINUE
-	  IF(LAST_ATNO_RD .NE. ATNO_MAX_X)THEN
+	  IF(LAST_ATNO_RD .NE. ATNO_MAX_X .AND. MYPE .EQ. 0)THEN
+	    WRITE(LUER,*)' '
+	    WRITE(LUER,*)('*',I=1,80)
+	    WRITE(LUER,*)('*',I=1,80)
 	    WRITE(LU_ER,*)'Error reading photoionization data from XRAY_PHOT_FITS' 
 	    WRITE(LU_ER,*)'Insuffient atomic data'
 	    WRITE(LU_ER,*)'ATNO_MAX_X=',ATNO_MAX_X
 	    WRITE(LU_ER,*)'LAST_ATNO_RD=',LAST_ATNO_RD
-	    STOP
-	  ELSE
-	    XRAY_PHOT_RD_IN=.TRUE.
+	    WRITE(LUER,*)('*',I=1,80)
+	    WRITE(LUER,*)('*',I=1,80)
+	    WRITE(LUER,*)' '
 	  END IF
+	  XRAY_PHOT_RD_IN=.TRUE.
 !
 	RETURN
 	END

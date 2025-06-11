@@ -88,7 +88,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(spl_clump.o)\
       $(LIB)(steq_multi_mpi_v1.o)\
       $(LIB)(steqne_v4.o)\
-      $(LIB)(steq_advec_mpi_v1.o)\
+      $(LIB)(steq_advec_mpi_v2.o)\
       $(LIB)(steq_co_mov_deriv_mpi_v1.o)\
       $(LIB)(store_old_grid.o)\
       $(LIB)(store_ba_data_mpi_v1.o)\

@@ -35,22 +35,7 @@
 	USE LINE_MOD
 	IMPLICIT NONE
 !
-! Altered 28-Aug-2019 : Compute T and ED before DC's when GRID=TRUE.
-! Altered 18-Aug-2019 : Added option 'TR for DC_INTERP_METHOD (initially done on ESTRAVEN).
-!                          Added option validity check for DC_INTERP_METHOD.
-! Altered 26-Apr-2019 : Added "CALL AUTO_ADD_ION" (done earlier on OSIRIS).
-!                       Added RSP as a DC_INTERP_METHOD
-! Altered 31-Jan-2016 : Added SAVED_TWO_PHOT_METHOD.
-! Altered 07-Apr-2015 : Changed to SET_TWO_PHOT_V3.
-! Altered 05-Apr-2011 : Many changes done in order to facilitate the USE of LTE populations
-!                         over a wider dynamic range (18-Dec-2010).
-!                         Single routine (REGRID_LOG_DC_V1) now used to read all departure coefficient files.
-!                         CNVT_FR_DC_V2 and PAR_FUN_V4 now called.
-! Altered 15-Jan-2009 : Changed REGRID_T_ED to V2
-!                          'R' option in with non 'GRID' option no longer effects T & ED.
-! Created 17-Dec-2004
-! Altered 06-Jun-2005 : Call to SUP_TO FULL inserted to get better consistency.
-!                          Only done when GRID=.FALSE.
+! Altered 05-May-2025 : Fixed bug in call to - REGRID_LOG_DC_V1 -- passed root instead of ATM value (ATM(ID)%EDGEXzV_F)
 !
 	INTEGER NC
 	INTEGER ND
@@ -177,7 +162,7 @@
 	        TMP_STRING=TRIM(ION_ID(ID))//'_IN'
 	        ISPEC=SPECIES_LNK(ID)
 	        CALL REGRID_LOG_DC_V1( ROOT(ID)%XzV_F,R,ED,T, ROOT(ID)%DXzV_F,CLUMP_FAC,
-	1               ROOT(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
+	1               ATM(ID)%EDGEXzV_F, ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
 	1               POP_SPECIES(1,ISPEC),ATM(ID)%NXzV_F,ND,LUIN,DC_INTERP_METHOD,TMP_STRING)
 	      END IF
 	    END DO
@@ -399,9 +384,9 @@
 	        CALL SCALE_POPS_MPI_V1(ROOT(ID)%XzV_F,ROOT(ID)%DXzV_F,
 	1              POP_SPECIES(1,ISPEC),TA,ROOT(ID)%NXzV_F,IONE,ND,ND)
 	        WRITE(172,'(2I5,2ES14.4)')ID,ATM(ID)%NXzV_F,ROOT(ID)%DXzV_F(1),ROOT(ID)%DXzV_F(ND)
+	        FLUSH(UNIT=172)
 	      END DO
 	    END IF
-	    FLUSH(UNIT=172)
 	  END DO			!ISPEC
 	  IF(MYPE .EQ. 0)WRITE(6,*)'Set root pops';FLUSH(UNIT=6)
 	END IF

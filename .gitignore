@@ -1,0 +1,9 @@
+mod
+exe
+lib
+mod_dbg
+exe_debg
+lib_dbg
+*.mod
+*.o
+*.exe

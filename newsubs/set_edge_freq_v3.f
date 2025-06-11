@@ -55,14 +55,14 @@ C
 	  CALL SUB_PHOT_GEN_MPI_V2(ID,PHOT_CROSS,ZERO,EDGEHI_F,NHI_F,
 	1                 NEW_ID,RET_EDGE_CROSS)
 	  EDGE_FREQ(1:NHI_F)=PHOT_CROSS(1:NHI_F)
+	  CALL CHECK_MPI_EQUALITY(EDGE_FREQ,NHI_F,'Checking EDGE_FREQ in set edge_freq')
 C
-C Now get the photoionzation crossections at the edge-frequency.
+C Now get the photoionization crossections at the edge-frequency.
 C
 	  NEW_ID=100+PHOT_ID
 	  CALL SUB_PHOT_GEN_MPI_V2(ID,PHOT_CROSS,ZERO,EDGEHI_F,NHI_F,
 	1                 NEW_ID,RET_EDGE_CROSS)
-!
-	  CALL CHECK_MPI_EQUALITY(PHOT_CROSS,NHI_F,'In set edge_freq')
+	  CALL CHECK_MPI_EQUALITY(PHOT_CROSS,NHI_F,'Checking PHOT_CROSS in set edge_freq')
 C
 	  DO J=1,NHI_F
 	    IS=F_TO_S_HI(J)

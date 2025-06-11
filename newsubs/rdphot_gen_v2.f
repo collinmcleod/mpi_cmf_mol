@@ -20,7 +20,8 @@
 !
 	IMPLICIT NONE
 !
-! Altered 24-May-2005 : DO_SMOOTHING was not being inityialized to TRUE when
+! Altered 06-May-2025 : DO_SMOOTHING was not being initialized correctly for all processes.
+! Altered 24-May-2005 : DO_SMOOTHING was not being initialized to TRUE when
 !                         smoothing required.
 ! Altered 17-Apr-2004 : Photoionzation cross-sections can be smoothed
 !                          as they are read in. SIG_GAU etc inserted
@@ -334,8 +335,8 @@
 	      WRITE(LUER,*)'Warning in RDPHOT_GEN_V1: ',DESC
 	      WRITE(LUER,*)'Sigma of smoothing Gaussian is unavailable'
 	      WRITE(LUER,*)'Assuming data does not need to be smoothed'
-	      DO_SMOOTHING=.FALSE.
 	    END IF
+	    DO_SMOOTHING=.FALSE.
 	  ELSE
 	    READ(HEAD_STR(J),*)SIG_SM
 	    IF(SIG_SM .GE. 0.9_LDP*SIG_GAU_KMS)THEN
@@ -510,14 +511,22 @@
 !
 	IF(FIRST)THEN
 	  CALL GET_LU(LU_SUM,'LU_SUM in RDPHOTSUM_V2')
-	  OPEN(UNIT=LU_SUM,FILE='PHOT_SUMMARY_FILE',STATUS='UNKNOWN',ACTION='WRITE')
-	  WRITE(LU_SUM,*)'Summary of Photoionization routes for'
-	  WRITE(LU_SUM,'(A,T10,A,T40,3X,A,3X,A,4X,A,4X,A,2X,A,7X,A)')
-	1      'Desc','Level name','SL','G(ion)','Exc. Freq.','Scale Fac','Grid','DP_PHOT(I,:)'
+	  IF(MYPE .EQ. 0)THEN
+	    OPEN(UNIT=LU_SUM,FILE='PHOT_SUMMARY_FILE',STATUS='UNKNOWN',ACTION='WRITE')
+	    WRITE(LU_SUM,*)'Summary of Photoionization routes for'
+	    WRITE(LU_SUM,'(A,T10,A,T40,3X,A,3X,A,4X,A,4X,A,2X,A,7X,A)')
+	1        'Desc','Level name','SL','G(ion)','Exc. Freq.','Scale Fac','Grid','DP_PHOT(I,:)'
+	  ELSE
+	    OPEN(UNIT=LU_SUM,STATUS='SCRATCH',ACTION='WRITE')
+	  END IF
 	  FIRST=.FALSE.
 	ELSE
 	  CALL GET_LU(LU_SUM,'LU_SUM in RDPHOTSUM_V2')
-	  OPEN(UNIT=LU_SUM,FILE='PHOT_SUMMARY_FILE',STATUS='OLD',ACTION='WRITE',POSITION='APPEND')
+	  IF(MYPE .EQ. 0)THEN
+	    OPEN(UNIT=LU_SUM,FILE='PHOT_SUMMARY_FILE',STATUS='OLD',ACTION='WRITE',POSITION='APPEND')
+	  ELSE
+	    OPEN(UNIT=LU_SUM,STATUS='SCRATCH',ACTION='WRITE')
+	  END IF
 	END IF
 !
 	IF(NUM_ROUTES .GT. MAX_N_PHOT)THEN

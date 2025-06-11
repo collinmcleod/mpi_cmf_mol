@@ -1,5 +1,8 @@
 ! 
 !
+! Altered 12-M<ay-2025: Now call STEQ_ADVEC_MPI_V2.
+!                       Advection in MPI now working (11-Jun-2025). 
+!
 ! Associate charge exchange reactions with levels in the model atoms.
 !
 	CALL SET_CHG_LEV_ID_MPI_V1(ND,LUMOD)
@@ -1578,6 +1581,7 @@
 	     EXIT
 	  END IF
 	END DO
+	IF(DEND .EQ. ND .AND. USE_FIXED_J)RLUMST(ND)=RLUMST(ND-1)
 	CALL TUNE(ITWO,'FLUX_DIST')
 !
 ! The current opacities and emissivities are stored for the variation of the
@@ -1812,14 +1816,12 @@
 	  DO ID=1,NION
 	    SE(ID)%STEQ_ADV=0.0_LDP
 	  END DO
-	  IF(INCL_ADVECTION)THEN
-	    IF(MYPE .EQ. 0)WRITE(6,*)'STE_ADVEC_V4 needs to be updated to USE POPS'; FLUSH(UNIT=6)
-	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-	    CALL MPI_FINALIZE (ierr)
-	    STOP  
-	  END IF
-	  CALL STEQ_ADVEC_MPI_V1(ADVEC_RELAX_PARAM,LINEAR_ADV,NUM_BNDS,ND,
+	  CALL STEQ_ADVEC_MPI_V2(POPS,ADVEC_RELAX_PARAM,LINEAR_ADV,NUM_BNDS,ND,NT,
 	1            INCL_ADVECTION,LAMBDA_ITERATION,COMPUTE_BA)
+	  IF(INCL_ADVECTION .AND. MYPE .EQ. 0)THEN
+	    WRITE(6,*)'Done STEQ_ADVEC_MPI_V2'
+	    FLUSH(UNIT=6)
+	  END IF
 	  IF(LST_ITERATION .AND. VERBOSE_OUTPUT)THEN
 	    WRITE(199,'(I10,2ES18.8,3X,A)')ML,STEQ_T(DPTH_INDX),BA_T(VAR_INDX,DIAG_INDX,DPTH_INDX),'SN_DDT'
 	    CALL WR2D_MPI_V1(STEQ_T,IONE,DST,DEND,ND,'After advection','&',L_TRUE,183)
