@@ -160,6 +160,18 @@
           WRITE(LUER,'(A,T25,A,/)')' MPI_COMM_WORLD=',TRIM(TEMP_KEY)
 	END IF
 !
+	IF(KIND(HDKT) .EQ. KIND(REAL_STAR_EIGHT))THEN
+	  MY_MPI_DP=MPI_DOUBLE_PRECISION
+	ELSE
+	  MY_MPI_DP=MPI_LONG_DOUBLE
+	END IF
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(LUER,'(A,I12)')  '            MY_MPI_DP=',MY_MPI_DP
+	  WRITE(LUER,'(A,I12)')  ' MPI_DOUBLE_PRECISION=',MPI_DOUBLE_PRECISION
+	  WRITE(LUER,'(A,I12,/)')'      MPI_LONG_DOUBLE=',MPI_LONG_DOUBLE
+	  FLUSH(UNIT=LUER)
+	END IF
+!
 !
 ! Set all atomic data. New species can be simple added by insertion.
 ! Try to add species in order of atomic number. Hydrogen should ALWAYS

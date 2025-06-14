@@ -19,6 +19,7 @@
 	USE CONTROL_VARIABLE_MOD, ONLY : USE_ELEC_HEAT_BAL, COMP_STEQ_T_EHB
  	IMPLICIT NONE
 !
+! Altered  13-Jun-2-25 : Changed dimension of SUM_EN to NT from ND.
 ! Altered  29-Dec-2023 : Fixed evaluation of STEQ_T_EHB and its variation.
 ! Altered     Dec-2023 : Added evaluation of STEQ_T_EHB. 
 ! Altered  21-Jun-2004 : Changed to version V3.
@@ -210,7 +211,7 @@
 	REAL(KIND=LDP) NEW_BA_T(NT,NUM_BNDS,ND)
 	REAL(KIND=LDP) NEW_STEQ_T(ND)
 	REAL(KIND=LDP) MEAN_EN(ND)
-	REAL(KIND=LDP) SUM_EN(ND)
+	REAL(KIND=LDP) SUM_EN(NT)
 !
 ! We now compute constants for each of the 4 terms. These make
 ! it simpler and cleaner for the evaluation of the linearization.

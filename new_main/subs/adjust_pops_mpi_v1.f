@@ -285,7 +285,7 @@
 ! We now distribute the atmoic populations to all processors.
 !
 	K=NT*ND
-	CALL MPI_BCAST(POPS,K,MPI_DOUBLE_PRECISION,IZERO,MPI_COMM_WORLD,IERR)
+	CALL MPI_BCAST(POPS,K,MY_MPI_DP,IZERO,MPI_COMM_WORLD,IERR)
 	T(:)=POPS(NT,:); ED(:)=POPS(NT-1,:)
 !
 ! Scatter the FULL populations from root to all processes.
