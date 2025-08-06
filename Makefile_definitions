@@ -17,17 +17,19 @@
 
 AR_OPTION = ruv
 
-HOST :=$(shell hostname)
+#HOST :=$(shell hostname)
 
-HOST=crc
-COMPILER=intel
+HOST:=galah
 DEBUG=nodebug
 
-COMPILE_OPT=$(HOST)_$(COMPILER)_$(DEBUG)
+#DEBUG=nodebug
 
-ifeq ($(HOST),crc)
-INSTALL_DIR=$(HOME)/mpi_cmfgen/
+ifeq ($(HOST),galah)
+INSTALL_DIR=/Users/jdh/mpi_cmfgen/
 endif
+
+COMPILE_OPT=$(HOST)_$(DEBUG)
+
 
 ifeq ($(DEBUG),nodebug)
  MOD_DIR=$(INSTALL_DIR)mod/
@@ -41,59 +43,32 @@ ifeq ($(DEBUG),debug)
  EXE_DIR=$(INSTALL_DIR)exe_dbg/
 endif
 
-ifeq ($(COMPILE_OPT),crc_gcc_nodebug)
- F90 = mpif90 -fopenmp -m64
- F90nomp = mpif90 -m64
- FG  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -ffpe-trap=invalid -I$(MOD_DIR) 
- FD  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments   -fbacktrace -I$(MOD_DIR) 
- FFREE  = -O -fno-backslash -I$(MOD_DIR) -J$(MOD_DIR)
- FFRED  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
- BLAS=
- LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
-    -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
- X11LIB=-L/usr/X11R6/lib -lX11
- PGLIB=-L$(PGPLOT_DIR) -lpgplot
+ifeq ($(COMPILE_OPT),galah_nodebug)
+
+F90 = mpif90 -fallow-argument-mismatch  -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib -fopenmp -m64
+F90nomp = mpif90 -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib 
+FG  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -ffpe-trap=invalid -I$(MOD_DIR)
+FD  = -g  -ffixed-line-length-0 -fbacktrace -fno-backslash -fbounds-check -fd-lines-as-comments -ffpe-trap=invalid,zero,overflow -I$(MOD_DIR) -J$(MOD_DIR)
+FFREE  = -fno-backslash -O -I$(MOD_DIR) -J$(MOD_DIR)
+FFRED  = -fno-backslash -g -I$(MOD_DIR) -J$(MOD_DIR)
+BLAS=-lmy_blas
+LAPACK=-lmy_lapack
+X11LIB=-L/opt/X11/lib -lX11
+PGLIB= -L/Users/jdh/pgplot_gfort/pgplot -lpgplot
+
 endif
 
-ifeq ($(COMPILE_OPT),crc_gcc_debug)
- F90 = mpif90 -fopenmp -m64
- F90nomp = mpif90 -m64
- FG  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments   -fbacktrace -I$(MOD_DIR) 
- FD  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments   -fbacktrace -I$(MOD_DIR) 
- FFREE  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
- FFRED  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
- BLAS=
- LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
-    -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
- X11LIB=-L/usr/X11R6/lib -lX11
- PGLIB=-L$(PGPLOT_DIR) -lpgplot
-endif
 
-ifeq ($(COMPILE_OPT),crc_intel_nodebug)
- F90 = mpiifort -mkl -pg -traceback -nbs 
- F90nomp = mpiifort -mkl -pg -traceback   -nbs
- FG  = -traceback  -extend_source -O2 -I$(MOD_DIR)
- FD  = -g -O0  -fpe0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR) 
- FFREE  = -O2 -nbs -traceback -check bounds -extend_source -I$(MOD_DIR)
- FFRED  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend_source -traceback  
- BLAS=
- LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
--Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
- X11LIB=-L/usr/X11R6/lib -lX11
- PGLIB=-L$(PGPLOT_DIR) -lpgplot
-endif
-
-ifeq ($(COMPILE_OPT),crc_intel_debug)
- F90 = mpiifort -mkl -pg -traceback -nbs 
- F90nomp = mpiifort -mkl -pg -traceback   -nbs
- FG  = -g -O0  -fpe0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR) 
- FD  = -g -O0  -fpe0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR) 
- FFREE  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend_source -traceback  
- FFRED  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend_source -traceback  
- BLAS=
- LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
--Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
- X11LIB=-L/usr/X11R6/lib -lX11
- PGLIB=-L$(PGPLOT_DIR) -lpgplot
+ifeq ($(COMPILE_OPT),galah_debug)
+F90 = mpif90 -fallow-argument-mismatch  -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib -fopenmp -m64
+F90nomp = mpif90 -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib
+FG  = -g  -ffixed-line-length-0 -fbacktrace -fno-backslash -fbounds-check -fd-lines-as-comments -ffpe-trap=invalid,zero,overflow -I$(MOD_DIR) -J$(MOD_DIR)
+FD  = -g  -ffixed-line-length-0 -fbacktrace -fno-backslash -fbounds-check -fd-lines-as-comments -ffpe-trap=invalid,zero,overflow -I$(MOD_DIR) -J$(MOD_DIR)
+FFREE  = -fno-backslash -g -I$(MOD_DIR) -J$(MOD_DIR)
+FFRED  = -fno-backslash -g -I$(MOD_DIR) -J$(MOD_DIR)
+BLAS=-lmy_blas
+LAPACK=-lmy_lapack
+X11LIB=-L/opt/X11/lib -lX11
+PGLIB= -L/Users/jdh/pgplot_gfort/pgplot -lpgplot
 endif
 

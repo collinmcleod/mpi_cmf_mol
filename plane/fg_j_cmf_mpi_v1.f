@@ -204,6 +204,7 @@
 	USE FG_J_CMF_MOD_MPI_V1
 	IMPLICIT NONE
 !
+! Altered 03-Jul-2025 : Fixed bug for NI=2 when using thin outer boundary condition.
 ! Altered 18-May-2025 : Improved error checking for outer boundary condition (10-Jun-2025).
 ! Altered 17-Mar-2025 : Bug fix when checking whether NI=1.
 !                       Error messages fixed to point to correct routines.
@@ -602,8 +603,8 @@
 	      V_EXT(I)=VINF*(1.0_LDP-R_EXT(ND_EXT)/R_EXT(I))**BETA
 	      SIGMA_EXT(I)=BETA/(R_EXT(I)/R_EXT(ND_EXT)-1.0_LDP)-1.0_LDP
 	    END DO
-	    J=ERROR_LU()
 	    IF(MYPE .EQ. 0)THEN
+	      J=ERROR_LU()
 	      WRITE(J,'(A)')' '
 	      WRITE(J,*)'Using thick boundary condition in FG_J_CMF_MPI_V1'
 	      WRITE(J,'(2(A,ES16.8,3X))')' R(1)=',R(1),'RMAX=',RMAX
@@ -611,6 +612,7 @@
 	    END IF
 	  ELSE
 	    IF(MYPE .EQ. 0)THEN
+	      J=ERROR_LU()
 	      WRITE(J,'(A)')' '
 	      WRITE(J,*)'Using thin boundary condition in FG_J_CMF_MPI_V1'
 	    END IF
@@ -946,14 +948,16 @@
 	      RAY(LS)%GAM(I)=T1*( 1.0_LDP+SIGMA_RAY(I)*(MU**2) )
 	    END DO
 !
-	    DO I=1,RAY(LS)%NI_RAY
-	      MU=RAY(LS)%Z(I)/RAY(LS)%R_RAY(I)
-	      T1=3.33564E-06_LDP*V_RAY(I)/RAY(LS)%R_RAY(I)
-	      RAY(LS)%dGAMdR(I)=RAY(LS)%GAM(I)*SIGMA_RAY(I)/RAY(LS)%R_RAY(I)
-	      J=MAX(I-1,1); K=MIN(NI,I+1)
-	      RAY(LS)%dGAMdR(I)=RAY(LS)%dGAMdR(I)+T1*(MU**2)*
+	    IF(RAY(LS)%NI_RAY .GT. 1)THEN
+	      DO I=1,RAY(LS)%NI_RAY
+	        MU=RAY(LS)%Z(I)/RAY(LS)%R_RAY(I)
+	        T1=3.33564E-06_LDP*V_RAY(I)/RAY(LS)%R_RAY(I)
+	        RAY(LS)%dGAMdR(I)=RAY(LS)%GAM(I)*SIGMA_RAY(I)/RAY(LS)%R_RAY(I)
+	        J=MAX(I-1,1); K=MIN(NI,I+1)
+	        RAY(LS)%dGAMdR(I)=RAY(LS)%dGAMdR(I)+T1*(MU**2)*
 	1           (SIGMA_RAY(J)-SIGMA_RAY(K))/(RAY(LS)%R_RAY(J)-RAY(LS)%R_RAY(K))
-	    END DO
+	      END DO
+	    END IF
 !
 	  END DO		!LS Loop
 !
@@ -1202,24 +1206,28 @@
 !
 ! Now compute the derivatives node I.
 !
-	  dS(1)=S(1) +(S(1)-S(2))*RAY(LS)%DTAU(1)/(RAY(LS)%DTAU(1)+RAY(LS)%DTAU(2))
-	  DO I=2,NI-1
-	    dS(I)=(S(I-1)*RAY(LS)%DTAU(I)+S(I)*RAY(LS)%DTAU(I-1))/
+	  IF(NI .EQ. 2)THEN
+	    dS(1)=S(1); dS(2)=S(2)
+	  ELSE
+	    dS(1)=S(1) +(S(1)-S(2))*RAY(LS)%DTAU(1)/(RAY(LS)%DTAU(1)+RAY(LS)%DTAU(2))
+	    DO I=2,NI-1
+	      dS(I)=(S(I-1)*RAY(LS)%DTAU(I)+S(I)*RAY(LS)%DTAU(I-1))/
 	1                     (RAY(LS)%DTAU(I-1)+RAY(LS)%DTAU(I))
-	  END DO
-	  dS(NI)=S(NI-1)+(S(NI-1)-S(NI-2))*RAY(LS)%DTAU(NI-1)/
-	1                       (RAY(LS)%DTAU(NI-2)+RAY(LS)%DTAU(NI-1))
+	    END DO
+	    dS(NI)=S(NI-1)+(S(NI-1)-S(NI-2))*RAY(LS)%DTAU(NI-1)/
+	1                         (RAY(LS)%DTAU(NI-2)+RAY(LS)%DTAU(NI-1))
 !
 ! Adjust first derivatives so that function is monotonic in each interval.
 !
-	  dS(1)=( SIGN(ONE,S(1))+SIGN(ONE,dS(1)) )*
+	    dS(1)=( SIGN(ONE,S(1))+SIGN(ONE,dS(1)) )*
 	1                      MIN(ABS(S(1)),0.5_LDP*ABS(dS(1)))
-	  DO I=2,NI-1
-	    dS(I)=( SIGN(ONE,S(I-1))+SIGN(ONE,S(I)) )*
+	    DO I=2,NI-1
+	      dS(I)=( SIGN(ONE,S(I-1))+SIGN(ONE,S(I)) )*
 	1             MIN(ABS(S(I-1)),ABS(S(I)),0.5_LDP*ABS(dS(I)))
-	  END DO
-	  dS(NI)=( SIGN(ONE,S(NI-1))+SIGN(ONE,dS(NI)) )*
+	    END DO
+	    dS(NI)=( SIGN(ONE,S(NI-1))+SIGN(ONE,dS(NI)) )*
 	1               MIN(ABS(S(NI-1)),0.5_LDP*ABS(dS(NI)))
+	  END IF
 !
           RAY(LS)%I_M(1)=0.0_LDP
 	  DO I=1,NI-1
@@ -1254,21 +1262,25 @@
 !
 ! Now compute the derivatives at node I.
 !
-	  dS(1)=S(1) +(S(1)-S(2))*RAY(LS)%DTAU(1)/(RAY(LS)%DTAU(1)+RAY(LS)%DTAU(2))
-	  DO I=2,NI-1
-	    dS(I)=(S(I-1)*RAY(LS)%DTAU(I)+S(I)*RAY(LS)%DTAU(I-1))/
+          IF(NI .EQ. 2)THEN
+	    dS(1)=S(1); dS(2)=S(1)
+	  ELSE
+	    dS(1)=S(1) +(S(1)-S(2))*RAY(LS)%DTAU(1)/(RAY(LS)%DTAU(1)+RAY(LS)%DTAU(2))
+	    DO I=2,NI-1
+	      dS(I)=(S(I-1)*RAY(LS)%DTAU(I)+S(I)*RAY(LS)%DTAU(I-1))/
 	1                  (RAY(LS)%DTAU(I-1)+RAY(LS)%DTAU(I))
-	  END DO
-	  dS(NI)=S(NI-1)+(S(NI-1)-S(NI-2))*RAY(LS)%DTAU(NI-1)/
+	    END DO
+	    dS(NI)=S(NI-1)+(S(NI-1)-S(NI-2))*RAY(LS)%DTAU(NI-1)/
 	1                  (RAY(LS)%DTAU(NI-2)+RAY(LS)%DTAU(NI-1))
 !
 ! Adjust the first derivatives so that function is monotonic in each interval.
 !
-	  dS(1)=( SIGN(ONE,S(1))+SIGN(ONE,dS(1)) )*MIN(ABS(S(1)),0.5_LDP*ABS(dS(1)))
-	  DO I=2,NI-1
-	    dS(I)=( SIGN(ONE,S(I-1))+SIGN(ONE,S(I)) )*MIN(ABS(S(I-1)),ABS(S(I)),0.5_LDP*ABS(dS(I)))
-	  END DO
-	  dS(NI)=( SIGN(ONE,S(NI-1))+SIGN(ONE,dS(NI)) )*MIN(ABS(S(NI-1)),0.5_LDP*ABS(dS(NI)))
+	    dS(1)=( SIGN(ONE,S(1))+SIGN(ONE,dS(1)) )*MIN(ABS(S(1)),0.5_LDP*ABS(dS(1)))
+	    DO I=2,NI-1
+	      dS(I)=( SIGN(ONE,S(I-1))+SIGN(ONE,S(I)) )*MIN(ABS(S(I-1)),ABS(S(I)),0.5_LDP*ABS(dS(I)))
+	    END DO
+	    dS(NI)=( SIGN(ONE,S(NI-1))+SIGN(ONE,dS(NI)) )*MIN(ABS(S(NI-1)),0.5_LDP*ABS(dS(NI)))
+	  END IF
 !
 	  IF(INNER_BND_METH .EQ. 'DIFFUSION' .AND. LS .LE. NC)THEN
 	    I_CORE=( ETA_RAY(NI)+ DBB*SQRT(R(ND)*R(ND)-P(LS)*P(LS))/R(ND) )/CHI_RAY(NI)

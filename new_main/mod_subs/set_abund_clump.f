@@ -89,6 +89,30 @@
 	1                     CLUMP_PAR(3)*EXP(-T1/CLUMP_PAR(4))
 	    END DO
 !
+	  ELSE IF(CLUMP_LAW(1:4) .EQ. 'NEXP')THEN
+!
+! CLUMP_PAR(1) is the clumping factor at infinity.
+! CLUMP_PAR(2) is a velocity, and determines how fast the clumping factor
+! approach CLUMP_PAR(1).
+!
+	    IF(N_CLUMP_PAR .NE. 3)THEN
+	      WRITE(LUER,*)'Error in SET_ABUND_CLUMP for NEXP : N should be 5'
+	      WRITE(LUER,*)' WRONG VALUE N_CLUMP_PAR=',N_CLUMP_PAR
+	      STOP
+	    END IF
+	    DO K=1,ND
+	      T1=V(K)
+	      T3=(V(K)-0.5_LDP*CLUMP_PAR(2))/0.5_LDP/CLUMP_PAR(2)
+	      IF(T3 .GT. 1.0_LDP)THEN
+	        T2=1.0
+	      ELSE IF(T3 .LT. 0.0_LDP)THEN
+	        T2=1.0_LDP/CLUMP_PAR(3)
+	      ELSE
+	        T2=1.0_LDP/CLUMP_PAR(3)*(1-T3)+T3*CLUMP_PAR(3)
+	      END IF
+	      CLUMP_FAC(K)=CLUMP_PAR(1)+(1.0_LDP-CLUMP_PAR(1))*EXP(-(T1/CLUMP_PAR(2))**T2)
+	    END DO
+!
 	  ELSE IF(CLUMP_LAW(1:4) .EQ. 'MEXP')THEN
 	    IF(N_CLUMP_PAR .NE. 5)THEN
 	      WRITE(LUER,*)'Error in SET_ABUND_CLUMP for MEXP N_CLUMP_PAR should be 5'

@@ -11,6 +11,7 @@
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
 !
+! Altered 26-Jul-2025 - Changed SUM to have dimension DST:DEND.
 ! Altered 18-May-2004 - Major rewrite: Assume linear only, and modifiy computation of
 !                          ion terms for ionizaton/recombination equations.
 ! Created 20-Jan-2003
@@ -29,7 +30,7 @@
 !
 ! Local variables.
 !
-	REAL(KIND=LDP) SUM(NUM_IONS,ND)
+	REAL(KIND=LDP) SUM(NUM_IONS,DST:DEND)
 	REAL(KIND=LDP) T1,T2
 	REAL(KIND=LDP) DERIV_CONST
 	REAL(KIND=LDP) UNIT_CONST
@@ -73,6 +74,7 @@
 ! NB: The factor of 1.0D-05 arises from V/R.
 !
 	UNIT_CONST=1.0E-05_LDP*RELAXATION_PARAMETER
+	WRITE(250+MYPE,*)UNIT_CONST,RELAXATION_PARAMETER
 !
 ! We use backward linear differencing. This should be more stable than linear
 ! differencing in the log-log plane.
@@ -90,11 +92,13 @@
 	        SE(ID)%STEQ(I,K)=SE(ID)%STEQ(I,K) - DERIV_CONST*(T1-T2)
 	        SUM(ID,K)=SUM(ID,K)+DERIV_CONST*(T1-T2)
 	      END DO
+	      WRITE(250+MYPE,*)ID,K,SUM(ID,K)
 	      IF(ID .EQ. SPECIES_END_ID(ISPEC)-1)THEN
 	        IP=IP+1
 	        T1=R(K)*R(K)*V(K)*POPS(IP,K)
 	        T2=R(KP1)*R(KP1)*V(KP1)*POPS(IP,K)
 	        SUM(ID+1,K)=SUM(ID+1,K)+DERIV_CONST*(T1-T2)
+	        WRITE(250+MYPE,*)ID,K,SUM(ID+1,K),T1,T2,T1-T2
 	      END IF
 	    END DO
 	  END DO
@@ -133,19 +137,21 @@
 	        END DO
 	      END DO
 	      T2=T2+ATM(ID_END-1)%DXzV(K)
-	      IF(T1 .GT. T2)THEN
+!
+	      
+ 	      IF(T1 .GT. T2)THEN
 	        DO I=ID+1,ID_END
 		  SE(ID)%STEQ_ADV(K)=SE(ID)%STEQ_ADV(K)+SUM(I,K)
 	        END DO
 	        SE(ID)%STRT_ADV_ID(K)=ID+1
 	        SE(ID)%END_ADV_ID(K)=ID_END-1          !Don't count ion.
-	      ELSE
-	        DO I=ID_STRT,ID
+ 	      ELSE
+ 	        DO I=ID_STRT,ID
                   SE(ID)%STEQ_ADV(K)=SE(ID)%STEQ_ADV(K)-SUM(I,K)
-	        END DO
-	        SE(ID)%STRT_ADV_ID(K)=ID_STRT
-	        SE(ID)%END_ADV_ID(K)=ID
-	      END IF
+ 	        END DO
+ 	        SE(ID)%STRT_ADV_ID(K)=ID_STRT
+ 	        SE(ID)%END_ADV_ID(K)=ID
+ 	      END IF
 	    END DO
 	  END DO
 	END DO
@@ -156,8 +162,10 @@
 	  BA_ADV_TERM(M,K)=UNIT_CONST*V(K)/(R(K)-R(K+1))
 	  IF(DO_OFF_DIAG)BA_ADV_TERM(M+1,K)=-UNIT_CONST*V(K+1)*R(K+1)*R(K+1)/(R(K)-R(K+1))/R(K)/R(K)
 	END DO
-	IF(DEND .EQ. ND)BA_ADV_TERM(M,ND)=UNIT_CONST*V(ND)/(R(ND)-R(ND-1))
-	IF(DO_OFF_DIAG)BA_ADV_TERM(M-1,ND)=-UNIT_CONST*V(ND-1)*R(ND-1)*R(ND-1)/(R(ND)-R(ND-1))/R(ND)/R(ND)
+	IF(DEND .EQ. ND)THEN
+	  BA_ADV_TERM(M,ND)=UNIT_CONST*V(ND)/(R(ND)-R(ND-1))
+	  IF(DO_OFF_DIAG)BA_ADV_TERM(M-1,ND)=-UNIT_CONST*V(ND-1)*R(ND-1)*R(ND-1)/(R(ND)-R(ND-1))/R(ND)/R(ND)
+	END IF
 !
 	IF(COMPUTE_BA)THEN
 	  DO ISPEC=1,NUM_SPECIES

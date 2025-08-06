@@ -76,6 +76,9 @@ clean:
 	rm -f */*.o
 	rm -f */*/*.o
 	rm -f */*/*/*.o
+	rm -f */*.mod
+	rm -f */*/*.mod
+	rm -f */*/*/*.mod
 
 dbg_clean:
 	rm -f lib_dbg/*.a
@@ -84,3 +87,6 @@ dbg_clean:
 	rm -f */*.o
 	rm -f */*/*.o
 	rm -f */*/*/*.o
+	rm -f */*.mod
+	rm -f */*/*.mod
+	rm -f */*/*/*.mod

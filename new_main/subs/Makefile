@@ -55,7 +55,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(evalse_lowt_mpi_v1.o)\
       $(LIB)(evalse_x_qwvj_mpi_v1.o)\
       $(LIB)(eval_temp_ddt_mpi_v1.o)\
-      $(LIB)(eval_shock_power.o)\
+      $(LIB)(eval_shock_power_mpi_v1.o)\
       $(LIB)(fiddle_pop_corrections_mpi_v1.o)\
       $(LIB)(fixpop_in_ba_v2.o)\
       $(LIB)(fixpop_t.o)\
@@ -97,7 +97,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(tst_rd_seq.o)\
       $(LIB)(var_op_mpi_v1.o)\
       $(LIB)(var_x_opa_eta_mpi_v1.o)\
-      $(LIB)(vehb_byj_v1.o)\
+      $(LIB)(vehb_byj_mpi_v1.o)\
       $(LIB)(vsebyj_multi_mpi_v1.o)\
       $(LIB)(vsebyj_x_mpi_v1.o)\
       $(LIB)(write_cmat.o)\

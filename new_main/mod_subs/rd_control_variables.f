@@ -988,10 +988,14 @@
 	  USE_ELEC_HEAT_BAL=.FALSE.
 	  CALL RD_STORE_LOG(USE_ELEC_HEAT_BAL,'USE_EHB',L_FALSE,
 	1            'Use electron heating/cooling balance as T constraint?')
+	  DEPTH_INDX_EHB=0
+	  CALL RD_STORE_INT(DEPTH_INDX_EHB,'D_INDX_EHB',USE_ELEC_HEAT_BAL,
+	1            'Upper depth for using EHB for constraining T')
 	  COMP_STEQ_T_EHB=USE_ELEC_HEAT_BAL
-	  CALL RD_STORE_LOG(COMP_STEQ_T_EHB,'COMP_EHB',L_FALSE,
+	  IF(.NOT. USE_ELEC_HEAT_BAL)THEN
+	    CALL RD_STORE_LOG(COMP_STEQ_T_EHB,'COMP_EHB',L_FALSE,
 	1            'Compute electron heating/cooling balance as T constraint check?')
-
+	  END IF
 !
 	  CALL RD_STORE_NCHAR(METH_SOL,'SOL_METH',ISIX,L_TRUE,
 	1            'Which Method To solve Matrix Equations'//
