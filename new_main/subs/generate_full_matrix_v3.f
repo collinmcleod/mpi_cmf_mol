@@ -14,6 +14,9 @@
 	USE CONTROL_VARIABLE_MOD, ONLY : LTE_MODEL, USE_ELEC_HEAT_BAL,DEPTH_INDX_EHB
 	IMPLICIT NONE
 !
+! Altered 12-Aug-2025 : Save ION equations so that they can written to STEQ_VALS by the calling routine.
+! Altered 07-Aug-2025 : We can now switch to using the electron energy balance equation for
+!                             depths less than DEPTH_INDX_EHB.
 ! Altered 21-Feb-2022 : Added a quick fudge to STOP equation replacement from occuring.
 !                          Change will be invisible to the average user.
 ! Altered 13-Mar-2014 : Issues with crude electron-energy balance equation when
@@ -217,6 +220,7 @@
 	    END DO
 	  END DO
 	END IF
+	CALL SAVE_STEQ_ION(STEQ_ION,DEPTH_INDX,NION,DST,DEND)
 !
 ! Allow for advection terms in the ionization equations. Since we are using linear derivatives,
 ! the terms, at each depth, are identical. We only need to worry about the sign of the terms.
@@ -416,7 +420,7 @@
 !
 	K=DEPTH_INDX
 	WRITE_INDX=0                      !; WRITE_INDX(1:4)=(/5,15,52,58/)
-1	WRITE_INDX(1:5)=(/14,15,16,17,18/)
+1	WRITE_INDX(1:3)=(/87,88,89/)
 	DO I=1,NINDX
 	  IF(WRITE_INDX(I) .EQ. 0 .OR. WRITE_INDX(I) .GT. ND)EXIT
 	  WRITE(FILENAME,'(I5)')WRITE_INDX(I)

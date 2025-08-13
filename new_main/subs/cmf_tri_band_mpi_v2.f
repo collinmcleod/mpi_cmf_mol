@@ -22,6 +22,7 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered 12-Aug-2025: ION equations written to STEQ_VALS.
 ! Altered 10-Jun-2024: Now use diagonal solution when tridiagonal solution fails.
 !                         Cleaning done earlier -- 12-May-2025.
 ! Created 24-Sep-2023: Based on CMF_BLK_BAND_V3
@@ -403,6 +404,7 @@
 	  END DO
 	END IF
 	CALL TUNE(1,'TRI_GATH')
+	CALL WRITE_STEQ_ION(NION,DST,DEND,ND)
 	CALL WR2D_GATH_MPI_V1(STEQ_STORE,N,DST,DEND,ND,'STEQ_ARRAY','*',L_TRUE,16)
 	CALL TUNE(2,'TRI_GATH')
 !

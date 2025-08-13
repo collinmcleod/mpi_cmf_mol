@@ -19,6 +19,9 @@
 	USE CONTROL_VARIABLE_MOD, ONLY : USE_ELEC_HEAT_BAL, COMP_STEQ_T_EHB
  	IMPLICIT NONE
 !
+! Altered  04-Aug-2024 : Fixed output with MPI
+!                        Fixed confusion with passed and global variables in local subroutine.
+!
 ! Altered  29-Dec-2023 : Fixed evaluation of STEQ_T_EHB and its variation.
 ! Altered     Dec-2023 : Added evaluation of STEQ_T_EHB. 
 ! Altered  21-Jun-2004 : Changed to version V3.

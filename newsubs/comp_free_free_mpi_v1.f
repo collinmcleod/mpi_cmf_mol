@@ -9,6 +9,7 @@
 	USE MOD_CMFGEN
 	IMPLICIT NONE
 !
+! Altered 07-Aug-2023 : Bug fix: VCHI_FF,VETA_FF now dimensioned DST:DEND
 ! Altered 24-Sep-2023 : Fixed bug (NU was not set, now changed to FREQ everywhere).
 ! Altered 04-May-2022 : CHange HMI to H0
 ! Created 11-Jul-2019 : Based on COMP_OPAC and GENOPAETA_V10
@@ -19,8 +20,15 @@
 	REAL(KIND=LDP) CONT_FREQ
 	REAL(KIND=LDP) CHI_FF(ND)			!Opacity
 	REAL(KIND=LDP) ETA_FF(ND)			!Emissivity
-	REAL(KIND=LDP) VCHI_FF(NT,DST-1:DEND+1)		!Opacity
-	REAL(KIND=LDP) VETA_FF(NT,DST-1:DEND+1)		!Emissivity
+!
+! These 2 arrays are only used for evaluating the variation in the electron heating equation, 
+! and thus only need to be defined locally. If NUM_BNDS=3 the passed arrays may have a larger
+! dimension (dst-1,dend+1) but thus will not matter provided the variation routine uses 
+! consistent dimensioning.
+!
+	REAL(KIND=LDP) VCHI_FF(NT,DST:DEND)		!Opacity
+	REAL(KIND=LDP) VETA_FF(NT,DST:DEND)		!Emissivity
+!
 	LOGICAL INIT
 	LOGICAL USE_EHB
 	LOGICAL DO_VAR

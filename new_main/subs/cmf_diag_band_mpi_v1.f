@@ -22,6 +22,7 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered 12-Aug-2025: ION equations written to STEQ_VALS.
 ! Created 24-Sep-2024: Based on CMF_BLKBND_MPI_V1 (Also see cmf_blkband_v3.f for earlier alterations).
 !
 ! 
@@ -282,6 +283,7 @@
 	  END DO
           FLAG=.TRUE.
           DEALLOCATE (C_MAT,ORIG_POPS,RUB)
+	  CALL WRITE_STEQ_ION(NION,DST,DEND,ND)
 	  CALL WR2D_GATH_MPI_V1(STEQ_STORE,N,DST,DEND,ND,'STEQ_ARRAY','*',L_TRUE,16)
 !
 	  RETURN

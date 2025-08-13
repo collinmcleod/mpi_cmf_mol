@@ -17,12 +17,13 @@
 	SUBROUTINE BA_EHB_FF_UPDATE_MPI_V1(VJ,VCHI_FF,VETA_FF,
 	1              ETA_FF,CHI_FF,T,POPS,RJ,
 	1              FQW,NEW_CONT,FINAL_FREQ,DO_SRCE_VAR_ONLY,
-	1              NION,NT,NUM_BNDS,DST,DEND,ND)
+	1              NION,NT,NUM_BNDS,ND,DST,DEND)
 	USE SET_KIND_MODULE
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
 !
-! Created 14-Jul-2019
+! Altered 07-Aug-2025 : Bug fix: VCHI_FF,VETA_FF now dimensioned DST:DEND
+!                       Fixed subroutine call.
 !
 	REAL(KIND=LDP), SAVE, ALLOCATABLE ::  VJ_T(:,:,:)
 	INTEGER, SAVE :: CNT=0
@@ -32,8 +33,14 @@
 	REAL(KIND=LDP) POPS(NT,ND)
 !
 	REAL(KIND=LDP) VJ(NT,NUM_BNDS,DST:DEND)
-	REAL(KIND=LDP) VCHI_FF(NT,DST-1:DEND+1)
-	REAL(KIND=LDP) VETA_FF(NT,DST-1:DEND+1)
+!
+! The following 2 arrays are only used for evaluating the variation in the electron heating equation, 
+! and thus only need to be defined locally. If NUM_BNDS=3 the passed arrays may have a larger
+! dimension (dst-1,dend+1) but thus will not matter provided comp_free_free_mpi_v1.f uses
+! consistent dimensioning.
+!
+	REAL(KIND=LDP) VCHI_FF(NT,DST:DEND)
+	REAL(KIND=LDP) VETA_FF(NT,DST:DEND)
 !
 	REAL(KIND=LDP) RJ(ND)
 	REAL(KIND=LDP) ETA_FF(ND)

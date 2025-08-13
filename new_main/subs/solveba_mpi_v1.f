@@ -9,6 +9,9 @@
 	USE CONTROL_VARIABLE_MOD, ONLY: LTE_MODEL, TRI_SOL_OPTIONS
 	IMPLICIT NONE
 !
+! Altered 08-Aug-2025:  POPS at depth 2 set to those at depth 1 even if LAMBDA operation
+!                           (assuming SET_POPS_D2_EQ_D1 is set).
+!
 	INTEGER NT
 	INTEGER NION
 	INTEGER NUM_BNDS
@@ -116,7 +119,7 @@
 !
 ! This is done to prevent corrections at depth 2 setting the nature of future iterations.
 !
-	IF(SET_POPS_D2_EQ_D1 .AND. .NOT. LAMBDA_IT)THEN
+	IF(SET_POPS_D2_EQ_D1)THEN                               ! .AND. .NOT. LAMBDA_IT)THEN
 	  IF(DST .LE. 2 .AND. DEND .GE. 2)SOL_MAT(:,2)=0.0_LDP
 	END IF
 !
@@ -286,7 +289,7 @@
 	  END DO
 	END IF
 !
-	IF(SET_POPS_D2_EQ_D1 .AND. .NOT. LAMBDA_IT)THEN
+	IF(SET_POPS_D2_EQ_D1)THEN                      ! .AND. .NOT. LAMBDA_IT)THEN
 	  POPS(:,2)=POPS(:,1)*POP_ATOM(2)/POP_ATOM(1)
 	END IF
 !

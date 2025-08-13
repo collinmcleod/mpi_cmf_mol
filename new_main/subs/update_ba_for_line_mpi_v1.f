@@ -15,7 +15,8 @@
 	USE MOD_VAR_OPAC_J
 	IMPLICIT NONE
 !
-! Altered: 04-Oxt-2016 : Now call VSEBYJ_MULTI_V8 and VSEBYJ_X_V7.
+! Altered: 07-Aug-2025 : Fixed cal & fixed output with mpi.
+! Altered: 04-Oct-2016 : Now call VSEBYJ_MULTI_V8 and VSEBYJ_X_V7.
 ! Altered: 06-Feb-2010 : Now call VSEBYJ_MULTI_V7.
 !
         INTEGER ND

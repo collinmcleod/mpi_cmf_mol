@@ -11,6 +11,7 @@
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
 !
+! Altered 12-Aug-2025 - Fixed bug effecting computation of SUM for the last ion of a species.
 ! Altered 26-Jul-2025 - Changed SUM to have dimension DST:DEND.
 ! Altered 18-May-2004 - Major rewrite: Assume linear only, and modifiy computation of
 !                          ion terms for ionizaton/recombination equations.
@@ -74,7 +75,6 @@
 ! NB: The factor of 1.0D-05 arises from V/R.
 !
 	UNIT_CONST=1.0E-05_LDP*RELAXATION_PARAMETER
-	WRITE(250+MYPE,*)UNIT_CONST,RELAXATION_PARAMETER
 !
 ! We use backward linear differencing. This should be more stable than linear
 ! differencing in the log-log plane.
@@ -92,13 +92,11 @@
 	        SE(ID)%STEQ(I,K)=SE(ID)%STEQ(I,K) - DERIV_CONST*(T1-T2)
 	        SUM(ID,K)=SUM(ID,K)+DERIV_CONST*(T1-T2)
 	      END DO
-	      WRITE(250+MYPE,*)ID,K,SUM(ID,K)
 	      IF(ID .EQ. SPECIES_END_ID(ISPEC)-1)THEN
 	        IP=IP+1
 	        T1=R(K)*R(K)*V(K)*POPS(IP,K)
-	        T2=R(KP1)*R(KP1)*V(KP1)*POPS(IP,K)
+	        T2=R(KP1)*R(KP1)*V(KP1)*POPS(IP,KP1)
 	        SUM(ID+1,K)=SUM(ID+1,K)+DERIV_CONST*(T1-T2)
-	        WRITE(250+MYPE,*)ID,K,SUM(ID+1,K),T1,T2,T1-T2
 	      END IF
 	    END DO
 	  END DO
