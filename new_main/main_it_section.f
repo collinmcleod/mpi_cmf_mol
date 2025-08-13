@@ -1,6 +1,8 @@
 ! 
 !
-! Altered 12-M<ay-2025: Now call STEQ_ADVEC_MPI_V2.
+! Altered 13-Aug-2025: Several call related to ADVECTION, ADIABATIC cooling, and EHB rouines were
+!                       updated during august. Fixed inadvertant line deletion.
+! Altered 12-May-2025: Now call STEQ_ADVEC_MPI_V2.
 !                       Advection in MPI now working (11-Jun-2025). 
 !
 ! Associate charge exchange reactions with levels in the model atoms.
@@ -1916,7 +1918,7 @@
 !     XzV_PRES for this species is FALSE).
 !
 	IF(LST_ITERATION)THEN   ! .AND. VERBOSE)THEN  ! .AND. .NOT. USE_FIXED_J)THEN
-	  CALL WRITE_RECOM_MPI_V1(ND)
+	  CALL WRITE_RECOM_MPI_V1(AD_COOL_V,AD_COOL_DT,ARTIFICIAL_HEAT_TERM,
 	1                dE_RAD_DECAY,dE_SHOCK_POWER,
 	1                XRAY_LUM_TOT,INCL_ADIABATIC,ND)
 	END IF		!Only output if last iteration.
