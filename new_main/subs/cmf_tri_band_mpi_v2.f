@@ -608,9 +608,9 @@
 ! Error handling setcion
 !
 9999	CONTINUE
-	WRITE(LUER,*)'Error in LINPAC (or BLAS) routine',DESC,' in CMF_TRI_BAMD_MPI_V2'
+	WRITE(LUER,*)'Error in LINPAC (or BLAS) routine ',DESC,' in CMF_TRI_BAMD_MPI_V2'
 	WRITE(LUER,100)K,IFAIL
-100	FORMAT(1x,'depth=',I3,10x,'IFAIL=',I3)
+100	FORMAT(1x,'depth=',I5,10x,'IFAIL=',I5)
 	FLAG=.FALSE.
 	RETURN
 !

@@ -21,6 +21,7 @@ HOST :=$(shell hostname)
 
 HOST=crc
 COMPILER=intel
+#COMPILER=gcc
 DEBUG=nodebug
 
 COMPILE_OPT=$(HOST)_$(COMPILER)_$(DEBUG)
@@ -70,12 +71,12 @@ ifeq ($(COMPILE_OPT),crc_gcc_debug)
 endif
 
 ifeq ($(COMPILE_OPT),crc_intel_nodebug)
- F90 = mpiifort -mkl -pg -traceback -nbs 
- F90nomp = mpiifort -mkl -pg -traceback   -nbs
- FG  = -traceback  -extend_source -O2 -I$(MOD_DIR)
- FD  = -g -O0  -fpe0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR) 
- FFREE  = -O2 -nbs -traceback -check bounds -extend_source -I$(MOD_DIR)
- FFRED  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend_source -traceback  
+ F90 = mpiifort -qmkl -pg -traceback -nbs 
+ F90nomp = mpiifort -qmkl -pg -traceback   -nbs
+ FG  = -traceback  -extend-source -O2 -I$(MOD_DIR)
+ FD  = -g -O0  -fpe0 -check bounds  -extend-source  -traceback  -I$(MOD_DIR) 
+ FFREE  = -O2 -nbs -traceback -check bounds -extend-source -I$(MOD_DIR)
+ FFRED  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend-source -traceback  
  BLAS=
  LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
 -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
@@ -84,12 +85,12 @@ ifeq ($(COMPILE_OPT),crc_intel_nodebug)
 endif
 
 ifeq ($(COMPILE_OPT),crc_intel_debug)
- F90 = mpiifort -mkl -pg -traceback -nbs 
- F90nomp = mpiifort -mkl -pg -traceback   -nbs
- FG  = -g -O0  -fpe0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR) 
- FD  = -g -O0  -fpe0 -check bounds  -extend_source  -traceback  -I$(MOD_DIR) 
- FFREE  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend_source -traceback  
- FFRED  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend_source -traceback  
+ F90 = mpiifort -qmkl -pg -traceback -nbs 
+ F90nomp = mpiifort -qmkl -pg -traceback   -nbs
+ FG  = -g -O0  -fpe0 -check bounds  -extend-source  -traceback  -I$(MOD_DIR) 
+ FD  = -g -O0  -fpe0 -check bounds  -extend-source  -traceback  -I$(MOD_DIR) 
+ FFREE  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend-source -traceback  
+ FFRED  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend-source -traceback  
  BLAS=
  LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
 -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl

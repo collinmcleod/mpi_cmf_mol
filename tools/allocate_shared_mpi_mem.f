@@ -2,6 +2,8 @@
 	IMPLICIT NONE
 	PUBLIC SUB_ALLOCATE_DP_MPI_MEM
 !
+! Altered 11-Jul-2025: ARRAY now decalred using KIND=LDP.
+!
 	CONTAINS
 	SUBROUTINE SUB_ALLOCATE_DP_MPI_MEM(array,n,subid,mymaster,share_comm,win)
 	USE SET_KIND_MODULE
@@ -12,7 +14,7 @@
 !
 ! Arguments
 !
-	DOUBLE PRECISION, POINTER, INTENT(inout) :: ARRAY(:)
+	REAL(KIND=LDP), POINTER, INTENT(inout) :: ARRAY(:)
 	INTEGER, INTENT(in) :: N                                  !Lenth of array
 	INTEGER, INTENT(in) :: SUBID                              !Thread ID
 	INTEGER, INTENT(in) :: MYMASTER                           !Master thread ID

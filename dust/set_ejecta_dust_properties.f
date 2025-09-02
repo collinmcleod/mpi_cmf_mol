@@ -3,6 +3,7 @@
 	USE DUST_MOD
 	IMPLICIT NONE
 !
+! Altered 10_Jul-2025: Replacded DABS and DEXP by ABS and EXP.
 ! Created 12-Feb-2023
 !
 	INTEGER ND
@@ -36,10 +37,10 @@
 	  ELSE IF(DUST_DIST_LAW .EQ. 'SHELL')THEN
 	    DO I=1,ND 
 	      T1 = (V(I)-V_SHELL_LOC) / dV_SHELL
-	      IF (DABS(T1) .GT. 10.0_LDP) THEN
+	      IF (ABS(T1) .GT. 10.0_LDP) THEN
 	        LOCAL_DUST_TO_GAS_RATIO(I) = 0.0_LDP
 	      ELSE
-	        LOCAL_DUST_TO_GAS_RATIO(I) = DEXP(-T1*T1)
+	        LOCAL_DUST_TO_GAS_RATIO(I) = EXP(-T1*T1)
 	      ENDIF
 	    END DO
 	  ELSE
@@ -51,7 +52,7 @@
 	         IF (V(I).LT.VMAX_DUST) THEN 
 	   	   LOCAL_DUST_TO_GAS_RATIO(I) = 1.0D0
 	         ELSE
-		   LOCAL_DUST_TO_GAS_RATIO(I) = 1.0D0 - (1.0D0-DEXP(-(V(I)-VMAX_DUST)/DV_DUST))
+		   LOCAL_DUST_TO_GAS_RATIO(I) = 1.0D0 - (1.0D0-EXP(-(V(I)-VMAX_DUST)/DV_DUST))
 	         ENDIF
 	       ENDDO
 	     ENDIF

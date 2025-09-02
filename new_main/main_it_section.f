@@ -1,6 +1,8 @@
 ! 
 !
-! Altered 12-M<ay-2025: Now call STEQ_ADVEC_MPI_V2.
+! Altered 09-Jul-2025: Now call EVAL_SHOCK_POWER_MPI_V1.
+! Altered 12-Jun-2025: Converted from MPI_DOUBLE_PRECISION to MY_MPI_DP
+! Altered 12-May-2025: Now call STEQ_ADVEC_MPI_V2.
 !                       Advection in MPI now working (11-Jun-2025). 
 !
 ! Associate charge exchange reactions with levels in the model atoms.
@@ -1129,6 +1131,24 @@
 	      END DO
 	    END IF
 !
+	    IF(MIN_OPAC_OPTION .EQ. 'NONE')THEN
+	    ELSE IF(MIN_OPAC_OPTION .EQ. 'SIMPLE')THEN
+	      T1=MIN_OP_TAU*R(1)
+	      DO I=DST,DEND
+	        IF(CHI(I)*R(I) .LT. T1/R(I))THEN
+	          CHI(I)=T1/R(I)
+	        END IF
+	      END DO
+	    ELSE IF(MIN_OPAC_OPTION .EQ. 'ABS')THEN
+	      T1=MIN_OP_TAU*R(1)
+	      DO I=DST,DEND
+	        T2=CHI(I)-CHI_SCAT(I)
+	        IF(T2 .GT. 0.0_LDP .AND. T2*R(I) .LT. T1/R(I))THEN
+	          CHI(I)=CHI_SCAT(I)+T2/R(I)
+	        END IF
+	      END DO
+	    END IF
+!
             CALL MPI_ALLREDUCE(CHI,TA,ND,MY_MPI_DP,MPI_SUM,MPI_COMM_WORLD,IERR); CHI(1:ND)=TA(1:ND)
             CALL MPI_ALLREDUCE(ETA,TA,ND,MY_MPI_DP,MPI_SUM,MPI_COMM_WORLD,IERR); ETA(1:ND)=TA(1:ND)
 !
@@ -1853,7 +1873,7 @@
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 	IF(INC_SHOCK_POWER)THEN
-	  CALL EVAL_SHOCK_POWER(dE_SHOCK_POWER,ND,SHOCK_POWER_FAC)
+	  CALL EVAL_SHOCK_POWER_MPI_V1(dE_SHOCK_POWER,SHOCK_POWER_FAC)
 	  STEQ_T_EHB=STEQ_T_EHB+SHOCK_POWER_FAC*dE_SHOCK_POWER
 	  IF(LST_ITERATION .AND. VERBOSE_OUTPUT)THEN
 	    CALL WR2D_MPI_V1(STEQ_T_EHB,IONE,DST,DEND,ND,'After shock power','&',L_TRUE,LU_T_EHB)

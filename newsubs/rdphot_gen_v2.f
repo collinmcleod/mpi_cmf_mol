@@ -20,6 +20,7 @@
 !
 	IMPLICIT NONE
 !
+! Altered 11-Jul-2025 : Bug fix: PD(ID)%CUR_CROSS and PD(ID)%CUR_FREQ are now initialized.
 ! Altered 06-May-2025 : DO_SMOOTHING was not being initialized correctly for all processes.
 ! Altered 24-May-2005 : DO_SMOOTHING was not being initialized to TRUE when
 !                         smoothing required.
@@ -171,8 +172,8 @@
 	ALLOCATE (PD(ID)%EDGE_CROSS(NXzV,NUM_ROUTES))
 	ALLOCATE (PD(ID)%EDGE_FREQ(NXzV,NUM_ROUTES))
 !
-	ALLOCATE (PD(ID)%CUR_CROSS(NXzV,NUM_ROUTES))
-	ALLOCATE (PD(ID)%CUR_FREQ(NUM_ROUTES))
+	ALLOCATE (PD(ID)%CUR_CROSS(NXzV,NUM_ROUTES));    PD(ID)%CUR_CROSS=0.0_LDP
+	ALLOCATE (PD(ID)%CUR_FREQ(NUM_ROUTES));          PD(ID)%CUR_FREQ=0.0_LDP
 !
 ! Perform default initializations.
 !

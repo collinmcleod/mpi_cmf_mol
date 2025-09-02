@@ -718,6 +718,14 @@
 	  CALL RD_STORE_LOG(SETZERO,'He2_RES=0',L_TRUE,
 	1           'Set rates in He2 resonance lines to zero ?')
 !
+	  MIN_OPAC_OPTION='NONE'
+	  CALL RD_STORE_NCHAR(MIN_OPAC_OPTION,'MIN_OPAC_OPT',ITEN,L_FALSE,'Set minimum opacity?')
+	  IF(MIN_OPAC_OPTION .EQ. 'SIMPLE')THEN
+	    CALL RD_STORE_DBLE(MIN_OP_TAU,'MIN_OP_TAU',L_TRUE,'Minimum optical depth used to set minimum opacity')
+	  ELSE IF(MIN_OPAC_OPTION .EQ. 'ABS')THEN
+	    CALL RD_STORE_DBLE(MIN_OP_TAU,'MIN_OP_TAU',L_TRUE,'Minimum optical depth used to set min abs. opacity')
+	  END IF
+!    
 	  CALL RD_STORE_LOG(OVERLAP,'ALLOW_OL',L_TRUE,
 	1           'Allow for overlap of close lines (SOB only) ?')
 	  CALL RD_STORE_DBLE(OVER_FREQ_DIF,'OL_DIF',L_TRUE,

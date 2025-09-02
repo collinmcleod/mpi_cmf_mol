@@ -19,7 +19,7 @@
 !            When
 !               ITERATE_INIT_T=.TRUE.
 !            we compute the grey temperature structure and iterate to
-!            improve T. Only done when GRID=.FALSE. If GREY_SCK_FAC_IN
+!            improve T. Only done when GRID=.FALSE. If GREY_SCL_FAC_IN
 !            is present, we modify TGREY according to
 !                        TGREY = TGREY . (T/TGREY)_old
 !
