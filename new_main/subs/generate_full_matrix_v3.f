@@ -14,6 +14,9 @@
 	USE CONTROL_VARIABLE_MOD, ONLY : LTE_MODEL, USE_ELEC_HEAT_BAL,DEPTH_INDX_EHB
 	IMPLICIT NONE
 !
+! Altered 13-Aug-2025 : Saves which g.s rate equations are replaced by their ion equation (2-Sep-2025).
+!                         Change was necessary so that depth depndent changes could be tracked in with different
+!                         processes acting at different depths.
 ! Altered 12-Aug-2025 : Save ION equations so that they can written to STEQ_VALS by the calling routine.
 ! Altered 07-Aug-2025 : We can now switch to using the electron energy balance equation for
 !                             depths less than DEPTH_INDX_EHB.
@@ -83,8 +86,6 @@
 ! is used to indicate whether the current depth is to be replaced
 ! (as determined from the DIAGONAL band). Replace now passed.
 !
-	INTEGER, SAVE, ALLOCATABLE ::  REP_CNT(:)
-!
 	INTEGER, SAVE :: LST_DEPTH_INDX=0
 !
 	INTEGER I,J,K,L,JJ,N
@@ -143,10 +144,6 @@
 !            WRITE(99,*)SE(4)%BA(1,I,DIAG_INDX,1),SE(4)%BA(2,I,DIAG_INDX,1)
 !	  END IF
 !
-	END IF
-!
-	IF( .NOT. ALLOCATED(REP_CNT))THEN
-	  ALLOCATE (REP_CNT(NION)); REP_CNT(:)=0
 	END IF
 !
 ! Map the small BA array onto the full BA array
@@ -330,7 +327,6 @@
 ! array so that we only use the conservation equation over a
 ! sequence of optical depths.
 !
-	IF(DIAG_BAND .AND. DEPTH_INDX .EQ. 1)REP_CNT(:)=0
         IF(.NOT. USE_PASSED_REP .AND. DIAG_BAND)THEN
 	  DO ID=1,NION
 	    REPLACE(ID)=.FALSE.
@@ -340,11 +336,11 @@
               IF( ABS(C_MAT(EQ,EQ))*ATM(ID)%XzV(1,K) .GT.
 	1          FAC*ABS(C_MAT(EQ,EQ+N))*ATM(ID)%DXzV(K) )THEN
 	        REPLACE(ID)=.TRUE.
-	        REP_CNT(ID)=REP_CNT(ID)+1
 	      END IF
 	    END IF
 	  END DO
 	END IF
+	IF(DIAG_BAND)CALL SAVE_REPLACE(REPLACE,ION_ID,DEPTH_INDX,NION,DST,DEND)
 !
 	CALL GET_LU(LUOUT,'In subs/generate_full_matrix_v3.f')
 	IF(DEPTH_INDX .GE. 480**2)THEN				!**2 prevents writing
@@ -375,18 +371,6 @@
 	    IF(K .EQ. 100000)CALL WR2D_MA(C_ION(ID,:),NT,1,'C_MAT_D1',LUOUT)
 	  END IF
 	END DO
-!
-	IF(DIAG_BAND .AND. DEPTH_INDX .EQ. ND)THEN
-	  WRITE(LUWARN,'(/,/,1X,A,/)')' Equation selection in generate_full_matrix_v3.f'
-	  DO ID=1,NION
-	    IF(REP_CNT(ID) .GT. 0)THEN
-              WRITE(LUWARN,'(1X,A,T9,A,I3,A)')
-	1         TRIM(ION_ID(ID)),' g.s. eq. replaced by ionization eq. at ',
-	1         REP_CNT(ID),' depths.'
-	      END IF
-	  END DO
-	  WRITE(LUWARN,'(A)')' '
-	END IF
 !
 ! Fix any populations.
 !

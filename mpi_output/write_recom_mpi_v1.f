@@ -5,10 +5,12 @@
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
 !
+! Altered: 13-Aug-2025: LOC_STEQ_ADV now nly defined for MYPE=0
+!
 	INTEGER ND
 	REAL(KIND=LDP) LOC_X(ND)
 	REAL(KIND=LDP) LOC_NT_2E(ND)
-	REAL(KIND=LDP) LOC_STEQ_ADV(ND,NUM_IONS)
+	REAL(KIND=LDP), ALLOCATABLE :: LOC_STEQ_ADV(:,:)
 	INTEGER ID, I, K
 	INTEGER LU
 	INTEGER SCAT_SIZE(0:NTHREAD-1)
@@ -16,7 +18,6 @@
 	INTEGER, PARAMETER :: IZERO=0
 	CHARACTER(LEN=80) TMP_STRING
 !
-!        INCLUDE 'mpif.h'
 !
 ! Write out recombination, photoionization and cooling terms for digestion.
 !
@@ -28,6 +29,12 @@
 !     refer to the highest level of the previous ion.  By convention in
 !     CMFGEN this refers to a 1 level state with an INDEX of 0 (and
 !     XzV_PRES for this species is FALSE).
+!
+! LOC_STEQ_ADV gets the data from all processes, and only needs to be defined on MYPE=0
+!
+	IF(MYPE .EQ. 0)THEN
+ 	  ALLOCATE(LOC_STEQ_ADV(ND,NUM_IONS))
+	END IF
 !
 	CALL GET_LU(LU,'In WRITE_RECOM_MPI_V1')
 	DO ID=1,NUM_IONS

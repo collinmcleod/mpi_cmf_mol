@@ -1,0 +1,114 @@
+!
+! Routine designed to track which ground-state equations have been replaced by their
+! respected ion equation. For use with MPI.
+!
+! Contains SAVE_REPLACE & WRIRE_REPLACE.
+!
+! Creation date: 13-Aug-2025
+!
+	MODULE MOD_SAVE_REPLACE
+	USE SET_KIND_MODULE
+	LOGICAL, ALLOCATABLE, SAVE :: REPLACE_STORE(:,:)
+	CHARACTER(LEN=12), ALLOCATABLE, SAVE ::  LOC_ION_ID(:)
+	END MODULE MOD_SAVE_REPLACE
+!
+	SUBROUTINE SAVE_REPLACE(REPLACE,ION_ID,DEPTH_INDX,NION,DST,DEND)
+	USE SET_KIND_MODULE
+	USE MOD_SAVE_REPLACE
+	IMPLICIT NONE
+!
+	LOGICAL REPLACE(NION)
+	CHARACTER(LEN=*) ION_ID(NION)
+	INTEGER DEPTH_INDX
+	INTEGER NION
+	INTEGER DST,DEND
+!
+	IF(.NOT. ALLOCATED(REPLACE_STORE))THEN
+	  ALLOCATE(REPLACE_STORE(NION,DST:DEND))
+	END IF
+	IF(MYPE .EQ. 0 .AND. .NOT. ALLOCATED(LOC_ION_ID))THEN
+	  ALLOCATE(LOC_ION_ID(NION))
+	  LOC_ION_ID=ION_ID
+	END IF
+	REPLACE_STORE(:,DEPTH_INDX)=REPLACE(:)
+!
+	RETURN 
+	END
+!
+	SUBROUTINE WRITE_REPLACE(NION,DST,DEND,ND)
+	USE SET_KIND_MODULE
+	USE MOD_SAVE_REPLACE
+	USE MPI
+	IMPLICIT NONE
+!
+	INTEGER NION,DST,DEND,ND
+!
+! Local variables
+!
+	INTEGER IERR
+	INTEGER I,L,ID,IS
+	INTEGER IST,IEND
+	INTEGER LUWARN
+	INTEGER WARNING_LU; EXTERNAL WARNING_LU
+!
+	INTEGER, PARAMETER :: IZERO=0
+	LOGICAL, PARAMETER :: L_TRUE=.TRUE.
+!
+        INTEGER, ALLOCATABLE, SAVE :: SCAT_DISP(:)
+        INTEGER, ALLOCATABLE, SAVE :: SCAT_SIZE(:)
+	LOGICAL, ALLOCATABLE, SAVE :: A(:,:)
+	CHARACTER(LEN=500) STRING
+!
+        CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	IF(. NOT. ALLOCATED(SCAT_DISP))THEN
+          ALLOCATE(SCAT_SIZE(0:NTHREAD-1))
+          ALLOCATE(SCAT_DISP(0:NTHREAD-1))
+	  IF(MYPE .EQ. 0)ALLOCATE(A(NION,ND))
+        END IF
+!
+        CALL SET_IDISP_ISEND(SCAT_DISP,SCAT_SIZE,ND,NTHREAD)
+        SCAT_DISP=SCAT_DISP*NION
+        SCAT_SIZE=SCAT_SIZE*NION
+!
+        CALL MPI_GATHERV(REPLACE_STORE,SCAT_SIZE(MYPE),MPI_LOGICAL,
+	1      A,SCAT_SIZE,SCAT_DISP,MPI_LOGICAL,IZERO,
+	1      MPI_COMM_WORLD,IERR)
+!
+	IF(MYPE .EQ. 0)THEN
+	   LUWARN=WARNING_LU()
+	   WRITE(LUWARN,'(/,/,1X,A,/)')' Equation selection in generate_full_matrix_v?.f'
+	   WRITE(LUWARN,'(A,/,A)')' The following ground state equations were replaced by the',
+	1                         '     ionization at the indicated depths.'
+	   DO ID=1,NION
+	     IST=0; IEND=0; STRING=' '
+	     IF(COUNT(A(ID,:)) .NE. 0)THEN
+	       DO L=1,ND
+	         IF(IST .EQ. 0 .AND. A(ID,L))THEN
+	            IST=L
+	            IEND=L
+	         ELSE IF(A(ID,L))THEN
+	            IEND=L
+	         END IF
+	         IF(IEND .NE. 0 .AND. (.NOT. A(ID,L) .OR. L .EQ. ND) )THEN
+	            IS=LEN_TRIM(STRING)
+	            IF(IS .NE. 0)THEN
+	              STRING(IS+1:IS+1)=','
+	              IS=IS+1
+	            END IF  
+	            IF(IEND .LT. 100)THEN
+	              WRITE(STRING(IS+1:),'(I2,A1,I2)')IST,'-',IEND
+	            ELSE IF(IEND .LT. 1000)THEN
+	              WRITE(STRING(IS+1:),'(I3,A1,I3)')IST,'-',IEND
+	            ELSE
+	              WRITE(STRING(IS+1:),'(I4,A1,I4)')IST,'-',IEND
+	            END IF
+	            IST=0; IEND=0
+ 	         END IF
+	       END DO
+	       WRITE(LUWARN,'(1X,A,T14,A,A)')TRIM(LOC_ION_ID(ID)),'-- replaced at depths: ',TRIM(STRING)
+	     END IF
+	   END DO
+	END IF
+!
+	RETURN
+	END SUBROUTINE WRITE_REPLACE

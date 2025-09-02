@@ -1895,11 +1895,11 @@
 	  CALL TUNE(IONE,'STORE_BA')
 	    CALL STORE_BA_DATA_MPI_V1(LU_BA,NION,NUM_BNDS,COMPUTE_BA,FIXED_T,'BAMAT')
 	  CALL TUNE(ITWO,'STORE_BA')
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(6,*)'Successfully output BAMAT files'; FLUSH(UNIT=6)
+	  END IF
 	END IF
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-	IF(MYPE .EQ. 0)THEN
-	  WRITE(6,*)'Successfully output BAMAT files'; FLUSH(UNIT=6)
-	END IF
 !
 ! Store radiative equlibrium equation so we can check influence on radiation field.
 !
@@ -1917,11 +1917,13 @@
 !     CMFGEN this refers to a 1 level state with an INDEX of 0 (and
 !     XzV_PRES for this species is FALSE).
 !
-	IF(LST_ITERATION)THEN   ! .AND. VERBOSE)THEN  ! .AND. .NOT. USE_FIXED_J)THEN
-	  CALL WRITE_RECOM_MPI_V1(AD_COOL_V,AD_COOL_DT,ARTIFICIAL_HEAT_TERM,
-	1                dE_RAD_DECAY,dE_SHOCK_POWER,
-	1                XRAY_LUM_TOT,INCL_ADIABATIC,ND)
-	END IF		!Only output if last iteration.
+	IF(LST_ITERATION)THEN   		! .AND. VERBOSE)THEN  ! .AND. .NOT. USE_FIXED_J)THEN
+	  CALL WRITE_RECOM_MPI_V1(ND)
+	  CALL WR_COOL_MPI_V1(AD_COOL_V,AD_COOL_DT,ARTIFICIAL_HEAT_TERM,
+	1          dE_RAD_DECAY,dE_SHOCK_POWER,
+	1          XRAY_LUM_TOT,INCL_ADIABATIC,ND)
+	END IF
+		!Only output if last iteration.
 ! 
 !
 	TA=RLUMST;   CALL MPI_ALLREDUCE(TA,RLUMST,ND,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
