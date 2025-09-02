@@ -25,7 +25,7 @@ UPDATE=$(LIB_DIR)libsubs.a(update_keyword.o)
 # Give the dependencies of dispgen.exe and how it is created.
 
 $(EXE_DIR)cmfgen_dev.exe : cmfgen.o cmfgen_sub.o  $(FN1) $(FN3) 
-	$(F90) cmfgen.o cmfgen_sub.o \
+	$(F90) -g cmfgen.o cmfgen_sub.o \
               -L$(LIB_DIR) -l$(LN1)  -l$(LN3) \
                $(LAPACK) $(BLAS) $(LOCLIB) \
               -o $(EXE_DIR)cmfgen_dev.exe

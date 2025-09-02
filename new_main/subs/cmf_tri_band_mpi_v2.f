@@ -22,6 +22,8 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered 13-Aug-2025: Now writes out which g.s. rate equations are replaced (2-Sep-2025).
+! Altered 12-Aug-2025: ION equations written to STEQ_VALS.
 ! Altered 10-Jun-2024: Now use diagonal solution when tridiagonal solution fails.
 !                         Cleaning done earlier -- 12-May-2025.
 ! Created 24-Sep-2023: Based on CMF_BLK_BAND_V3
@@ -403,6 +405,8 @@
 	  END DO
 	END IF
 	CALL TUNE(1,'TRI_GATH')
+	CALL WRITE_STEQ_ION(NION,DST,DEND,ND)
+	CALL WRITE_REPLACE(NION,DST,DEND,ND)
 	CALL WR2D_GATH_MPI_V1(STEQ_STORE,N,DST,DEND,ND,'STEQ_ARRAY','*',L_TRUE,16)
 	CALL TUNE(2,'TRI_GATH')
 !
@@ -505,7 +509,7 @@
 !
 	  IF(MAXVAL(ERR_EST) .LT. 1.0E-06_LDP)THEN
 	    STEQ(:,DST:DEND)=NEW_EST(:,DST:DEND)
-	    WRITE(6,*)'Solution of tri-diaginal equations converged'
+	    IF(MYPE .EQ. 0)WRITE(6,*)'Solution of tri-diaginal equations converged'
 	    EXIT
 !
 	  ELSE IF(IT_COUNTER .EQ. MAX_NUM_ITS .AND. MAXVAL(ERR_EST) .LT. 1.0E-02_LDP)THEN

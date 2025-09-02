@@ -16,6 +16,7 @@
 	USE UPDATE_KEYWORD_INTERFACE
 	IMPLICIT NONE
 !
+! Altered 01-Sep-2025 - CHanges that non onotocity only checked if V(I) > 0.1 km/s.
 ! Altered 02-Dec-2025 - Changed output accuracy for R &V in RVSIG_COL (10-Jun-2025). 
 ! Altered 17-Dec-2023 - HYDRO_OPT now automatically set to FIXED_R_REF when TAU_REF > 2/3.
 ! Altered 04-Jan-2023 - Changed was connection radius adjusted if excessive iteratons (> 50).
@@ -798,7 +799,7 @@
 	    GAMMA_FULL(I)=GAM_FULL
 	    V(I)=MDOT/MU_ATOM/POP_ATOM(I)/R(I)/R(I)
 	    IF(.NOT. PLANE_PARALLEL_NO_V)THEN
-	      IF(V(I) .GE. V(I-1))THEN
+	      IF(V(I) .GE. V(I-1) .AND. V(I) .GT. 0.1_LDP)THEN
 	        GAM_LIM=GAM_LIM-0.01_LDP
 	        IF(VERBOSE_OUTPUT)WRITE(LUV,*)'Resetting GAM_LIM due to -ve velocity gradient'
 	        GOTO 100

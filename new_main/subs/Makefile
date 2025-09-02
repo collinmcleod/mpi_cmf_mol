@@ -75,6 +75,8 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(read_time_model_v1.o)\
       $(LIB)(read_seq_time_file_v1.o)\
       $(LIB)(rv_sn_model_sniin.o)\
+      $(LIB)(save_replace.o)\
+      $(LIB)(save_steq_ion.o)\
       $(LIB)(set_ba_storage_mpi_v1.o)\
       $(LIB)(set_ba_storage.o)\
       $(LIB)(set_depth_consistency.o)\
@@ -97,7 +99,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(tst_rd_seq.o)\
       $(LIB)(var_op_mpi_v1.o)\
       $(LIB)(var_x_opa_eta_mpi_v1.o)\
-      $(LIB)(vehb_byj_v1.o)\
+      $(LIB)(vehb_byj_mpi_v1.o)\
       $(LIB)(vsebyj_multi_mpi_v1.o)\
       $(LIB)(vsebyj_x_mpi_v1.o)\
       $(LIB)(write_cmat.o)\

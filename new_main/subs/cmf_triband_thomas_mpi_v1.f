@@ -12,6 +12,8 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered 13-Aug-2025: Now writes out which g.s. rate equations are replaced (2-Sep-2025)
+! Altered 12-Aug-2025: ION equations written to STEQ_VALS.
 ! Altered 1-0Jun-2025 : Comments (partially fixed). Earlier a MPI_BARRIER statement was pu in its
 !                          correct location.
 !
@@ -660,7 +662,9 @@
 	IF(ALLOCATED(D_MAT_STORE))DEALLOCATE (D_MAT_STORE)
 !
         CALL TUNE(1,'TRI_GATH')
-        CALL WR2D_GATH_MPI_V1(STEQ_STORE,N,DST,DEND,ND,'STEQ_ARRAY','*',L_TRUE,16)
+        CALL WRITE_STEQ_ION(NION,DST,DEND,ND)
+	CALL WRITE_REPLACE(NION,DST,DEND,ND)
+	CALL WR2D_GATH_MPI_V1(STEQ_STORE,N,DST,DEND,ND,'STEQ_ARRAY','*',L_TRUE,16)
         CALL TUNE(2,'TRI_GATH')
 !
 	IF(INDEX(TRI_SOL_OPTIONS,'CHECK_SOL') .NE. 0)THEN

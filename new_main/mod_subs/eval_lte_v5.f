@@ -32,8 +32,6 @@
 ! and are required by SUP_TO_FULL and LTE_POP_WLD.
 !
 	CALL COMP_LEV_DIS_BLK(ED,POPION,T,DO_LEV_DISSOLUTION,ND)
-	WRITE(180,*)ND,ED(1),ED(ND),POPION(1),POPION(ND),T(1),T(ND)
-	FLUSH(180)
 !
 ! The final statements set the population of the ground state of the next
 ! ionizations stages. These must be set since they are used in determining

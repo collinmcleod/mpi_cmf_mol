@@ -1,6 +1,8 @@
 ! 
 !
-! Altered 09-Jul-2025: Now call EVAL_SHOCK_POWER_MPI_V1.
+! Altered 13-Aug-2025: Several call related to ADVECTION, ADIABATIC cooling, and EHB rouines were
+!                       updated during august. Fixed inadvertant line deletion.
+! Altered 09-Jul-2025: Now call EVAL_SHOCK_POWER_MPI_V1. 
 ! Altered 12-Jun-2025: Converted from MPI_DOUBLE_PRECISION to MY_MPI_DP
 ! Altered 12-May-2025: Now call STEQ_ADVEC_MPI_V2.
 !                       Advection in MPI now working (11-Jun-2025). 
@@ -260,9 +262,9 @@
 	1       ATM(ID)%ZXzV,            ATM(ID)%EQXzV,   ATM(ID)%XzV_PRES)
 	END DO
 !
-	CALL WR2D_MPI_V1(ATM(1)%XzVLTE,ATM(1)%NXzV,DST,DEND,ND,'Hyd SL LTEPOP',' ',.TRUE.,411)
-	IF(MYPE .EQ. 0)CLOSE(UNIT=411)
-	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	CALL WR2D_MPI_V1(ATM(1)%XzVLTE,ATM(1)%NXzV,DST,DEND,ND,'Hyd SL LTEPOP',' ',.TRUE.,411)
+!	IF(MYPE .EQ. 0)CLOSE(UNIT=411)
+!	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! 
 !
@@ -546,7 +548,7 @@
 	IF(VERBOSE_OUTPUT .AND. LST_ITERATION)THEN
 	  CALL GET_LU(LU_T_EHB,'Electron energy balance')
 	  OPEN(UNIT=LU_T_EHB,FILE='CHECK_EHB_BALANCE',STATUS='UNKNOWN',ACTION='WRITE')
-	  CALL WR2D_MPI_V1(TA,IONE,DST,DEND,ND,'After collison terms','&',L_TRUE,LU_T_EHB)
+	  CALL WR2D_MPI_V1(STEQ_T_EHB,IONE,DST,DEND,ND,'After collison terms','&',L_TRUE,LU_T_EHB)
 	END IF
 !
 	IF(TREAT_NON_THERMAL_ELECTRONS)THEN
@@ -1172,7 +1174,7 @@
 	       IF(NEG_OPACITY(I) .AND. K .EQ. 0)K=I
 	       IF(NEG_OPACITY(I))J=I
 	      END DO
-	      WRITE(LU_NEG,'(A,2X,I3,5X,A,2XI3)')' 1st depth',K,'Last depth',J
+	      WRITE(LU_NEG,'(A,2X,I4,5X,A,2X,I4)')' 1st depth',K,'Last depth',J
 	    END IF
 !
 	    DO I=DST,DEND
@@ -1398,7 +1400,7 @@
 	  IF(USE_ELEC_HEAT_BAL .AND. COMPUTE_BA .AND. .NOT. LAMBDA_ITERATION)THEN
 	    CALL BA_EHB_BF_UPDATE_MPI_V1(VJ,ETA,CHI,POPS,RJ,
 	1              FL,FQW(ML),COMPUTE_NEW_CROSS,FINAL_CONSTANT_CROSS,DO_SRCE_VAR_ONLY,
-	1              NION,NT,NUM_BNDS,DST,DEND,ND)
+	1              NION,NT,NUM_BNDS,ND)
 	  END IF
 !
 ! Modify the BA matrix for terms in the statistical equilibrium
@@ -1693,7 +1695,6 @@
 !
 	IF( .NOT. USE_FIXED_J .AND. (USE_ELEC_HEAT_BAL .OR. COMP_STEQ_T_EHB) )THEN
 	  CALL TUNE(IONE,'FF_EB_COR')
-	  IF(ML .EQ. 1)WRITE(6,*)'Free-free correction may need revising'
 	  CALL  COMP_FREE_FREE_MPI_V1(CHI,ETA,VCHI,VETA,CONT_FREQ,FL,
 	1           FIRST_FREQ,USE_ELEC_HEAT_BAL,COMPUTE_BA,ND,NT)
 	  T1=1.0E-10_LDP*16.0_LDP*ATAN(1.0_LDP)*FQW(ML)
@@ -1710,16 +1711,16 @@
 	  CALL BA_EHB_FF_UPDATE_MPI_V1(VJ,VCHI,VETA,
 	1              ETA,CHI,T,POPS,RJ,
 	1              FQW(ML),COMPUTE_NEW_CROSS,FINAL_CONSTANT_CROSS,DO_SRCE_VAR_ONLY,
-	1              NION,NT,NUM_BNDS,ND,IONE,ND)
+	1              NION,NT,NUM_BNDS,ND,DST,DEND)
 !
-	  TB(1:ND)=BA_T_PAR_EHB(NT,1:ND)
+	  TB(DST:DEND)=BA_T_PAR_EHB(NT,DST:DEND)
 	  DO ID=1,NUM_IONS
 	    ID_SAV=ID
 	    IF(ATM(ID)%XzV_PRES .AND. FINAL_CONSTANT_CROSS)THEN
 	      DO J=1,ATM(ID)%N_XzV_PHOT
-	        CALL VEHB_BYJ_V1(ID_SAV,
-	1             ATM(ID)%WSXzV(1,1,J), ATM(ID)%dWSXzVdT(1,1,J),
-	1             ATM(ID)%WCRXzV(1,1,J), ATM(ID)%dWCRXzVdT(1,1,J),
+	        CALL VEHB_BYJ_MPI_V1(ID_SAV,
+	1             ATM(ID)%WSXzV(:,:,J), ATM(ID)%dWSXzVdT(:,:,J),
+	1             ATM(ID)%WCRXzV(:,:,J), ATM(ID)%dWCRXzVdT(:,:,J),
 	1             ATM(ID)%XzV, ATM(ID)%XzVLTE, ATM(ID)%dlnXzVLTE_dlnT,
 	1             ATM(ID)%NXzV,ATM(ID)%EQXzV,
 	1             ATM(ID+1)%XzV, ATM(ID+1)%LOG_XzVLTE,
@@ -1727,7 +1728,7 @@
 	1             ATM(ID)%XzV_ION_LEV_ID(J),ED,T,
 	1             JREC,dJRECdt,JPHOT,
 	1             JREC_CR,dJREC_CRdt,JPHOT_CR,
-	1             FIXED_T,ND,IONE,ND,NT)
+	1             FIXED_T,ND,DST,DEND,NT)
 	     END DO
 	   END IF
 	  END DO
@@ -1914,7 +1915,11 @@
 	  CALL TUNE(IONE,'STORE_BA')
 	    CALL STORE_BA_DATA_MPI_V1(LU_BA,NION,NUM_BNDS,COMPUTE_BA,FIXED_T,'BAMAT')
 	  CALL TUNE(ITWO,'STORE_BA')
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(6,*)'Successfully output BAMAT files'; FLUSH(UNIT=6)
+	  END IF
 	END IF
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Store radiative equlibrium equation so we can check influence on radiation field.
 !
@@ -1932,24 +1937,13 @@
 !     CMFGEN this refers to a 1 level state with an INDEX of 0 (and
 !     XzV_PRES for this species is FALSE).
 !
-	IF(LST_ITERATION)THEN   ! .AND. VERBOSE)THEN  ! .AND. .NOT. USE_FIXED_J)THEN
+	IF(LST_ITERATION)THEN   		! .AND. VERBOSE)THEN  ! .AND. .NOT. USE_FIXED_J)THEN
 	  CALL WRITE_RECOM_MPI_V1(ND)
-	  IF(MYPE .EQ. 0)THEN
-	    WRITE(420,*)de_SHOCK_POWER; FLUSH(UNIT=420)
-	  END IF
-	  IF(MYPE .EQ. 1)THEN
-	    WRITE(421,*)de_SHOCK_POWER; FLUSH(UNIT=421)
-	  END IF
-	  IF(MYPE .EQ. 0)THEN
-	    WRITE(422,*)de_RAD_DECAY; FLUSH(UNIT=422)
-	  END IF
-	  IF(MYPE .EQ. 1)THEN
-	    WRITE(423,*)de_RAD_DECAY; FLUSH(UNIT=423)
-	  END IF
 	  CALL WR_COOL_MPI_V1(AD_COOL_V,AD_COOL_DT,ARTIFICIAL_HEAT_TERM,
-	1                dE_RAD_DECAY,dE_SHOCK_POWER,
-	1                XRAY_LUM_TOT,INCL_ADIABATIC,ND)
-	END IF		!Only output if last iteration.
+	1          dE_RAD_DECAY,dE_SHOCK_POWER,
+	1          XRAY_LUM_TOT,INCL_ADIABATIC,ND)
+	END IF
+		!Only output if last iteration.
 ! 
 !
 	TA=RLUMST;   CALL MPI_ALLREDUCE(TA,RLUMST,ND,MY_MPI_DP,MPI_SUM,MPI_COMM_WORLD,IERR)
@@ -2127,7 +2121,6 @@
 ! Output hydrodynamical terms to allow check on radiation driving of the wind.
 !
 	IF(MYPE .EQ. 0 .AND. .NOT. SN_MODEL .AND. .NOT. USE_FIXED_J .AND. .NOT. PNT_SRCE_MOD)THEN
-!	IF(.NOT. USE_FIXED_J)THEN
 	  I=18
 	  CALL WRITE_VEC(RLUMST,ND,'RLUMST',743)
 	  CALL WRITE_VEC(FLUX_MEAN,ND,'FLUX_MEAN',743)

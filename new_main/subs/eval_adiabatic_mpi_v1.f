@@ -19,6 +19,9 @@
 	USE CONTROL_VARIABLE_MOD, ONLY : USE_ELEC_HEAT_BAL, COMP_STEQ_T_EHB
  	IMPLICIT NONE
 !
+! Altered  04-Aug-2024 : Fixed output with MPI
+!                        Fixed confusion with passed and global variables in local subroutine.
+!
 ! Altered  29-Dec-2023 : Fixed evaluation of STEQ_T_EHB and its variation.
 ! Altered     Dec-2023 : Added evaluation of STEQ_T_EHB. 
 ! Altered  21-Jun-2004 : Changed to version V3.
@@ -76,6 +79,7 @@
 	INTEGER ISPEC
 	INTEGER ID
 	LOGICAL WRITE_CHK
+	CHARACTER(LEN=80) FILE_NAME
 !
 ! A full linearization is now obsolete, but check to make sure.
 !
@@ -122,6 +126,9 @@
 	  INT_EN(I)=HDKT*INT_EN(I)/POP_ATOM(I)
 	  COL_EN(I)=HDKT*COL_EN(I)/POP_ATOM(I)
 	END DO
+!
+! Scale factor arrises as terms have a factore V/R times T.
+! Thus the scale factor = 1.0E_05/1.0E-10 * 1.0E+04.
 !
 	IF(USE_ELEC_HEAT_BAL .OR. COMP_STEQ_T_EHB)THEN
 	  SCALE=0.1_LDP*BOLTZMANN_CONSTANT()
@@ -171,33 +178,44 @@
 	AD_CR_V=AD_CR_V*T1
 	AD_CR_DT=AD_CR_DT*T1
 !
-	WRITE_CHK=.FALSE.   !TRUE.  -- needs fixing for MPI
+	WRITE_CHK=.TRUE.
 	IF(WRITE_CHK)THEN
-	  OPEN(UNIT=7,FILE='ADIABAT_CHK',STATUS='UNKNOWN')
-	    WRITE(7,'(A)')' '
-	    WRITE(7,'(A)')'  Scaling is for STEQ_VALS(NT,:). This is cgs units scaled'
-	    WRITE(7,'(A)')'  by a factor of 10^10 on 4PI. The 10^9 comes from V . T'
-	    WRITE(7,'(A)')' '
-	    WRITE(7,'(A,ES12.4)')' SCALE=1.0D+09*BOLTZMANN_CONSTANT()/4.0D0/PI=',SCALE
-	    WRITE(7,'(A)')' T1=R(I)-R(I+1)'
-	    WRITE(7,'(A)')' GAMMA=ED/POP_ATOM'
-	    WRITE(7,'(A)')' A=1.5D0*SCALE*(POP_ATOM+ED)*V/T1 * (T(I)-T(I+1)'
-	    WRITE(7,'(A)')' B=SCALE*(POP_ATOM+ED)*V*(3.0D0+SIGMA)/R * T(I)'
-	    WRITE(7,'(A)')' C=1.5D0*SCALE*POP_ATOM*V/T1 * T(I)*(GAMMA(I)-GAMMA(I+1))'
-	    WRITE(7,'(A)')' D=SCALE*POP_ATOM*V/T1* (INT_EN(I)-INT_EN(I+1))'
-	    WRITE(7,'(A)')' '
-	    WRITE(7,'(8X,A,6X,8(7X,A))')'R','     V',' SIGMA','     T',
-	1                 'NU_ION','     A','     B','     C','     D'
-	    DO I=1,ND-1
-	      WRITE(7,'(ES15.7,8(1X,ES12.4))')
-	1              R(I),V(I),SIGMA(I),T(I),INT_EN(I)/HDKT,
+	  WRITE(FILE_NAME,'(I3.3)')MYPE; FILE_NAME='ADIABAT_CHK_'//FILE_NAME
+	  OPEN(UNIT=7,FILE=FILE_NAME,STATUS='UNKNOWN')
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(7,'(A)')' '
+	      WRITE(7,'(A)')'  Scaling is for STEQ_VALS(NT,:). This is cgs units scaled'
+	      WRITE(7,'(A)')'  by a factor of 10^10 on 4PI. The 10^9 comes from V . T'
+	      WRITE(7,'(A)')' '
+	      WRITE(7,'(A,ES12.4)')' SCALE=1.0D+09*BOLTZMANN_CONSTANT()/4.0D0/PI=',SCALE
+	      WRITE(7,'(A)')' T1=R(I)-R(I+1)'
+	      WRITE(7,'(A)')' GAMMA=ED/POP_ATOM'
+	      WRITE(7,'(A)')' A=1.5D0*SCALE*(POP_ATOM+ED)*V/T1 * (T(I)-T(I+1)'
+	      WRITE(7,'(A)')' B=SCALE*(POP_ATOM+ED)*V*(3.0D0+SIGMA)/R * T(I)'
+	      WRITE(7,'(A)')' C=1.5D0*SCALE*POP_ATOM*V/T1 * T(I)*(GAMMA(I)-GAMMA(I+1))'
+	      WRITE(7,'(A)')' D=SCALE*POP_ATOM*V/T1* (INT_EN(I)-INT_EN(I+1))'
+	      WRITE(7,'(A)')' E=SCALE*POP_ATOM*V/T1* (COL_EN(I)-COL_EN(I+1))'
+	      WRITE(7,'(A)')' '
+	      WRITE(7,'(1X,A,8X,A,6X,9(7X,A))')'Depth','R','     V',' SIGMA','     T',
+	1                 'NU_ION','     A','     B','     C','     D','     E'
+	    END IF
+!
+	    DO I=DST,MIN(DEND,ND-1)
+	      WRITE(7,'(I6,3X,ES15.7,9(1X,ES12.4))')
+	1              I,R(I),V(I),SIGMA(I),T(I),INT_EN(I)/HDKT,
 	1              A(I)*(T(I)-T(I+1)),B(I)*T(I),
-	1              C(I)*T(I)*(GAMMA(I)-GAMMA(I+1)),D(I)*(INT_EN(I)-INT_EN(I+1))
+	1              C(I)*T(I)*(GAMMA(I)-GAMMA(I+1)),
+	1              D(I)*(INT_EN(I)-INT_EN(I+1)),
+	1              D(I)*(COL_EN(I)-COL_EN(I+1))
 	    END DO
-	    WRITE(7,'(ES15.7,8(1X,ES12.4))')
-	1              R(ND),V(ND),SIGMA(ND),T(ND),INT_EN(ND)/HDKT,
+	    IF(DEND .EQ. ND)THEN
+	      WRITE(7,'(I6,3X,ES15.7,9(1X,ES12.4))')
+	1              I,R(ND),V(ND),SIGMA(ND),T(ND),INT_EN(ND)/HDKT,
 	1              A(ND)*(T(ND-1)-T(ND)),B(ND)*T(ND),
-	1              C(ND)*T(ND)*(GAMMA(ND-1)-GAMMA(ND)),D(ND)*(INT_EN(ND-1)-INT_EN(ND))
+	1              C(ND)*T(ND)*(GAMMA(ND-1)-GAMMA(ND)),
+	1              D(ND)*(INT_EN(ND-1)-INT_EN(ND)),
+	1              D(ND)*(COL_EN(ND-1)-COL_EN(ND))
+	    END IF
 	  CLOSE(UNIT=7)
 	END IF
 !
@@ -239,7 +257,7 @@
 	  DO I=DST,MIN(ND-1,DEND)
  	    WORK(I)=A(I)*(T(I)-T(I+1)) + B(I)*T(I) +
 	1              C(I)*T(I)*(GAMMA(I)-GAMMA(I+1)) +
-	1              D(I)*(INT_EN(I)-INT_EN(I+1))
+	1              D(I)*(MEAN_EN(I)-MEAN_EN(I+1))
 	  END DO
 	  IF(DEND .EQ. ND)THEN
  	    WORK(ND)=A(ND)*(T(ND-1)-T(ND)) + B(ND)*T(ND) +
