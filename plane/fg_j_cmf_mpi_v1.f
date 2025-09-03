@@ -205,10 +205,7 @@
 	IMPLICIT NONE
 !
 ! Altered 03-Jul-2025 : Fixed bug for NI=2 when using thin outer boundary condition.
-<<<<<<< HEAD
 ! Altered 12-Jun-2025 : Converted from MPI_DOUBLE_PRECISION to MY_MPI_DP
-=======
->>>>>>> galah/main
 ! Altered 18-May-2025 : Improved error checking for outer boundary condition (10-Jun-2025).
 ! Altered 17-Mar-2025 : Bug fix when checking whether NI=1.
 !                       Error messages fixed to point to correct routines.

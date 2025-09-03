@@ -1,0 +1,35 @@
+#
+# Compile options for the intel compiler on the CRC.
+#
+# The variable COMPILE_OPT must be defined in Makefile_defintion.
+#
+
+
+ifeq ($(COMPILE_OPT),crc_intel_nodebug)
+ F90 = mpiifort -qmkl -pg -traceback -nbs 
+ F90nomp = mpiifort -qmkl -pg -traceback   -nbs
+ FG  = -traceback  -extend-source -O2 -I$(MOD_DIR)
+ FD  = -g -O0  -fpe0 -check bounds  -extend-source  -traceback  -I$(MOD_DIR) 
+ FFREE  = -O2 -nbs -traceback -check bounds -extend-source -I$(MOD_DIR)
+ FFRED  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend-source -traceback  
+ BLAS=
+ LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
+-Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
+ X11LIB=-L/usr/X11R6/lib -lX11
+ PGLIB=-L$(PGPLOT_DIR) -lpgplot
+endif
+
+ifeq ($(COMPILE_OPT),crc_intel_debug)
+ F90 = mpiifort -qmkl -pg -traceback -nbs 
+ F90nomp = mpiifort -qmkl -pg -traceback   -nbs
+ FG  = -g -O0  -fpe0 -check bounds  -extend-source  -traceback  -I$(MOD_DIR) 
+ FD  = -g -O0  -fpe0 -check bounds  -extend-source  -traceback  -I$(MOD_DIR) 
+ FFREE  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend-source -traceback  
+ FFRED  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend-source -traceback  
+ BLAS=
+ LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
+-Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
+ X11LIB=-L/usr/X11R6/lib -lX11
+ PGLIB=-L$(PGPLOT_DIR) -lpgplot
+endif
+

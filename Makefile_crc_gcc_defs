@@ -1,0 +1,29 @@
+
+ifeq ($(COMPILE_OPT),crc_gcc_nodebug)
+ F90 = mpif90 -fopenmp -m64
+ F90nomp = mpif90 -m64
+ FG  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -ffpe-trap=invalid -I$(MOD_DIR) 
+ FD  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments   -fbacktrace -I$(MOD_DIR) 
+ FFREE  = -O -fno-backslash -I$(MOD_DIR) -J$(MOD_DIR)
+ FFRED  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
+ BLAS=
+ LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
+    -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
+ X11LIB=-L/usr/X11R6/lib -lX11
+ PGLIB=-L$(PGPLOT_DIR) -lpgplot
+endif
+
+ifeq ($(COMPILE_OPT),crc_gcc_debug)
+ F90 = mpif90 -fopenmp -m64
+ F90nomp = mpif90 -m64
+ FG  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments   -fbacktrace -I$(MOD_DIR) 
+ FD  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments   -fbacktrace -I$(MOD_DIR) 
+ FFREE  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
+ FFRED  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
+ BLAS=
+ LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
+    -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
+ X11LIB=-L/usr/X11R6/lib -lX11
+ PGLIB=-L$(PGPLOT_DIR) -lpgplot
+endif
+

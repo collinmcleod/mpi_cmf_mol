@@ -1,0 +1,30 @@
+
+ifeq ($(COMPILE_OPT),galah_nodebug)
+
+F90 = mpif90 -fallow-argument-mismatch  -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib -fopenmp -m64
+F90nomp = mpif90 -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib 
+FG  = -O -ffixed-line-length-0 -fno-backslash -fd-lines-as-comments -fbacktrace -ffpe-trap=invalid -I$(MOD_DIR)
+FD  = -g  -ffixed-line-length-0 -fbacktrace -fno-backslash -fbounds-check -fd-lines-as-comments -ffpe-trap=invalid,zero,overflow -I$(MOD_DIR) -J$(MOD_DIR)
+FFREE  = -fno-backslash -O -I$(MOD_DIR) -J$(MOD_DIR)
+FFRED  = -fno-backslash -g -I$(MOD_DIR) -J$(MOD_DIR)
+BLAS=-lmy_blas
+LAPACK=-lmy_lapack
+X11LIB=-L/opt/X11/lib -lX11
+PGLIB= -L/Users/jdh/pgplot_gfort/pgplot -lpgplot
+
+endif
+
+
+ifeq ($(COMPILE_OPT),galah_debug)
+F90 = mpif90 -fallow-argument-mismatch  -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib -fopenmp -m64
+F90nomp = mpif90 -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib
+FG  = -g  -ffixed-line-length-0 -fbacktrace -fno-backslash -fbounds-check -fd-lines-as-comments -ffpe-trap=invalid,zero,overflow -I$(MOD_DIR) -J$(MOD_DIR)
+FD  = -g  -ffixed-line-length-0 -fbacktrace -fno-backslash -fbounds-check -fd-lines-as-comments -ffpe-trap=invalid,zero,overflow -I$(MOD_DIR) -J$(MOD_DIR)
+FFREE  = -fno-backslash -g -I$(MOD_DIR) -J$(MOD_DIR)
+FFRED  = -fno-backslash -g -I$(MOD_DIR) -J$(MOD_DIR)
+BLAS=-lmy_blas
+LAPACK=-lmy_lapack
+X11LIB=-L/opt/X11/lib -lX11
+PGLIB= -L/Users/jdh/pgplot_gfort/pgplot -lpgplot
+endif
+
