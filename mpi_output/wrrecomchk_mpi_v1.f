@@ -3,7 +3,6 @@
 ! any ion. The valuse are output to an existing file (overwriting), or
 ! to a new file.
 !
-!
 	SUBROUTINE WRRECOMCHK_MPI_V1(PR,RR,CPR,CRR,CHG_PR,CHG_RR,ADVEC_RR,
 	1                 DIERECOM,ADDRECOM,X_RECOM_1,X_RECOM_2,
 	1                 NT_ION_RATE,NT_ION_RATE_2E_1,NT_ION_RATE_2E_2,
@@ -11,6 +10,8 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered 27-Oct-2025 : Create RECOM_SUM file, and output warning if ionization equalibrium 
+!                          is not valid for an ion
 ! Created 28-Aug-2024 : Based on WRRECOM_CHK_V5
 !
 	INTEGER ID
@@ -192,8 +193,118 @@
 !
 	  MS=MS+10
 10	CONTINUE
+	CALL RECOM_CHK(ND,STRDESC(ID))
+	CALL WRITE_RECOM_SUM(T,TOTRR,STRDESC(ID),ND)
 !
+999	FORMAT(1X,1P,10E12.4)
 	CLOSE(UNIT=LU)
 	RETURN
-999	FORMAT(1X,1P,10E12.4)
-	END
+
+	CONTAINS
+!
+! Routine to output a warning message if there are still significant
+! errors in the recombination balance.
+!
+	SUBROUTINE RECOM_CHK(ND,DESCRIPTOR)
+	USE SET_KIND_MODULE
+	IMPLICIT NONE
+!
+	INTEGER ND
+	CHARACTER(LEN=*) DESCRIPTOR
+!
+	REAL(KIND=LDP) MAX_VAL
+	REAL(KIND=LDP) CHK_VAL
+	LOGICAL, SAVE :: FIRST=.TRUE.
+	INTEGER I,IST,IEND
+	CHARACTER(LEN=300) STRING
+	CHARACTER(LEN=5) IST_STR,IEND_STR
+!
+        STRING='Possible recombination error for '//DESCRIPTOR//' at depths: '
+        IST=0; IEND=0; IST_STR=' '
+	CHK_VAL=1.0_LDP
+	MAX_VAL=0.0_LDP
+!
+        DO I=1,ND
+	  MAX_VAL=MAX(ABS(NETRR(I)),MAX_VAL)
+          IF( ABS(NETRR(I)) .GE. CHK_VAL )THEN
+            IF(IST .EQ. 0)THEN
+               IST=I; IEND=I
+            ELSE
+               IEND=I
+            END IF
+	  END IF
+          IF( (IEND .NE. 0 .AND. IEND .NE. I) .OR. IEND .EQ. ND )THEN
+            WRITE(IST_STR,'(I5)')IST; IST_STR=ADJUSTL(IST_STR)
+            IF(IEND .NE. IST)THEN
+	      WRITE(IEND_STR,'(I5)')IEND
+	      IST_STR=TRIM(IST_STR)//':'//ADJUSTL(IEND_STR)
+	    END IF
+	    STRING=TRIM(STRING)//', '//TRIM(IST_STR)
+	    IST=0; IEND=0
+	  END IF
+	END DO
+!
+	IF(IST_STR .NE. ' ')THEN
+	  IF(FIRST)THEN
+	    WRITE(6,'(A)')' '; FIRST=.FALSE.
+	    WRITE(6,'(A)')' In the following the maximum % error is printed in ()'
+	  END IF
+	  I=INDEX(STRING,':,')
+	  STRING(I+1:)=STRING(I+2:)
+	  WRITE(6,'(1X,A,A,F6.2,A)')TRIM(STRING),' (',MAX_VAL,'%)'
+	END IF
+!
+	RETURN
+	END SUBROUTINE RECOM_CHK
+!
+	SUBROUTINE WRITE_RECOM_SUM(T,TOTRR,STRDESC,ND)
+	USE SET_KIND_MODULE
+	IMPLICIT NONE
+	INTEGER ND
+	REAL(KIND=LDP) T(ND)
+	REAL(KIND=LDP) TOTRR(ND)
+	CHARACTER(LEN=*) STRDESC
+!
+	INTEGER, PARAMETER :: NVEC=6
+	INTEGER I,J,JLIM
+	REAL(KIND=LDP) TVEC(NVEC)
+	REAL(KIND=LDP) RECOM(NVEC)
+	DATA TVEC/0.5_LDP,1.0_LDP,2.0_LDP,5.0_LDP,10.0_LDP,20.0_LDP/
+	INTEGER, SAVE :: LU
+	LOGICAL, SAVE :: FIRST=.TRUE.
+!
+	RECOM=0.0
+	DO J=1,NVEC
+	  DO I=1,ND-1
+	    IF( (T(I)-TVEC(J))*(TVEC(J)-T(I+1)) .GE. 0.0_LDP)THEN
+	      IF(T(I) .NE. T(I+1))THEN
+	        T1=(T(I)-TVEC(J))/(T(I)-T(I+1))
+	      ELSE
+	        T1=0.0_LDP
+	      END IF
+	      RECOM(J)=T1*TOTRR(I+1)+(1.0_LDP-T1)*TOTRR(I)
+	      EXIT
+	    END IF
+	  END DO
+	END DO
+!
+	IF(FIRST)THEN
+	  CALL GET_LU(LU,'In WRITE_RECOM_SUM')
+	  OPEN(UNIT=LU,FILE='RECOM_SUM',STATUS='UNKNOWN')
+	  WRITE(LU,'(/,A)')' Summary of radiaive recombination coefficients as computed by CMFGEN.'
+	  WRITE(LU,'(A)')  ' At low temperatures, LTDR may contribute.' 
+	  WRITE(LU,'(A)')  ' At high temperatures, stimulated recombinaton may be important.'
+	  WRITE(LU,'(A,/)')' The temperatue is in units of 10^4 K.'
+	  WRITE(LU,'(1X,A6,10F10.1)')'Desc/T',(TVEC(J),J=1,NVEC)
+	  FIRST=.FALSE.
+	END IF
+	JLIM=0
+	DO J=1,NVEC
+	  IF(RECOM(J) .NE. 0.0_LDP)JLIM=J
+	END DO
+	WRITE(LU,'(1X,A6,10ES10.2)')STRDESC,(RECOM(J),J=1,JLIM)
+	FLUSH(UNIT=LU)
+!
+	END SUBROUTINE WRITE_RECOM_SUM
+!	
+	END SUBROUTINE WRRECOMCHK_MPI_V1

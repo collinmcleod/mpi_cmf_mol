@@ -5,12 +5,16 @@
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
 !
-! Altered: 13-Aug-2025: LOC_STEQ_ADV now nly defined for MYPE=0
+! Altered: 28-Oct-2025: Recobination rate now computed with respect to total ion population.
+!                       This fixes a diagnostic issue when the lower term is split.
+!                       Fixed bug created when merging galag and CRC versions.
+! Altered: 13-Aug-2025: LOC_STEQ_ADV now only defined for MYPE=0
 !
 	INTEGER ND
 	REAL(KIND=LDP) LOC_X(ND)
 	REAL(KIND=LDP) LOC_NT_2E(ND)
 	REAL(KIND=LDP), ALLOCATABLE :: LOC_STEQ_ADV(:,:)
+	REAL(KIND=LDP), ALLOCATABLE :: TMP_ION(:)
 	INTEGER ID, I, K
 	INTEGER LU
 	INTEGER SCAT_SIZE(0:NTHREAD-1)
@@ -33,7 +37,8 @@
 ! LOC_STEQ_ADV gets the data from all processes, and only needs to be defined on MYPE=0
 !
 	IF(MYPE .EQ. 0)THEN
- 	  ALLOCATE(LOC_STEQ_ADV(ND,NUM_IONS))
+ 	  ALLOCATE(LOC_STEQ_ADV(ND,NUM_IONS)); LOC_STEQ_ADV=0.0_LDP
+	  ALLOCATE(TMP_ION(ND))
 	END IF
 !
 	CALL GET_LU(LU,'In WRITE_RECOM_MPI_V1')
@@ -69,7 +74,7 @@
 	1                       SCAT_SIZE,SCAT_DISP,MY_MPI_DP,IZERO,MPI_COMM_WORLD,IERR)
 	    CALL MPI_GATHERV(ATM(ID)%X_RECOM,SCAT_SIZE(MYPE),MY_MPI_DP,ROOT(ID)%X_RECOM,
 	1                       SCAT_SIZE,SCAT_DISP,MY_MPI_DP,IZERO,MPI_COMM_WORLD,IERR)
-	    CALL MPI_GATHERV(SE(ID)%STEQ_ADV,SCAT_SIZE(MYPE),MY_MPI_DP,LOC_STEQ_ADV,
+	    CALL MPI_GATHERV(SE(ID)%STEQ_ADV,SCAT_SIZE(MYPE),MY_MPI_DP,LOC_STEQ_ADV(1,ID),
 	1                       SCAT_SIZE,SCAT_DISP,MY_MPI_DP,IZERO,MPI_COMM_WORLD,IERR)
 	  END IF
 	END DO
@@ -86,6 +91,16 @@
 	        LOC_NT_2E=ROOT(ID-1)%NTIXzV_2E
 	      END IF
 	    END IF
+	    IF(ATM(ID+1)%XzV_PRES)THEN
+	      TMP_ION=0.0D0
+	      DO I=1,ND
+	        DO K=1,ATM(ID+1)%NXzV
+	          TMP_ION(I)=TMP_ION(I)+ROOT(ID+1)%XzV(K,I)
+	        END DO
+	      END DO
+	    ELSE
+	      TMP_ION=ROOT(ID)%DXzV
+	    END IF
 	    TMP_STRING=TRIM(ION_ID(ID))//'PRRR'
 	    CALL WRRECOMCHK_MPI_V1(ROOT(ID)%APRXzV, ROOT(ID)%ARRXzV,
 	1          ROOT(ID)%CPRXzV, ROOT(ID)%CRRXzV,
@@ -93,10 +108,12 @@
 	1          ROOT(ID)%DIERECOM,  ROOT(ID)%ADDRECOM,
 	1          LOC_X, ROOT(ID)%X_RECOM,
 	1          ROOT(ID)%NTIXzV,LOC_NT_2E, ROOT(ID)%NTIXzV_2E,
-	1          R,T,ED,ROOT(ID)%DXzV,ATM(ID)%NXzV,
+	1          R,T,ED,TMP_ION,ATM(ID)%NXzV,
 	1          ND,LU,TMP_STRING,ION_ID,ID)
 	  END IF
+!
 	END DO
 !
+	DEALLOCATE (TMP_ION,LOC_STEQ_ADV)
 	RETURN
 	END

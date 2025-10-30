@@ -1,35 +1,47 @@
-#!/bin/csh
+#!/bin/tcsh
 
 #
-# Simple script to cycle through all the sub-directories
-# and compare Makefile, *.f, and *.INC files in two
-# different CMF distribution lists.
+# Simple script to cycle through all the sub-directories and compare 
+# Makefile, *.f, and *.INC files in two different MPI distributions of MPI_CMFGEN.
 #
 
-echo " "
-echo "This program compares all Makefiles, Fortran files, and *.INC files"
-echo "in 2 CMFGEN directory structures. If one directory arguments is supplied,"
-echo "the comparison directory is taken as the pwd. Two directory arguments may"
-echo "also be supplied. Output is to Diff_sum. Diff_output is corrupted."
-echo " "
-pwd
-echo " "
+setenv RED "\033[31m"
+setenv GREEN "\033[32m"
+setenv YELLOW "\033[33m"
+setenv BLUE "\033[34m"
+setenv RESET "\033[0m"
+
+echo "${RED}" > /dev/tty
+echo "  This program compares all Makefiles, Fortran files, and *.INC files" > /dev/tty
+echo "  in 2 MPI_CMFGEN directory structures. If one directory arguments is supplied," > /dev/tty
+echo "  the comparison directory is taken as the pwd. Two directory arguments may" > /dev/tty
+echo "  also be supplied. Output is to Diff_sum. Diff_output is corrupted." > /dev/tty
+echo " " > /dev/tty
+echo "  IT IS NOT TO BE USED FOR COMPARING CMFGEN DISTRIBUTIONS ${RESET}" > /dev/tty
+echo " " > /dev/tty
 
 if ($1 == "")then
-  echo "Need to supply at least one directory  argument"
+  echo " Need to supply at least one directory  argument" > /dev/tty
   exit
 endif
 
 rm -f Diff_sum
 
 if ($2 == "")then
-#  set X1=$dirstack
   set X1="."
   set X2=$1
 else
   set X1=$1
   set X2=$2
 endif
+
+echo "${BLUE}  Current    directory is" $PWD > /dev/tty
+echo "  Comparison directory is" $X2 > /dev/tty
+echo "${RESET} " > /dev/tty
+
+echo -n " Please enter any character to continue: " > /dev/tty
+set jnk_char = $<
+echo " "  > /dev/tty
 
 echo " " > Diff_sum
 echo "Current directory is:" >> Diff_sum
@@ -42,28 +54,19 @@ cat Diff_output >> Diff_sum
 $cmfdist/com/main_diff.sh $X1/blas $X2/blas
 cat Diff_output >> Diff_sum
 
-$cmfdist/com/main_diff.sh $X1/disp $X2/disp
-cat Diff_output >> Diff_sum
-
-$cmfdist/com/main_diff.sh $X1/disp/subs $X2/disp/subs
-cat Diff_output >> Diff_sum
-
 $cmfdist/com/main_diff.sh $X1/lpack $X2/lpack
 cat Diff_output >> Diff_sum
 
-$cmfdist/com/main_diff.sh $X1/lte_hydro $X2/lte_hydro
-cat Diff_output >> Diff_sum
-
 $cmfdist/com/main_diff.sh $X1/main $X2/main
-cat Diff_output >> Diff_sum
-
-$cmfdist/com/main_diff.sh $X1/misc $X2/misc
 cat Diff_output >> Diff_sum
 
 $cmfdist/com/main_diff.sh $X1/new_main $X2/new_main
 cat Diff_output >> Diff_sum
 
 $cmfdist/com/main_diff.sh $X1/new_main/mod_subs $X2/new_main/mod_subs
+cat Diff_output >> Diff_sum
+
+$cmfdist/com/main_diff.sh $X1/mpi_output $X2/mpi_output
 cat Diff_output >> Diff_sum
 
 $cmfdist/com/main_diff.sh $X1/new_main/gam_transport $X2/new_main/gam_transport
@@ -87,19 +90,7 @@ cat Diff_output >> Diff_sum
 $cmfdist/com/main_diff.sh $X1/newsubs $X2/newsubs
 cat Diff_output >> Diff_sum
 
-$cmfdist/com/main_diff.sh $X1/obs $X2/obs
-cat Diff_output >> Diff_sum
-
-$cmfdist/com/main_diff.sh $X1/pgplt $X2/pgplt
-cat Diff_output >> Diff_sum
-
 $cmfdist/com/main_diff.sh $X1/plane $X2/plane
-cat Diff_output >> Diff_sum
-
-$cmfdist/com/main_diff.sh $X1/spec_plt $X2/spec_plt
-cat Diff_output >> Diff_sum
-
-$cmfdist/com/main_diff.sh $X1/spec_plt/subs $X2/spec_plt/subs
 cat Diff_output >> Diff_sum
 
 $cmfdist/com/main_diff.sh $X1/subs $X2/subs

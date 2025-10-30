@@ -25,6 +25,7 @@ C
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered 01-Sep-2025 : Replace ETIME by call to CPU_TIME.
 ! Altered 18-Feb-2013 : MAX_IDS increased. STACK introduced.
 !                       Routine should now be much more efficient, with less instructions per call.
 ! Altered 08-Mar-2010 : Change variable for system clock to 8 bytes.
@@ -38,7 +39,7 @@ C
 !
 	INTEGER, PARAMETER :: MAX_IDS=100
 !
-        REAL(KIND=LDP), SAVE :: T0,OVERHEAD
+        REAL(KIND=LDP), SAVE :: T0,T1,dT,OVERHEAD
         REAL(KIND=LDP), SAVE :: ST_CPU(MAX_IDS)
 	REAL(KIND=LDP), SAVE :: CPUTOT(MAX_IDS)
         REAL(KIND=LDP), SAVE :: WALLTOT(MAX_IDS)
@@ -61,7 +62,6 @@ C
 	INTEGER, SAVE :: CNT=0
 	EXTERNAL TERM_OUT
 !
-	REAL*4 ETIME,TARRY(2)
 	LOGICAL, PARAMETER :: OUT_DIAGNOSTICS=.FALSE. 
 !
 	LOGICAL, SAVE :: FIRST_TOO_MANY
@@ -107,8 +107,9 @@ C
 	  NUM_IDS=0
 	  NUM_STACK=0
 	  CALL SYSTEM_CLOCK(IC0,IR0,IM0);    RR0=IR0
-          T0=ETIME(TARRY)
-          OVERHEAD=2.0_LDP*(ETIME(TARRY)-T0)
+          CALL CPU_TIME(T0)
+	  CALL CPU_TIME(T1)
+          OVERHEAD=2.0_LDP*(T1-T0)
 	  CALL GET_LU(LUOUT,'TIMING file in TUNE')
 	  OPEN(UNIT=LUOUT,STATUS='REPLACE',FILE='TIMING')
 	  WRITE(LUOUT,*)' '
@@ -128,7 +129,7 @@ C
 	      NUM_STACK=NUM_STACK+1
 	      STACK(NUM_STACK)=I
 	      CALL SYSTEM_CLOCK(IST_WALL(I))
-	      ST_CPU(I)=ETIME(TARRY)
+	      CALL CPU_TIME(ST_CPU(I))
 	      RETURN	
 	    END IF
 	  END DO
@@ -139,7 +140,7 @@ C
 	    NUM_STACK=NUM_STACK+1
 	    STACK(NUM_STACK)=I
 	    CALL SYSTEM_CLOCK(IST_WALL(I))
-	    ST_CPU(I)=ETIME(TARRY)
+	    CALL CPU_TIME(ST_CPU(I))
 	    RETURN	
 	  END IF
 	  IF(FIRST_TOO_MANY)THEN
@@ -159,7 +160,7 @@ C
 !
 ! If TUNE has called been called correctly, then STACK should always be set correctly.
 !
-          T0=ETIME(TARRY)
+          CALL CPU_TIME(T0)
 	  CALL SYSTEM_CLOCK(IEND_WALL)
 	  ACTIVE_ID=STACK(NUM_STACK)
 	  IF (IDENT .EQ. IDLIST(ACTIVE_ID))THEN
@@ -188,7 +189,8 @@ C
 !
 	  IF(CURRENT_ID .NE. 0)THEN
 	    I=CURRENT_ID
-	    CPUTOT(I)=CPUTOT(I)+(T0-ST_CPU(I)-OVERHEAD)
+	    dT=T0-ST_CPU(I)-OVERHEAD
+	    CPUTOT(I)=CPUTOT(I)+MAX(0.0_LDP,dT)
 	    IT1=IEND_WALL-IST_WALL(I)
 	    IF(IT1 .LT. 0)IT1=IT1+IM0
 	    WALLTOT(I)=WALLTOT(I)+IT1/RR0

@@ -17,6 +17,7 @@
 	USE MOD_CMFGEN
 	IMPLICIT NONE
 !
+! Altered 04-Oct-2025 : Added SPLR' clumping option.
 ! Altered 29-Jul-2023 : Update VTURB_VEC -- now allow for POW law option (LONG ver -- 15-Oct-2023).
 ! Altered 16-Apr-2023 : Added RUN2 and REX2 from Paco (Paul now uses RUNA which is
 !	                      the same option).
@@ -255,6 +256,8 @@
 	      CLUMP_FAC(K)=10**T2
 	      IF(CLUMP_FAC(K).GT. 1._LDP) CLUMP_FAC(K)=1.0_LDP
 	    END DO
+	  ELSE IF(CLUMP_LAW(1:4) .EQ. 'SPLR')THEN
+	    CALL SPL_CLUMP_R(CLUMP_FAC,R,ND)
 	  ELSE IF(CLUMP_LAW(1:6) .EQ. 'SPLINE')THEN
 	    CALL SPL_CLUMP(CLUMP_FAC,V,ND)
 !

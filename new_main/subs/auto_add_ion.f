@@ -9,6 +9,7 @@
 	USE CONTROL_VARIABLE_MOD
 	IMPLICIT NONE
 !
+! Altered: 19-Sep-2025 - Fixed bug in call to SUB_GUESS_DC_V2 (fixed in $CMFDIST version 26-Aug-2024)
 ! Altered: 25-Jul-2024 - Changed call to SUB_GUESS_DC_V2
 !                           DCs estimates no only computed for levesl in the model.
 ! Altered: 12-Aug-2019 - Better error reporting.
@@ -52,8 +53,8 @@
 !
 !	  WRITE(6,'(L,3X,3I4)')FILE_PRES,FST_ID
 	  DO NID=FST_ID-1,SPECIES_BEG_ID(ISPEC),-1
-	    WRITE(6,*)'Generating input file for ',SPECIES(ISPEC),ION_ID(NID)
-	    CALL SUB_GUESS_DC_V2(ATM(ID)%NXzV_F,ION_ID(NID),ION_ID(NID),ATM(NID)%GXZV_F(1),ATM(NID+1)%GXZV_F(1))
+	    WRITE(6,*)'Generating input file for ',SPECIES(ISPEC),ION_ID(NID),ATM(NID)%NXzV_F
+	    CALL SUB_GUESS_DC_V2(ATM(NID)%NXzV_F,ION_ID(NID),ION_ID(NID),ATM(NID)%GXZV_F(1),ATM(NID+1)%GXZV_F(1))
 	  END DO
 !
 ! Now look at the high ionization stages.
@@ -74,7 +75,7 @@
 !
 	  DO NID=LST_ID+1,SPECIES_END_ID(ISPEC)-1
 	    WRITE(6,*)'Generating input file for ',SPECIES(ISPEC),ION_ID(NID)
-	    CALL SUB_GUESS_DC_V2(ATM(ID)%NXzV_F,ION_ID(NID),ION_ID(NID-1),ATM(NID)%GXZV_F(1),ATM(NID-1)%GXZV_F(1))
+	    CALL SUB_GUESS_DC_V2(ATM(NID)%NXzV_F,ION_ID(NID),ION_ID(NID-1),ATM(NID)%GXZV_F(1),ATM(NID-1)%GXZV_F(1))
 	  END DO
 !
 ! When no ionization stages are present, we need to add all ionization stages.
@@ -83,7 +84,7 @@
 	    WRITE(6,*)SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1; FLUSH(UNIT=6)
 	    DO NID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
 	      WRITE(6,*)'Generating input file for ',SPECIES(ISPEC),ION_ID(NID)
-	      CALL SUB_GUESS_DC_V2(ATM(ID)%NXzV_F,ION_ID(NID),ION_ID(NID),ATM(NID)%GXZV_F(1),ATM(NID)%GXZV_F(1))
+	      CALL SUB_GUESS_DC_V2(ATM(NID)%NXzV_F,ION_ID(NID),ION_ID(NID),ATM(NID)%GXZV_F(1),ATM(NID)%GXZV_F(1))
 	    END DO
 	  END IF
 !

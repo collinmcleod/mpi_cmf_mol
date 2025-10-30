@@ -1,3 +1,6 @@
+!
+! Altered 20-Sep-2025: Fixed broadcasting of IREC.
+!
 	  IF(MYPE .EQ. 0)WRITE(6,*)'Start of end iteration section',MYPE,MAXCH,FIXED_T
 !
 !*****************************************************************************
@@ -146,12 +149,12 @@
 	         CALL GREY_T_ITERATE_MPI_V1(POPS,Z_POP,NU,NU_EVAL_CONT,FQW,
 	1               LUER,LUIN,NC,ND,NP,NT,NCF,N_LINE_FREQ,MAX_SIM)
                  MAIN_COUNTER=MAIN_COUNTER+1
-	         WRITE(6,*)'GREY_T_ITEARTE needs to be fixed for SET_NEXT_ITERATION'; STOP
+!	         WRITE(6,*)'GREY_T_ITEARTE needs to be fixed for SET_NEXT_ITERATION'; STOP
 	         IF(MYPE .EQ. 0)THEN
 	           CALL SCR_RITE_V2(R,V,SIGMA,POPS,IREC,MAIN_COUNTER,RITE_N_TIMES,
 	1               LAST_NG,WRITE_RVSIG,NT,ND,LUSCR,NEWMOD)
-	           CALL MPI_BCAST(IREC,IONE,MPI_INTEGER,IZERO,MPI_COMM_WORLD,IERR)
 	         END IF
+	         CALL MPI_BCAST(IREC,IONE,MPI_INTEGER,IZERO,MPI_COMM_WORLD,IERR)
 	       END IF
 	       I=WORD_SIZE*(NDEXT+1)/UNIT_SIZE
 !

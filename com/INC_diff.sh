@@ -1,10 +1,10 @@
 #!/bin/csh
 #
 echo " "
-echo "This program compares *.INC files in two directories"
-echo "If one directory arguments is supplied, the comparison directory is taken as the pwd"
-echo "Two directory arguments may also be supplied"
-echo "Output is to Diff_output"
+echo " This program compares *.INC files in two directories"
+echo " If one directory arguments is supplied, the comparison directory is taken as the pwd"
+echo " Two directory arguments may also be supplied"
+echo " Output is to Diff_output"
 echo " "
 
 rm -f Diff_output

@@ -88,6 +88,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(smooth_pops_as_we_iterate.o)\
       $(LIB)(solveba_mpi_v1.o)\
       $(LIB)(spl_clump.o)\
+      $(LIB)(spl_clump_r.o)\
       $(LIB)(steq_multi_mpi_v1.o)\
       $(LIB)(steqne_v4.o)\
       $(LIB)(steq_advec_mpi_v2.o)\

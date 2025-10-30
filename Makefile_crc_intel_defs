@@ -19,6 +19,8 @@ ifeq ($(COMPILE_OPT),crc_intel_nodebug)
  PGLIB=-L$(PGPLOT_DIR) -lpgplot
 endif
 
+# LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
+
 ifeq ($(COMPILE_OPT),crc_intel_debug)
  F90 = mpiifort -qmkl -pg -traceback -nbs 
  F90nomp = mpiifort -qmkl -pg -traceback   -nbs

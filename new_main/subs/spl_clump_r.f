@@ -1,0 +1,72 @@
+!
+! Routine reads in a set of nodes and clumping factors at those nodes.
+! The routine then uses monotonic interpolation to create the model
+! clumping factors. At presnet the clumping factors are assumed to
+! be functions of velocity.
+!
+        SUBROUTINE SPL_CLUMP_R(CLUMP_FAC,R,ND)
+	USE MPI
+	USE SET_KIND_MODULE
+	IMPLICIT NONE
+!
+! Created: 30-Jan-2022 : Osiris
+!
+	INTEGER ND
+	REAL(KIND=LDP) R(ND)
+	REAL(KIND=LDP) CLUMP_FAC(ND)
+!
+	INTEGER NPAR
+	REAL(KIND=LDP) RLOC(ND)
+	REAL(KIND=LDP), ALLOCATABLE :: RNODE(:)
+	REAL(KIND=LDP), ALLOCATABLE :: FVAL(:)
+!
+	INTEGER IOS
+	INTEGER LU,I,J
+	CHARACTER(LEN=20) R_FORMAT
+!
+	LU=10
+	OPEN(UNIT=LU,FILE='CLUMP_R_NODES',STATUS='OLD',IOSTAT=IOS,ACTION='READ')
+	READ(LU,*)NPAR
+	READ(LU,'(A)')R_FORMAT; R_FORMAT=ADJUSTL(R_FORMAT)
+	ALLOCATE(RNODE(NPAR+2),FVAL(NPAR+2))
+	DO I=1,NPAR
+	  READ(LU,*)RNODE(I),FVAL(I)
+	END DO
+	CLOSE(UNIT=10)
+!
+	IF(R_FORMAT .EQ. 'LOG_NORM_R')THEN
+	  RLOC(1:ND)=LOG10(R(1:ND)/R(ND))
+	ELSE IF(R_FORMAT .EQ. 'NORM_R')THEN
+	  RLOC(1:ND)=R(1:ND)/R(ND)
+	ELSE IF(R_FORMAT .EQ. 'R')THEN
+	  RLOC(1:ND)=R(1:ND)
+	ELSE 
+	  WRITE(6,*)'Invalid R option in SPL_CLUMP_R'
+	  STOP
+	END IF
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'In SPL_CLUMP_F R_FORMAT is',R_FORMAT
+	END IF
+!
+	IF(RNODE(1) .LT. RLOC(1))THEN
+	  RNODE(2:NPAR+1)=RNODE(1:NPAR)
+	  FVAL(2:NPAR+1)=FVAL(1:NPAR)
+	  RNODE(1)=RLOC(1); FVAL(1)=FVAL(2)
+	  NPAR=NPAR+1
+	END IF
+!
+	IF(RNODE(NPAR) .GT. RLOC(ND))THEN
+	  NPAR=NPAR+1
+	  RLOC(NPAR)=RLOC(ND)
+	  FVAL(NPAR)=1.0_LDP
+	END IF
+!
+	I=1
+	CALL MON_INTERP(CLUMP_FAC,ND,I,RLOC,ND,FVAL,NPAR,RNODE,NPAR)
+	DEALLOCATE(RNODE,FVAL)
+	IF(MYPE .EQ. 0)THEN
+	  WRITE(6,*)'Done interpoalion of clump values'
+	END IF
+!
+	RETURN	
+	END
