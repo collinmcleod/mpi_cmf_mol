@@ -131,13 +131,18 @@ C
           CALL CPU_TIME(T0)
 	  CALL CPU_TIME(T1)
           OVERHEAD=2.0_LDP*(T1-T0)
-	  WRITE(FILE_NAME,'(I3.3)')MYPE; FILE_NAME='TIMING_'//FILE_NAME
+	  IF(ONLY_PROC_ZERO)THEN
+	    FILE_NAME='TIMING'
+	  ELSE
+	    WRITE(FILE_NAME,'(I3.3)')MYPE; FILE_NAME='TIMING_'//FILE_NAME
+	  END IF
 	  CALL GET_LU(LUOUT,'TIMING file in TUNE')
 	  OPEN(UNIT=LUOUT,STATUS='REPLACE',FILE=FILE_NAME)
 	  WRITE(LUOUT,*)' '
 	  WRITE(LUOUT,*)'Overhead is ',OVERHEAD
 	  WRITE(LUOUT,*)'   Count rate for wall clock is',IR0
 	  WRITE(LUOUT,*)'Maximum count for wall clock is',IM0
+	  IF(ONLY_PROC_ZERO)WRITE(LUOUT,*)'Timing is for process 0'
 	  WRITE(LUOUT,*)' '
 	  CLOSE(LUOUT)
         ENDIF
@@ -166,7 +171,7 @@ C
 	    RETURN	
 	  END IF
 	  IF(FIRST_TOO_MANY)THEN
-	    WRITE (LUOUT,'(A)')' ***** TOO MANY TUNING POINTS '
+	    WRITE (LUOUT,'(A,I3)')' ***** TOO MANY TUNING POINTS -- MYPE=',MYPE
 	    WRITE (LUOUT,'(A)')' Current TUNE points follow:'
 	    DO I=1,NUM_IDS
 	      WRITE(6,'(A)')TRIM(IDLIST(I))
