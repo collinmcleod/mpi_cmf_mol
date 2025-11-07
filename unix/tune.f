@@ -21,21 +21,9 @@ C
 C NB: Total time for each code section is accumulated on successive calls.
 C i.e. TUNE(1,'Unique ID') does not initialize the counters.
 C
-        SUBROUTINE TUNE(LRUN,IDENT)
+	MODULE TUNE_DATA
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
-!
-! Altered 01-Sep-2025 : Replace ETIME by call to CPU_TIME.
-! Altered 18-Feb-2013 : MAX_IDS increased. STACK introduced.
-!                       Routine should now be much more efficient, with less instructions per call.
-! Altered 08-Mar-2010 : Change variable for system clock to 8 bytes.
-!                          This prevents loss of elapsed time due to clock rollover.
-! Altered 11-Nov-2000 : Call to F90 SYSTEM_CLOCK routine implemented.
-!                       Wall time now returened as in original VMS routine.
-!                       Counters now initialized if LRUN=0 is passed.
-!
-	INTEGER LRUN
-	CHARACTER*(*) IDENT
 !
 	INTEGER, PARAMETER :: MAX_IDS=100
 !
@@ -64,17 +52,51 @@ C
 !
 	LOGICAL, PARAMETER :: OUT_DIAGNOSTICS=.FALSE. 
 !
-	LOGICAL, SAVE :: FIRST_TOO_MANY
-	LOGICAL, SAVE :: FIRST_UNMATCHED
-	LOGICAL, SAVE :: FIRSTTIME
-	DATA FIRSTTIME/.TRUE./
-	DATA FIRST_TOO_MANY/.TRUE./
-	DATA FIRST_UNMATCHED/.TRUE./
+	LOGICAL, SAVE :: ONLY_PROC_ZERO=.TRUE.
+	LOGICAL, SAVE :: DO_CALL_DIAGNOSTICS=.FALSE.
+	LOGICAL, SAVE :: FIRST_TOO_MANY=.TRUE.
+	LOGICAL, SAVE :: FIRST_UNMATCHED=.TRUE.
+	LOGICAL, SAVE :: FIRSTTIME=.TRUE.
+	CHARACTER(LEN=30), SAVE :: FILE_NAME
 !
-! We will only get time for process 0
+	END MODULE TUNE_DATA
 !
-	IF(OUT_DIAGNOSTICS)THEN
-!	  WRITE(280+MYPE,'(I4,2X,A)')LRUN,TRIM(IDENT); FLUSH(280+MYPE)
+	SUBROUTINE INIT_TUNE_ROUTINE(SET_ALL_PROCESSES,SET_CALL_DIAGNOSTICS)
+	USE SET_KIND_MODULE
+	USE TUNE_DATA
+	LOGICAL SET_ALL_PROCESSES
+	LOGICAL SET_CALL_DIAGNOSTICS
+!
+	IF(SET_ALL_PROCESSES)ONLY_PROC_ZERO=.FALSE.
+	IF(SET_CALL_DIAGNOSTICS)DO_CALL_DIAGNOSTICS=.TRUE.
+!
+	RETURN
+	END
+!
+        SUBROUTINE TUNE(LRUN,IDENT)
+	USE SET_KIND_MODULE
+	USE TUNE_DATA
+	IMPLICIT NONE
+!
+! Altered 07-Nov-2025 : Default is to output tuning information only for processor zero.
+!                         By calling INIT_TUNE_ROUTINE you can change the default to write 
+!                         output for all processors. The same routine can also output call 
+!                         information for process 0 for debugging help.
+! Altered 01-Sep-2025 : Replace ETIME by call to CPU_TIME.
+! Altered 18-Feb-2013 : MAX_IDS increased. STACK introduced.
+!                       Routine should now be much more efficient, with less instructions per call.
+! Altered 08-Mar-2010 : Change variable for system clock to 8 bytes.
+!                          This prevents loss of elapsed time due to clock rollover.
+! Altered 11-Nov-2000 : Call to F90 SYSTEM_CLOCK routine implemented.
+!                       Wall time now returened as in original VMS routine.
+!                       Counters now initialized if LRUN=0 is passed.
+!
+	INTEGER LRUN
+	CHARACTER*(*) IDENT
+!
+	IF(MYPE .NE. 0 .AND. ONLY_PROC_ZERO)RETURN
+!
+	IF(DO_CALL_DIAGNOSTICS)THEN
 	  IF(MYPE .EQ. 0)THEN
 	    IF(LRUN .EQ. 1 .AND. IDENT .NE. LAST_2_CALL)THEN
 	      IF(CNT .NE. 0)WRITE(6,'(I4,2X,A,I10)')LRUN,LAST_2_CALL,CNT
@@ -92,7 +114,6 @@ C
 	  END IF
 	END IF
 !
-	IF(MYPE .NE. 0)RETURN
 	IF(FIRSTTIME)THEN
           FIRSTTIME=.FALSE.
           DO  I=1,MAX_IDS
@@ -110,8 +131,9 @@ C
           CALL CPU_TIME(T0)
 	  CALL CPU_TIME(T1)
           OVERHEAD=2.0_LDP*(T1-T0)
+	  WRITE(FILE_NAME,'(I3.3)')MYPE; FILE_NAME='TIMING_'//FILE_NAME
 	  CALL GET_LU(LUOUT,'TIMING file in TUNE')
-	  OPEN(UNIT=LUOUT,STATUS='REPLACE',FILE='TIMING')
+	  OPEN(UNIT=LUOUT,STATUS='REPLACE',FILE=FILE_NAME)
 	  WRITE(LUOUT,*)' '
 	  WRITE(LUOUT,*)'Overhead is ',OVERHEAD
 	  WRITE(LUOUT,*)'   Count rate for wall clock is',IR0
@@ -203,7 +225,7 @@ C
 C
 	ELSE IF (LRUN .EQ. 3) THEN
 	  CALL GET_LU(LUOUT,'TIMING file in TUNE(3)')
-	  OPEN(UNIT=LUOUT,STATUS='OLD',ACTION='WRITE',POSITION='APPEND',FILE='TIMING')
+	  OPEN(UNIT=LUOUT,STATUS='OLD',ACTION='WRITE',POSITION='APPEND',FILE=FILE_NAME)
 	  WRITE(LUOUT,'(8X,''Identifier'',11x,''Elapsed'',11x,''  CPU'')')
 	  WRITE(LUOUT,'(29x,''  Time '',11x,''  Time'')')
 	  DO I=1,MAX_IDS

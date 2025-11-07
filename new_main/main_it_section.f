@@ -1,5 +1,8 @@
 ! 
 !
+! Altered 07-Nov-2025: Now only compute DTDR when using the diffusion approximation.
+!                        Added an MPI_BREAK statement at end of 10000 continnum loop.
+!                        This break mainly has an effect for full iterations. 
 ! Altered 13-Aug-2025: Several call related to ADVECTION, ADIABATIC cooling, and EHB rouines were
 !                       updated during august. Fixed inadvertant line deletion.
 ! Altered 09-Jul-2025: Now call EVAL_SHOCK_POWER_MPI_V1. 
@@ -299,7 +302,9 @@
 	CALL TUNE(IONE,'DTDR')
 	DTDR=0.0_LDP
 	SECTION='DTDR'
-	IF(IMPURITY_CODE .OR. USE_FIXED_J .OR. FLUX_CAL_ONLY .OR. 
+	IF(INNER_BND_METH .NE. 'DIFFUSION')THEN
+	  DIFFW(1:NT)=0.0_LDP
+	ELSE IF(IMPURITY_CODE .OR. USE_FIXED_J .OR. FLUX_CAL_ONLY .OR. 
 	1                     (RD_LAMBDA .AND. NEWMOD .AND. .NOT. SN_MODEL))THEN
 	  DTDR=(T(ND)-T(ND-1))/(R(ND-1)-R(ND))
 	  DIFFW(1:NT)=0.0_LDP
@@ -1754,6 +1759,12 @@
 	1                           BA_T(VAR_INDX,DIAG_INDX,DPTH_INDX)+BA_T_PAR(VAR_INDX,DPTH_INDX),
 	1                           BA_T(NT,DIAG_INDX,DPTH_INDX)+BA_T_PAR(NT,DPTH_INDX)
 	  END IF
+	END IF
+!
+	IF(COMPUTE_BA .AND. .NOT. LAMBDA_ITERATION)THEN
+	  CALL TUNE(IONE,'BAR_10000')
+	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	  CALL TUNE(ITWO,'BAR_10000')
 	END IF
 !
 10000	CONTINUE
