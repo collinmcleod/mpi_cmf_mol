@@ -112,7 +112,6 @@
 	  DO J=1,RAY(IP)%NZ
 	    IF(RAY(IP)%R_RAY(J) .EQ. R(ID))THEN
 	      RAY(IP)%LNK(ID)=J
-	      WRITE(160,*)IP,J,RAY(IP)%LNK(ID)
 	      ID=ID+1
 	    END IF
 	  END DO

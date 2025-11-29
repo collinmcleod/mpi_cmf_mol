@@ -243,6 +243,7 @@
 	RELAX_PARAM=0.8_LDP
 	LUER=ERROR_LU()
 	NG_CNT=30
+	UPDATE_RELAX=.FALSE.
 	IF( INDEX(TRI_SOL_OPTIONS,'UPDATE_RELAX') .NE. 0 )UPDATE_RELAX=.TRUE.
 	IF(MYPE .EQ. 0)THEN
 	  WRITE(6,*)'UPDATE_RELAX=',UPDATE_RELAX,TRIM(TRI_SOL_OPTIONS)
@@ -479,7 +480,8 @@
 	      NEW_EST(J,K)=STEQ(J,K)*COL_SF(J,K)
 	    END DO
 	    IF(RELAX_PARAM .LT. 0.1_LDP)THEN
-	       
+	      ERR_EST(K)=200.0_LDP		!Will force a switch to diagonal operator
+	      IT_COUNTER=200
 	    ELSE IF(IT_COUNTER .GE. 2)THEN
 	      DO J=1,N
 	        NEW_EST(J,K)=OLD_EST(J,K)+RELAX_PARAM*(NEW_EST(J,K)-OLD_EST(J,K))
@@ -521,7 +523,7 @@
 !
 ! Use diagonal solution.
 !
-	    WRITE(6,'(/,A)')' Solution of tri-diagonal equations failed to converged'
+	    WRITE(6,'(/,A)')' Solution of tri-diagonal equations failed to converged: MYPE=',MYPE
 	    WRITE(6,'(A,/)')' Using diagonal solution'
 	    DO K=DST,DEND
 	      STEQ(:,K)=STEQ_STORE(:,K)
@@ -541,6 +543,7 @@
 	      END DO
 	      STEQ(:,DST:DEND)=NEW_EST(:,DST:DEND)
             END DO
+	    CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	    EXIT
 !
 ! Check if converging. If not converging we restart the iterative procedure, and lower

@@ -296,6 +296,7 @@
 	    NON_THERMAL_IT_CNTRL=1
 	    NT_SOURCE_TYPE='BELL_SHAPE'
 	    READ_NON_THERM_SPEC=.FALSE.
+	    VERBOSE_NON_THERMAL_OUTPUT=.FALSE.
 	    IF(TREAT_NON_THERMAL_ELECTRONS)THEN
 	      CALL RD_STORE_INT(NT_NKT,'NT_NKT',L_FALSE,'Number of energy bins')
 	      CALL RD_STORE_DBLE(NT_EMIN,'NT_EMIN',L_FALSE,'Minimum energy of non-thermal electrons in eV')
@@ -313,6 +314,7 @@
 	      CALL RD_STORE_CHAR(NT_SOURCE_TYPE,'NT_SOURCE',L_FALSE,'Non-thermal source type - INJECT_DIRAC, CONSTANT or BELL_SHAPE')
 	      CALL RD_STORE_LOG(READ_NON_THERM_SPEC,'RD_NT_SPEC',L_FALSE,
 	1               'Read non-thermal electron spectrum?')
+	      CALL RD_STORE_LOG(VERBOSE_NON_THERMAL_OUTPUT,'VERBOSE_NT',L_FALSE,'Verbse non-thermal output?')
 	    ENDIF
 !
 	    ADD_DEC_NRG_SLOWLY=.FALSE.

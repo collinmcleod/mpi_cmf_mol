@@ -5,9 +5,9 @@
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
 !
-! Altered: 28-Oct-2025: Recobination rate now computed with respect to total ion population.
+! Altered: 28-Oct-2025: Recombination rate now computed with respect to total ion population.
 !                       This fixes a diagnostic issue when the lower term is split.
-!                       Fixed bug created when merging galag and CRC versions.
+!                       Fixed bug created when merging galah and CRC versions.
 ! Altered: 13-Aug-2025: LOC_STEQ_ADV now only defined for MYPE=0
 !
 	INTEGER ND

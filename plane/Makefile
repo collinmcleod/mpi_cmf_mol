@@ -75,6 +75,7 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(mom_j_pp_mpi_v1.o)\
       $(LIB)(mom_jrel_v8.o)\
       $(LIB)(mom_jrel_v9.o)\
+      $(LIB)(mom_jrel_mpi_v1.o)\
       $(LIB)(mom_jrel_grey_v1.o)\
       $(LIB)(mom_jrel_grey_v2.o)\
       $(LIB)(optdepth_mpi_v1.o)\

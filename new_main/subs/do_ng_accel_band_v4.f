@@ -186,6 +186,7 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered 25-Nov-2005: Fixed diivide by zero if sigma=-1.
 ! Altered 01-Jun-2003: NUM_BAD_NG now correctly initialized to zero.
 !
 	INTEGER ND
@@ -240,12 +241,16 @@
 ! Now check whether the NG acceleation has been reasonable.
 ! If it has, store the new estimates in POPS.
 !
+! We use NT-1 since we may accellerate SIGMA+1 which can be
+! zero (i.e. v=consntant). Even if T, the change in T will
+! alway be smaller than other variables.
+!
 	MAXINC=-1000.0_LDP
 	MAXDEC=1000.0_LDP
 	DO L=1,ND
 	  LOCINC=-1000.0_LDP
 	  LOCDEC=1000.0_LDP
-	  DO K=1,NT
+	  DO K=1,NT-1
 	    T1=NEWPOP(K,L)/POPS(K,L)
 	    LOCINC=MAX(LOCINC,T1)
 	    LOCDEC=MIN(LOCDEC,T1)

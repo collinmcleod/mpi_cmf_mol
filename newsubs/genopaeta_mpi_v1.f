@@ -13,6 +13,11 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Alterer 24-Nov-2025 - Computation of free-free gaunt factor moved outside depth loop. 
+!                          Change should be more efficient.
+! Altered 09-Nov-2025 - removed computation of DIS_CONSANT outside depth loop.
+! Altered 08-Nov-2025 - removed barrier statement.
+!
 	INTEGER ID,N,N_DI,ND
 	INTEGER DST,DEND
 	INTEGER DPTH_INDX
@@ -68,11 +73,12 @@
 !
 ! Local constants.
 !
-	INTEGER LOC_DST,LOC_DEND
+	INTEGER LOC_DST,LOC_DEND,NX
 	INTEGER I,K,K_ST,IERR,ND_LOC,NO_NON_ZERO_PHOT
 	REAL(KIND=LDP) ALPHA,TCHI1,TETA1,TETA2
 	REAL(KIND=LDP) T1,T2,ZION_CUBED,NEFF
 	REAL(KIND=LDP) GFF
+	REAL(KIND=LDP) GFF_RES_VEC(DST:DEND)
 	EXTERNAL GFF
 	INTEGER, PARAMETER :: IONE=1
 !
@@ -82,9 +88,19 @@
 ! than H and He, we now sum over all levels. To make sure that we only do this
 ! once, we only include the FREE-FREE contribution for the ion when PHOT_ID is one.
 !
+!	CALL TUNE(1,'GEN_FF')
 	LOC_DST=DST
 	IF(LST_DEPTH_ONLY)LOC_DST=DEND
-	IF(LST_DEPTH_ONLY .AND. DEND .NE. ND)LOC_DST=2*ND
+	IF(LST_DEPTH_ONLY .AND. DEND .NE. ND)THEN
+	  LOC_DST=2*ND
+	ELSE
+	  NX=DEND-LOC_DST+1
+	  GFF_RES_VEC=0.0_LDP
+	  IF(IONFF .AND. PHOT_ID .EQ. 1 .AND. ION_LEV .EQ. 1)THEN
+	    CALL FF_RES_GAUNT(GFF_RES_VEC,NU,T(LOC_DST),ID,GION,ZION,NX)
+	  END IF
+	END IF
+!
 	DO DPTH_INDX=LOC_DST,DEND
 !
 	  IF(ZION .EQ. 0.0_LDP)THEN
@@ -99,7 +115,7 @@
 	    K=DPTH_INDX
 	    GFF_VAL=GFF(NU,T(K),ZION)
 	    IF(ION_LEV .EQ. 1)THEN
-	      CALL FF_RES_GAUNT(GFF_VAL,NU,T(K),ID,GION,ZION,IONE)
+	      GFF_VAL=GFF_VAL+GFF_RES_VEC(K)
 	    END IF
 !
 ! We use COR_FAC as a temporary vector containing the sum of all level populations in
@@ -114,7 +130,7 @@
 	    ETA(K)=ETA(K)+TETA1*ALPHA*EMHNUKT(K)
 	  END IF
 	END DO
-	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+!	CALL TUNE(2,'GEN_FF')
 !
 ! We now do the bound-free contributions.
 !
@@ -122,34 +138,38 @@
 !
 ! Compute the photo-ionization cross-sections for all levels.
 !
-	CALL TUNE(1,'GET_PHOT_GENOPA')
+!	CALL TUNE(1,'GET_PHOT_GENOPA')
 	IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
 	  CALL GET_PHOT_CROSS_SECTIONS_V1(ALPHA_VEC,ID,PHOT_ID,N,NU,L_TRUE)
 	ELSE
 	  CALL GET_PHOT_CROSS_SECTIONS_V1(ALPHA_VEC,ID,PHOT_ID,N,NU,L_FALSE)
 	END IF
-	CALL TUNE(2,'GET_PHOT_GENOPA')
+!	CALL TUNE(2,'GET_PHOT_GENOPA')
 	NO_NON_ZERO_PHOT=COUNT(ALPHA_VEC .GT. 0.0_LDP)
 	IF(NO_NON_ZERO_PHOT .EQ. 0)RETURN
-!
-	DO DPTH_INDX=LOC_DST,DEND
 !
 ! DIS_CONST is the constant K appearing in the expression for level dissolution.
 ! A negative value for DIS_CONST implies that the cross-section is zero.
 !
-	  DIS_CONST(1:N)=-1.0_LDP
-	  IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
-	    ZION_CUBED=ZION*ZION*ZION
-	    DO I=1,N
-	      IF(NU .LT. EDGE(I) .AND. ALPHA_VEC(I) .NE. 0)THEN
-	        NEFF=SQRT(3.289395_LDP*ZION*ZION/(EDGE(I)-NU))
-	        IF(NEFF .GT. 2*ZION)THEN
-	          T1=MIN(1.0_LDP,16.0_LDP*NEFF/(1+NEFF)/(1+NEFF)/3.0_LDP)
-	          DIS_CONST(I)=( T1*ZION_CUBED/(NEFF**4) )**1.5_LDP
-	        END IF
+	DIS_CONST(1:N)=-1.0_LDP
+!	CALL TUNE(1,'GET_PHOT_LEV_DIS')
+	IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
+	  ZION_CUBED=ZION*ZION*ZION
+	  DO I=1,N
+	    IF(NU .GE. EDGE(I))EXIT
+	    IF(NU .LT. EDGE(I) .AND. ALPHA_VEC(I) .NE. 0)THEN
+	      NEFF=SQRT(3.289395_LDP*ZION*ZION/(EDGE(I)-NU))
+	      IF(NEFF .GT. 2*ZION)THEN
+	        T1=MIN(1.0_LDP,16.0_LDP*NEFF/(1+NEFF)/(1+NEFF)/3.0_LDP)
+	        DIS_CONST(I)=( T1*ZION_CUBED/(NEFF**4) )**1.5_LDP
 	      END IF
-	    END DO
-	  END IF
+	    END IF
+	  END DO
+	END IF
+!	CALL TUNE(2,'GET_PHOT_LEV_DIS')
+!
+!	CALL TUNE(1,'GEN_BF')
+	DO DPTH_INDX=LOC_DST,DEND
 !
 ! 
 ! Now add in BOUND-FREE contributions. We first compute vectors which can
@@ -223,6 +243,7 @@
 	    END IF		!NU > EDGE
 	  END DO		!Variable
 	END DO			!Depth
+!	CALL TUNE(2,'GEN_BF')
 !
 	RETURN
 	END

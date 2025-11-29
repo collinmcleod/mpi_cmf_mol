@@ -75,8 +75,12 @@
 	REAL(KIND=LDP) FREQ_SAVE
 	REAL(KIND=LDP) IN_NBC_SAVE
 	REAL(KIND=LDP) IN_NBC_PREV
-	INTEGER, SAVE :: LU_MOM=0
 	INTEGER TRI_ID, RSQH_ID
+	INTEGER :: LU_MOM=0
+	INTEGER :: MAX_COUNT=0
+	INTEGER :: TOT_COUNT=0
+	INTEGER, PARAMETER :: IZERO=0
+	SAVE
 !
 	END MODULE MOD_JREL_MPI_V1
 !
@@ -88,6 +92,7 @@
 	USE MOD_JREL_MPI_V1
 	USE MPI
 	USE ALLOCATE_SHARED_MEM
+	USE ISO_C_BINDING, ONLY: C_PTR, C_F_POINTER
 	IMPLICIT NONE
 !
 	REAL(KIND=LDP) GET_RSQJ_FROM_J
@@ -95,6 +100,7 @@
 	INTEGER LUER,ERROR_LU
 	EXTERNAL ERROR_LU
 	INTEGER I,J
+	TYPE(C_PTR) BASEPTR
 !
 	LUER=ERROR_LU()
 !
@@ -148,9 +154,13 @@
 	    STOP
 	  END IF
 !
-	  I=0
-	  CALL ALLOCATE_1D_DBL_MPI(RSQH_VEC,ND,MYPE,I,MPI_COMM_WORLD,RSQH_ID)
-	  CALL ALLOCATE_2D_DBL_MPI(TRI_VECS_SAV,ND,5,MYPE,I,MPI_COMM_WORLD,TRI_ID)
+	  J=SIZEOF(TA)
+	  CALL ALLOCATE_MPI_MEM(IZERO,ND,J,BASEPTR,MPI_COMM_WORLD,RSQH_ID)
+	  CALL C_F_POINTER(BASEPTR,RSQH_VEC,[ND])
+!
+	  I=5*ND
+	  CALL ALLOCATE_MPI_MEM(IZERO,I,J,BASEPTR,MPI_COMM_WORLD,TRI_ID)
+	  CALL C_F_POINTER(BASEPTR,TA,[ND,5])
 !
 	  ALLOCATE (TA(ND),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (TB(ND),STAT=IOS)
@@ -258,6 +268,7 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered: 14-Nov-2025 : Moved computation of H outside accuracy check.
 ! Altered: 29-Apr-2018 : Changed to V9: XM_CHK_OPTION and J_CHK_OPTION installed.
 ! Altered: 17-Oct-2016 : Changed to V8: H_CHK_OPTION inserted into call.
 !                          Will allow greater flexibility in testing etc.
@@ -564,6 +575,9 @@
 	  WRITE(LU_MOM,'(4X,A,2(12X,A),12X,A,3(4X,A),2(2X,A))')'I','FREQ','WAVE','XM','  DTAUSRSQ',
 	1                   'dRSQH_PREV',' PSI_RSQJP','EIM1_GRSQJNU','  EI_GRSQJNU'
 	  WRITE(LU_MOM,'(A)')' '
+!
+	  MAX_COUNT=0
+	  TOT_COUNT=0
 !
 	END IF
 !
@@ -902,9 +916,11 @@
 	TRI_VECS_SAV(DST:DEND,4)=XM(DST:DEND)
 	CALL MPI_WIN_FENCE(0, TRI_ID, IERR)
 !
+	TOT_COUNT=TOT_COUNT+1
 	DO WHILE(.NOT. ACCURATE)
 !
 	  ICOUNT=ICOUNT+1
+	  MAX_COUNT=MAX(ICOUNT,MAX_COUNT)
 !
 	  TA(:)=TRI_VECS_SAV(:,1)
 	  TB(:)=TRI_VECS_SAV(:,2)
@@ -979,42 +995,6 @@
 	  END DO
 	  GAM_RSQJNU(1:ND)=XM(1:ND)
 !
-	  DO I=DST,MIN(DEND,ND-1)
-	    RSQH_VEC(I)=HU(I)*XM(I+1)-HL(I)*XM(I)+HS(I)*GAM_RSQHNU_PREV(I) +
-	1        ( EPS_PREV(I)*(GAM_RSQJNU_PREV(I)+GAM_RSQJNU_PREV(I+1)) -
-	1          EPS(I)*(XM(I)+XM(I+1)) )
-	  END DO
-	  CALL MPI_WIN_FENCE(0, RSQH_ID, IERR)
-	  GAM_RSQHNU=RSQH_VEC
-!
-! Make sure H satisfies the basic requirement that it is less than J.
-!
-	  IF(H_CHK_OPTION .EQ. 'AV_VAL')THEN
-	    DO I=1,ND-1
-	      T1=(XM(I)+XM(I+1))/2.0_LDP
-	      IF(GAM_RSQHNU(I) .GT. T1)THEN
-	        GAM_RSQHNU(I)=0.9999_LDP*T1
-	      ELSE IF(GAM_RSQHNU(I) .LT. -T1)THEN
-	        GAM_RSQHNU(I)=-0.9999_LDP*T1
-	      END IF
-	    END DO
-	  ELSE IF(H_CHK_OPTION .EQ. 'MAX_VAL')THEN
-	    DO I=1,ND-1
-	      T1=MAX(XM(I),XM(I+1))
-	      IF(GAM_RSQHNU(I) .GT. T1)THEN
-	        GAM_RSQHNU(I)=0.9999_LDP*T1
-	      ELSE IF(GAM_RSQHNU(I) .LT. -T1)THEN
-	        GAM_RSQHNU(I)=-0.9999_LDP*T1
-	      END IF
-	    END DO
-	  ELSE IF(H_CHK_OPTION .EQ. 'NONE')THEN
-	  ELSE
-            WRITE(6,*)'Error - H_CHK_OPTION not recognized in MOM_JREL_MPI_V1'
-            WRITE(6,*)'Value is :',TRIM(H_CHK_OPTION)
-            WRITE(6,*)'Allowed values are: SET_POS, NONE'
-	    STOP
-	  END IF
-!
 	  IF(.NOT. INCL_ADVEC_TERMS)THEN
 	     ACCURATE=.TRUE.
 	  ELSE
@@ -1058,6 +1038,43 @@
 !
 	END DO
 !
+	DO I=DST,MIN(DEND,ND-1)
+	  RSQH_VEC(I)=HU(I)*XM(I+1)-HL(I)*XM(I)+HS(I)*GAM_RSQHNU_PREV(I) +
+	1        ( EPS_PREV(I)*(GAM_RSQJNU_PREV(I)+GAM_RSQJNU_PREV(I+1)) -
+	1          EPS(I)*(XM(I)+XM(I+1)) )
+	END DO
+	CALL MPI_WIN_FENCE(0, RSQH_ID, IERR)
+	GAM_RSQHNU=RSQH_VEC
+!
+! Make sure H satisfies the basic requirement that it is less than J.
+!
+	IF(H_CHK_OPTION .EQ. 'AV_VAL')THEN
+	  DO I=1,ND-1
+	    T1=(XM(I)+XM(I+1))/2.0_LDP
+	    IF(GAM_RSQHNU(I) .GT. T1)THEN
+	      GAM_RSQHNU(I)=0.9999_LDP*T1
+	    ELSE IF(GAM_RSQHNU(I) .LT. -T1)THEN
+	      GAM_RSQHNU(I)=-0.9999_LDP*T1
+	    END IF
+	  END DO
+	ELSE IF(H_CHK_OPTION .EQ. 'MAX_VAL')THEN
+	  DO I=1,ND-1
+	    T1=MAX(XM(I),XM(I+1))
+	    IF(GAM_RSQHNU(I) .GT. T1)THEN
+	      GAM_RSQHNU(I)=0.9999_LDP*T1
+	    ELSE IF(GAM_RSQHNU(I) .LT. -T1)THEN
+	      GAM_RSQHNU(I)=-0.9999_LDP*T1
+	    END IF
+	  END DO
+	ELSE IF(H_CHK_OPTION .EQ. 'NONE')THEN
+	ELSE
+          WRITE(6,*)'Error - H_CHK_OPTION not recognized in MOM_JREL_MPI_V1'
+          WRITE(6,*)'Value is :',TRIM(H_CHK_OPTION)
+          WRITE(6,*)'Allowed values are: SET_POS, NONE'
+	  STOP
+	END IF
+!
+!
 ! Save variables for next frequency
 !
 	FREQ_SAVE=FREQ
@@ -1092,6 +1109,11 @@
 	HFLUX_AT_IB=IN_HBC_SAVE/R_SM(ND_SM)/R_SM(ND_SM)
 	IF(OUTER_BND_METH .EQ. 'HONJ')THEN
 	  HFLUX_AT_OB=HBC*JNU_SM(1)
+	END IF
+!
+	IF(FREQ .LT. 3.001E-03_LDP .AND. MYPE .EQ. 0)THEN
+	  WRITE(6,*)'  Max iteraton count in MOM_JREL_MPI_V1 is ',MAX_COUNT
+	  WRITE(6,*)'Total iteraton count in MOM_JREL_MPI_V1 is ',TOT_COUNT
 	END IF
 !
 	RETURN

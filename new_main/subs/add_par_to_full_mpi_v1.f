@@ -19,6 +19,7 @@
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
 !
+! Altered: 09-Nov-2025  BA_PAR is now eplictly zeroed outside main do loops.
 ! Altered: 09-Apr-2001  Changed to utilize STEQ_DATA_MOD
 ! Created: 28-Feb-1995
 !
@@ -38,10 +39,10 @@
 	    DO IV=1,SE(ID)%N_IV
 	      DO IS=1,SE(ID)%N_SE
 	         SE(ID)%BA(IS,IV,DIAG_INDX,K)=SE(ID)%BA(IS,IV,DIAG_INDX,K) + SE(ID)%BA_PAR(IS,IV,K)
-	         SE(ID)%BA_PAR(IS,IV,K)=0.0_LDP
 	      END DO
 	    END DO
 	  END DO
+	  SE(ID)%BA_PAR=0.0_LDP
 	END DO
 !
 	BA_T(:,DIAG_INDX,:)=BA_T(:,DIAG_INDX,:)+BA_T_PAR

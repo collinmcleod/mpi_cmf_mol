@@ -92,10 +92,12 @@
 ! FQW has C units of Hz, not 10^15 Hz.
 !
 	FOUR_PI_D_H=1.0_LDP/5.27296E-03_LDP                    !1.8965D+02		!4*PI/H*DEX(-10)*DEX(-15)
+!	CALL TUNE(1,'QUAD_ZERO')
 	WSE_S=0.0_LDP
 	WCR=0.0_LDP
 	dWSE_SdT=0.0_LDP
 	dWCRdT=0.0_LDP
+!	CALL TUNE(2,'QUAD_ZERO')
 !
 ! Get edge frequencies.
 !
@@ -106,23 +108,30 @@
 ! Get photoionization cross-sections for all levels. The first call returns
 ! the threshold cross-section when NU < EDGE.
 !
-	  CALL TUNE(1,'SUB_PH2')
+!	  CALL TUNE(1,'SUB_PH2')
 	  IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
 	    CALL GET_PHOT_CROSS_SECTIONS_V1(ALPHA_VEC,ID,PHOT_ID,N_F,NU_CONT,L_TRUE)
 	  ELSE
 	    CALL GET_PHOT_CROSS_SECTIONS_V1(ALPHA_VEC,ID,PHOT_ID,N_F,NU_CONT,L_FALSE)
 	  END IF
-	  CALL TUNE(2,'SUB_PH2')
+!	  CALL TUNE(2,'SUB_PH2')
 !
 ! DIS_CONST is the constant K appearing in the expression for level dissolution.
 ! A negative value f_CONST implies that the cross-section is zero.
 !
-	  CALL TUNE(1,'SUB_DIS')
+! NB Edge frequencies ordered. Thus dont need to check remaining levels
+! once NU_CONT > EDGE_FREQ.
+!
+!	  CALL TUNE(1,'SUB_DIS_ZERO')
 	  DIS_CONST(1:N_F)=-1.0_LDP
+!	  CALL TUNE(2,'SUB_DIS_ZERO')
+!
+!	  CALL TUNE(1,'SUB_DIS')
 	  IF(MOD_DO_LEV_DIS .AND. PHOT_ID .EQ. 1)THEN
 	    ZION_CUBED=ZION*ZION*ZION
 	    DO I_F=1,N_F
-	      IF(NU_CONT .LT. EDGE_F(I_F) .AND. ALPHA_VEC(I_F) .NE. 0 .AND. NU_CONT .GT. 0.8_LDP*EDGE_F(I_F))THEN
+	      IF(NU_CONT .GE. EDGE_F(I_F))EXIT
+	      IF(ALPHA_VEC(I_F) .NE. 0 .AND. NU_CONT .GT. 0.8_LDP*EDGE_F(I_F))THEN
 	        NEFF=SQRT(3.289395_LDP*ZION*ZION/(EDGE_F(I_F)-NU_CONT))
 	        IF(NEFF .GT. 2*ZION)THEN
 	          T1=MIN(1.0_LDP,16.0_LDP*NEFF/(1+NEFF)/(1+NEFF)/3.0_LDP)
@@ -131,7 +140,7 @@
 	      END IF
 	    END DO
 	  END IF
-	  CALL TUNE(2,'SUB_DIS')
+!	  CALL TUNE(2,'SUB_DIS')
 !
 	  DO_ALL=.FALSE.
 	  IF(COMPUTE_BA)DO_ALL=.TRUE.
@@ -159,7 +168,8 @@
 	        J=DPTH_INDX
 	        DO I_F=1,N_F
 	          I_S=F_TO_S_MAPPING(I_F)
-	          IF(NU_CONT .GE. EDGE_F(I_F))THEN
+	          IF(ALPHA_VEC(I_F) .LE. 0.0_LDP)THEN
+	          ELSE IF(NU_CONT .GE. EDGE_F(I_F))THEN
 	            T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
 	            WSE_S(I_S,J,IP)=WSE_S(I_S,J,IP) + T1*HNST_F_ON_S(I_F,J)
 	            WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE_F(I_F)*T1*HNST_F_ON_S(I_F,J)
@@ -189,7 +199,8 @@
 	        J=DPTH_INDX
 	        DO I_F=1,N_F
 	          I_S=F_TO_S_MAPPING(I_F)
-	          IF(NU_CONT .GE. EDGE_F(I_F))THEN
+	          IF(ALPHA_VEC(I_F) .LE. 0.0_LDP)THEN
+	          ELSE IF(NU_CONT .GE. EDGE_F(I_F))THEN
 	            T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
 	            WSE_S(I_S,J,IP)=WSE_S(I_S,J,IP) + T1*HNST_F_ON_S(I_F,J)
 	            WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE_F(I_F)*T1*HNST_F_ON_S(I_F,J)

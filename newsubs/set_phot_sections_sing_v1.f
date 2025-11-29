@@ -1,4 +1,8 @@
 !
+! This routine can be compiled instead of set_phot_cross-sections.f. Make
+! sure other versions are not beeing compiled, and have been deleted from
+! libsubs.a
+!
         MODULE MOD_PHOT_THREAD_INFO
         USE SET_KIND_MODULE
         IMPLICIT NONE
@@ -7,12 +11,12 @@
 	END MODULE  MOD_PHOT_THREAD_INFO
 !
 ! Subroutine to compute the photoionization cross-sections for all species.
-! In this routine, each processor computes a separate photoionization
-! cross-section. The data are then shared to other processors using
-! the MPI_BCAST command.
+! In this routine,  the cross-sections are computed by each processor.
+! There is no parallel processing.
 !
 	SUBROUTINE SET_PHOT_CROSS_SECTIONS_V1(FREQ,NU,NU_EVAL_CONT,CUR_ML,NCF)
 	USE SET_KIND_MODULE
+	USE PHOT_DATA_MOD
 	USE MOD_PHOT_THREAD_INFO
 	USE MOD_CMFGEN
 	IMPLICIT NONE
@@ -43,51 +47,27 @@
 	  ALLOCATE(ALPHA_VEC(K))
 	  FIRST = .FALSE.
 	  IF(MYPE .EQ. 0)THEN
-	    WRITE(6,*)'Using BCAST version to compute photoionization cross-sections.'
-            WRITE(6,*)'Each processor computes a phot. cross-sections for a different frequency.'
-            WRITE(6,*)'These are share using the MPI_BCAST command.'
-            WRITE(6,*)'Called file is set_phot_cross-sections_v1.f'
+	    WRITE(6,*)'Using single processore versions to compute photoionization cross-sections.'
+	    WRITE(6,*)'Each processor computes their own photoionization cross-sections.'
+            WRITE(6,*)'Called file is set_phot_cross_sections_v1.f'
 	    WRITE(6,*)'Allocated COMP_FREQ,ALPHA_VEC in SET_PHOT_CROSS_SECTIONS_V1'
 	  END IF
 	  FLUSH(UNIT=6)
 	END IF
 !
-! Check if cross-section has already been computed.
-!
-	IF(FREQ .NE. 0.0_LDP)THEN
-	  DO K=0,NTHREAD-1
-	    IF(FREQ .EQ. COMP_FREQ(K))RETURN
-	  END DO
-	END IF
-!
-! Compute the photoionization cross-sections for all levels.
-!
 	IF(FREQ .NE. 0)THEN
-!
-	  COMP_FREQ=0.0_LDP
-	  COMP_FREQ(0)=NU_EVAL_CONT(CUR_ML)
-	  ML=CUR_ML+1
-	  DO K=1,NTHREAD-1
-	    DO I=ML,NCF
-	      IF(NU_EVAL_CONT(I) .NE. COMP_FREQ(K-1))THEN
-	        COMP_FREQ(K)=NU_EVAL_CONT(I)
-	        ML=I+1
-	        EXIT
-	      END IF
-	    END DO
-	  END DO
-!
-          LOC_FREQ=COMP_FREQ(MYPE)
+          LOC_FREQ=FREQ
 	  IF(LOC_FREQ .NE. 0.0_LDP)THEN
 	    DO ID=1,NUM_IONS
 	      IF(ATM(ID)%XzV_PRES)THEN
 	        DO I=1,ATM(ID)%N_XzV_PHOT
 	          PHOT_ID=I
-	          CALL SUB_PHOT_GEN_MPI_V2(ID,ALPHA_VEC,LOC_FREQ,ATM(ID)%EDGEXZV_F,ATM(ID)%NXzV_F,PHOT_ID,L_FALSE)
+	          CALL SUB_PHOT_GEN_MPI_V2(ID,PD(ID)%CUR_CROSS(:,PHOT_ID),LOC_FREQ,ATM(ID)%EDGEXZV_F,ATM(ID)%NXzV_F,PHOT_ID,L_FALSE)
 	        END DO
 	      END IF
 	    END DO
 	  END IF
+!
 ! 
 	ELSE
 !
@@ -105,7 +85,6 @@
 	    END IF
 	  END DO
 	END IF
-	FLUSH(UNIT=6)
 !
 	RETURN
 	END
@@ -130,61 +109,22 @@
 	INTEGER IERR
 	INTEGER NU_THRD
 !	
-	NU_THRD=-2
-	DO K=0,NTHREAD-1
-	  IF(COMP_FREQ(K) .EQ. FREQ)THEN
-	    NU_THRD=K
-	    EXIT
-	  END IF
-	END DO
-	IF(NU_THRD .LT. -1)THEN
-	  WRITE(6,*)'Error -- photoionization cross-sections have not been computed' 
-	  WRITE(6,*)MYPE,FREQ
-	  WRITE(6,*)COMP_FREQ
-	  FLUSH(UNIT=6)
-	  STOP
-	END IF
 !
 ! Set the photoionization cross-sections on all nodes for the current
 ! frequency.
 !
-	IF(FREQ .EQ. PD(ID)%CUR_FREQ(PHOT_ID))THEN
-	  PHOT(1:NLEVS)=PD(ID)%CUR_CROSS(1:NLEVS,PHOT_ID)
-	ELSE
-	  L(1)=1; L(2)=NLEVS
-	  IF(MYPE .EQ. NU_THRD)THEN
-	    PHOT(1:NLEVS)=PD(ID)%LST_CROSS(1:NLEVS,PHOT_ID)
-	    IF(NLEVS .GT. 30)THEN
-	      L(1)=NLEVS+1
-	      DO I=1,NLEVS
-	        IF(PHOT(I) .NE. 0)THEN
-	          L(1)=I
-	          EXIT
-	        END IF
-	      END DO
-	      L(2)=NLEVS-I+1
-	    END IF	  
-	  ELSE
-	    PHOT(1:NLEVS)=0.0_LDP
-	  END IF
-	  IF(NLEVS .GT. 30)THEN
-	    CALL MPI_BCAST(L,2,MPI_INTEGER,NU_THRD,MPI_COMM_WORLD,IERR)
-	  END IF
-	  IF(L(2) .GT. 0)THEN
-	    CALL MPI_BCAST(PHOT(L(1):NLEVS),L(2),MY_MPI_DP,NU_THRD,MPI_COMM_WORLD,IERR)
-	  END IF
+	NU_THRD=MYPE
+	PHOT(1:NLEVS)=PD(ID)%CUR_CROSS(1:NLEVS,PHOT_ID)
 !
-	  IF(ADD_EDGE .AND. PHOT_ID .EQ. 1)THEN
-	    DO I=1,NLEVS
-	      T1=PD(ID)%EDGE_FREQ(I,PHOT_ID)
-	      IF(FREQ .GE. 0.5_LDP*T1 .AND. FREQ .LT. T1)THEN
-	        PHOT(I)=PD(ID)%EDGE_CROSS(I,PHOT_ID)
-	      END IF
-	    END DO
-	  END IF
-	  PD(ID)%CUR_CROSS(1:NLEVS,PHOT_ID)=PHOT(1:NLEVS)
-	  PD(ID)%CUR_FREQ(PHOT_ID)=FREQ
+	IF(ADD_EDGE .AND. PHOT_ID .EQ. 1)THEN
+	  DO I=1,NLEVS
+	    T1=PD(ID)%EDGE_FREQ(I,PHOT_ID)
+	    IF(FREQ .GE. 0.5_LDP*T1 .AND. FREQ .LT. T1)THEN
+	      PHOT(I)=PD(ID)%EDGE_CROSS(I,PHOT_ID)
+	    END IF
+	  END DO
 	END IF
+!
 !
 	RETURN
 	END

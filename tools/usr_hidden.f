@@ -44,11 +44,13 @@ c    **** MODULE USR_HIDDEN ***
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
-c written  3/4/97  DLM  Modeled after usr_option
+c written   3/4/97  DLM  Modeled after usr_option
 c
-c altered  3/17/97 DLM  Removed main_option from list of passed
-c                         variables.  Now store hidden options in
-c                         variable string.
+c altered  3 /17/97 DLM  Removed main_option from list of passed
+c                          variables.  Now store hidden options in
+c                          variable string.
+c altered 28/Nov/25 DJH Fixed bug: Number of variables input was being set by
+c                          do loop variable on exit, which is undefined.
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
@@ -290,10 +292,13 @@ c
           write(*,"(8x,a,'=',a)")trim(var_name),trim(answer)
         endif
         l=len_trim(answer)
-        input(:)=0.0
+        input(:)=huge(input(1))
         read(answer(:l),*,end=100,err=300)(input(i),i=1,dim)
- 100    do i=dim,1,-1
-          if(input(i).ne.0.0_LDP)exit
+ 100    found=dim
+	 do i=dim,1,-1
+          if( input(i).ne. huge(input(1)) )exit
+	  found=i-1
+	  input(i)=0_LDP
         enddo
         found=i
         if(found.lt.required)goto 300
@@ -547,11 +552,11 @@ c
           write(*,"(8x,a,'=',a)")trim(var_name),trim(answer)
         endif
         l=len_trim(answer)
-        input(:)=huge(l)
+        input(:)=huge(input(1))
         read(answer(:l),*,end=100,err=300)(input(i),i=1,dim)
         found=0
  100    do i=dim,1,-1
-          if(input(i) .ne. huge(l))then
+          if(input(i) .ne. huge(input(1)))then
             found=i
 	    exit
 	  else

@@ -241,6 +241,9 @@
 	USE MOD_RAY_MOM_STORE
 	IMPLICIT NONE
 !
+! Altered: 29-Nov-2019 : Moved computation of RSQH outside iteration loop for dlnGRSQJdlnR.
+!                           Set dlnGRSQJdlnR to zero if convergence issue, and try again.
+!                           Done during November.
 ! Altered: 29-Apr-2018 : Changed to V9: XM_CHK_OPTION and J_CHK_OPTION installed.
 ! Altered: 17-Oct-2016 : Changed to V8: H_CHK_OPTION inserted into call.
 !                          Will allow greater flexibility in testing etc.
@@ -335,7 +338,6 @@
 	REAL(KIND=LDP) MAX_ER
 	REAL(KIND=LDP) DELTA_R
 	REAL(KIND=LDP) VDOP_MIN
-	REAL(KIND=LDP) TA_SAV,TB_SAV,XM_SAV
 	REAL(KIND=LDP) C_KMS
 !
 	INTEGER ICOUNT
@@ -348,6 +350,7 @@
 !
 	LOGICAL ACCURATE
 	LOGICAL FILE_OPEN
+	LOGICAL NO_RESET
 !
 	REAL(KIND=LDP) SPEED_OF_LIGHT
 	REAL(KIND=LDP) GET_RSQJ_FROM_J
@@ -726,6 +729,7 @@
 ! As we don't know dlnGRSQJdlnR and dHdlnR we need to iterate.
 !
 	ACCURATE=.FALSE.
+	NO_RESET=.TRUE.
 	ICOUNT=0
 	GAM_RSQJOLD(1:ND)=0.0_LDP
 !
@@ -878,7 +882,6 @@
 !
 ! Solve for the radiation field along ray for this frequency.
 !
-	  TA_SAV=TA(ND);TB_SAV=TB(ND); XM_SAV=XM(ND)
 	  CALL THOMAS(TA,TB,TC,XM,ND,1)
 !
 !	  IF(FREQ .EQ. FREQ_SAVE)BACKSPACE(UNIT=178)
@@ -932,40 +935,6 @@
 	  END DO
 	  GAM_RSQJNU(1:ND)=XM(1:ND)
 !
-	  DO I=1,ND-1
-	    GAM_RSQHNU(I)=HU(I)*XM(I+1)-HL(I)*XM(I)+HS(I)*GAM_RSQHNU_PREV(I) +
-	1        ( EPS_PREV(I)*(GAM_RSQJNU_PREV(I)+GAM_RSQJNU_PREV(I+1)) -
-	1          EPS(I)*(XM(I)+XM(I+1)) )
-	  END DO
-!
-! Make sure H satisfies the basic requirement that it is less than J.
-!
-	  IF(H_CHK_OPTION .EQ. 'AV_VAL')THEN
-	    DO I=1,ND-1
-	      T1=(XM(I)+XM(I+1))/2.0_LDP
-	      IF(GAM_RSQHNU(I) .GT. T1)THEN
-	        GAM_RSQHNU(I)=0.9999_LDP*T1
-	      ELSE IF(GAM_RSQHNU(I) .LT. -T1)THEN
-	        GAM_RSQHNU(I)=-0.9999_LDP*T1
-	      END IF
-	    END DO
-	  ELSE IF(H_CHK_OPTION .EQ. 'MAX_VAL')THEN
-	    DO I=1,ND-1
-	      T1=MAX(XM(I),XM(I+1))
-	      IF(GAM_RSQHNU(I) .GT. T1)THEN
-	        GAM_RSQHNU(I)=0.9999_LDP*T1
-	      ELSE IF(GAM_RSQHNU(I) .LT. -T1)THEN
-	        GAM_RSQHNU(I)=-0.9999_LDP*T1
-	      END IF
-	    END DO
-	  ELSE IF(H_CHK_OPTION .EQ. 'NONE')THEN
-	  ELSE
-            WRITE(6,*)'Error - H_CHK_OPTION not recognized in MOM_JREL_V9'
-            WRITE(6,*)'Value is :',TRIM(H_CHK_OPTION)
-            WRITE(6,*)'Allowed values are: SET_POS, NONE'
-	    STOP
-	  END IF
-!
 	  IF(.NOT. INCL_ADVEC_TERMS)THEN
 	     ACCURATE=.TRUE.
 	  ELSE
@@ -982,24 +951,68 @@
 ! NB: DERIVCHI computes d(GAM.R^2J)/dR. We then mulitply that derivative by
 ! R/[GAM.R^2.J] to get dln(GAM.R^2J)/dlnR).
 !
+! In regions with a rapid change in J, it may be better to start with dlnGRSQJdlnR=0,
+! rather than the value from the previus frequency.
+!
 	    DAMP_FAC=0.8_LDP
 	    IF(.NOT. ACCURATE .AND. INCL_ADVEC_TERMS)THEN
 	      CALL DERIVCHI(TB,XM,R,ND,'LINMON')
 	      TB(1:ND)=R(1:ND)*TB(1:ND)/XM(1:ND)
 	      IF(MAX_ER .LT. 0.01_LDP)THEN
 	        dlnGRSQJdlnR(1:ND)=DAMP_FAC*TB(1:ND)+(1.0_LDP-DAMP_FAC)*dlnGRSQJdlnR(1:ND)
+              ELSE IF(ICOUNT .GT. 90 .AND. NO_RESET)THEN
+                ICOUNT=0; NO_RESET=.FALSE.
+                dlnGRSQJdlnR(1:ND)=0.0_LDP
 	      ELSE
 	        dlnGRSQJdlnR(1:ND)=0.1_LDP*TB(1:ND)+0.9_LDP*dlnGRSQJdlnR(1:ND)
 	      END IF
 	    END IF
 	    IF(ICOUNT .EQ.  100)THEN
-	      WRITE(LUER,*)'Error in MOM_J_REL_V9: excessive iteration count.'
-	      WRITE(LUER,'(A,ES15.8,4X,A,ES9.2)')' FREQ= ',FREQ,'Error =',MAX_ER
+	      IF(MYPE .EQ 0)THEN
+	        WRITE(LUER,*)'Error in MOM_J_REL_V9: excessive iteration count.'
+	        WRITE(LUER,'(A,ES15.8,4X,A,ES9.2)')' FREQ= ',FREQ,'Error =',MAX_ER
+	      END IF
 	      ACCURATE=.TRUE.
 	    END IF
 	  END IF
 !
 	END DO
+!
+! Computation of H does not need to be in the accuracy iteration loop.
+!
+	DO I=1,ND-1
+	  GAM_RSQHNU(I)=HU(I)*XM(I+1)-HL(I)*XM(I)+HS(I)*GAM_RSQHNU_PREV(I) +
+	1      ( EPS_PREV(I)*(GAM_RSQJNU_PREV(I)+GAM_RSQJNU_PREV(I+1)) -
+	1        EPS(I)*(XM(I)+XM(I+1)) )
+	  END DO
+!
+! Make sure H satisfies the basic requirement that it is less than J.
+!
+	IF(H_CHK_OPTION .EQ. 'AV_VAL')THEN
+	  DO I=1,ND-1
+	    T1=(XM(I)+XM(I+1))/2.0_LDP
+	    IF(GAM_RSQHNU(I) .GT. T1)THEN
+	      GAM_RSQHNU(I)=0.9999_LDP*T1
+	    ELSE IF(GAM_RSQHNU(I) .LT. -T1)THEN
+	      GAM_RSQHNU(I)=-0.9999_LDP*T1
+	    END IF
+	  END DO
+	ELSE IF(H_CHK_OPTION .EQ. 'MAX_VAL')THEN
+	  DO I=1,ND-1
+	    T1=MAX(XM(I),XM(I+1))
+	    IF(GAM_RSQHNU(I) .GT. T1)THEN
+	      GAM_RSQHNU(I)=0.9999_LDP*T1
+	    ELSE IF(GAM_RSQHNU(I) .LT. -T1)THEN
+	      GAM_RSQHNU(I)=-0.9999_LDP*T1
+	    END IF
+	  END DO
+	ELSE IF(H_CHK_OPTION .EQ. 'NONE')THEN
+	ELSE
+          WRITE(6,*)'Error - H_CHK_OPTION not recognized in MOM_JREL_V9'
+          WRITE(6,*)'Value is :',TRIM(H_CHK_OPTION)
+          WRITE(6,*)'Allowed values are: SET_POS, NONE'
+	  STOP
+	END IF
 !
 ! Save variables for next frequency
 !

@@ -6,6 +6,7 @@
 	USE MPI	
 	IMPLICIT NONE
 !
+! Altered  8-Nov-2025 : VERBOSE output is now controlled by external input read in from VADAT.
 ! Altered 30-Oct-2021 : Can now read in electron thermal spectrum. Useful when testing.
 !                          Ouput file changed, additional data output.
 ! Altered 15-Jun-2016 : NT_ITERATION_COUNTER is now defined in CONTROL_VARIABLE_MOD
@@ -152,9 +153,7 @@
 ! At present all diagnostc informations is swithched of. By comnenting/uncommenting one of the 
 ! following statement, diagnostic information can be output for all threads, or just thread 0.
 !
-	VERBOSE=.FALSE.
-!	IF(MYPE .EQ. 0)VERBOSE=.TRUE.
-	VERBOSE=.TRUE.
+	VERBOSE=VERBOSE_NON_THERMAL_OUTPUT
 	IF(VERBOSE)THEN
 	  IF(NTHREAD-1 .LT. 100)THEN
 	    WRITE(FILE_NAME,'(I3.2)')MYPE

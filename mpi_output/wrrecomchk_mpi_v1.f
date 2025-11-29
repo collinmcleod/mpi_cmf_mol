@@ -10,7 +10,7 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
-! Altered 27-Oct-2025 : Create RECOM_SUM file, and output warning if ionization equalibrium 
+! Altered 27-Oct-2025 : Create RECOM_SUM file, and output warning if ionization equilibrium 
 !                          is not valid for an ion
 ! Created 28-Aug-2024 : Based on WRRECOM_CHK_V5
 !

@@ -58,13 +58,15 @@ c altered   3/4/97   DLM  Changed extended .sve files to .box file
 c                         Added possibility to change options in .sve files
 c                         Added do loops in array reads
 c
-c  altered   3/17/97  DLM  Now read and write var_name as all capital
+c altered   3/17/97  DLM  Now read and write var_name as all capital
 c                          letters.  Cannot reassign var_name because
 c                          a specific string is passed to usr_option
 c                          instead of a character variable.  Thus must
 c                          use another variable, all_caps, to create
 c                          an all upper case string (SGI will allow
 c                          change to var_name, but VMS will not!).
+c altered  28-Nov-25 DJHa Fixed bug: Number of variables input was being set by
+!                          do loop variable on exit, which is undefined.
 c
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c
@@ -269,12 +271,13 @@ c
           write(*,"(8x,a,'=',a)")trim(var_name),trim(answer)
         endif
         l=len_trim(answer)
-        input(:)=0.0
+        input(:)=huge(input(1))
         read(answer(:l),*,end=100,err=300)(input(i),i=1,dim)
- 100    do i=dim,1,-1
-          if(input(i).ne.0.0_LDP)exit
-        enddo
-        found=i
+ 100    found=dim
+	do i=dim,1,-1
+          if( input(i).ne. huge(input(1)) )exit
+          input(i)=0.0_ldp; found=found-1
+	enddo
         if(found.lt.required)then
           write(*,"(1x,i2,' values required, only found ',i2)")
      *         required,found
@@ -283,13 +286,14 @@ c
         sve_string=answer
       else
         if(len_trim(default).ne.0)then
-          read(default,*,end=200)(input(i),i=1,dim)
- 200      found=i-1
-          if(found.lt.dim)then
-            do i=found+1,dim
-              input(i)=0.0
-            enddo
-          endif
+          input(:)=HUGE(INPUT(1))
+	  read(default,*,end=200)(input(i),i=1,dim)
+ 200      found=dim
+          do i=dim,1,-1
+            if( input(i) .ne. huge(input(1)) )exit
+	    found=i-1
+	    input(i)=0_ldp
+          enddo
           sve_string=default
         else
           write(*,
@@ -463,12 +467,14 @@ c
           write(*,"(8x,a,'=',a)")trim(var_name),trim(answer)
         endif
         l=len_trim(answer)
-        input(:)=0
+        input(:)=huge(input(1))
         read(answer(:l),*,end=100,err=300)(input(i),i=1,dim)
- 100    do i=dim,1,-1
-          if(input(i).ne.0)exit
+ 100    found=dim
+	do i=dim,1,-1
+          if( input(i).ne. huge(input(1)) )exit
+	  input(i)=0
+	  found=i-1
         enddo
-        found=i
         if(found.lt.required)then
           write(*,"(1x,i2,' values required, only found ',i2)")
      *         required,found
@@ -477,13 +483,14 @@ c
         sve_string=answer
       else
         if(len_trim(default).ne.0)then
-          read(default,*,end=200)(input(i),i=1,dim)
- 200      found=i-1
-          if(found.lt.dim)then
-            do i=found+1,dim
-              input(i)=0.0
-            enddo
-          endif
+          input(:)=huge(input(1))
+	  read(default,*,end=200)(input(i),i=1,dim)
+ 200      found=dim
+          do i=dim,1,-1
+	    if( input(i) .ne. huge(input(1)) )exit
+            input(i)=0.0
+	    found=i-1
+          enddo
           sve_string=default
         else
           write(*,
