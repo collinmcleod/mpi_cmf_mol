@@ -968,7 +968,7 @@
 	      END IF
 	    END IF
 	    IF(ICOUNT .EQ.  100)THEN
-	      IF(MYPE .EQ 0)THEN
+	      IF(MYPE .EQ. 0)THEN
 	        WRITE(LUER,*)'Error in MOM_J_REL_V9: excessive iteration count.'
 	        WRITE(LUER,'(A,ES15.8,4X,A,ES9.2)')' FREQ= ',FREQ,'Error =',MAX_ER
 	      END IF

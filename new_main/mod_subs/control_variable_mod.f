@@ -1,6 +1,7 @@
 	MODULE CONTROL_VARIABLE_MOD
 	USE SET_KIND_MODULE
 !
+! Altered : 30-Nov-2025 : Added WR_ETA variable.
 ! Altered : 13-Jan-2024 : Added MAX_NO_GREY_ITERATIONS
 ! Altered : 12-Aug-2022 : Added SN shock variables (following work by LUC.)
 ! Altered : 06-Jun-2022 : Added COMP_STEQ_T_EHB
@@ -622,5 +623,6 @@
         LOGICAL VERBOSE_OUTPUT
 	LOGICAL WRITE_RATES
 	LOGICAL WRITE_JH
+	LOGICAL WRITE_ETA
 !
 	END MODULE CONTROL_VARIABLE_MOD

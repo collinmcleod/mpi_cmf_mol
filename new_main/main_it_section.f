@@ -1,5 +1,7 @@
 ! 
 !
+! Altered 30-Nov-2025: Added an option to output CHI and ETA on the last iteration.
+!                        Remove MPI_BARRIER statement after call to SET_PHOT_CROSS_SECTIONS.
 ! Altered 29-Nov-2025: Fixed potential bug with value of ACCESS_F on initial iteration.
 ! Altered 07-Nov-2025: Now only compute DTDR when using the diffusion approximation.
 !                        Added an MPI_BREAK statement at end of 10000 continuum loop.
@@ -994,10 +996,7 @@
 	1                      FINAL_CONSTANT_CROSS=.FALSE.
 	  END IF
 !
-	  CALL TUNE(1,'SET_PHOT')
 	  CALL SET_PHOT_CROSS_SECTIONS_V1(CONT_FREQ,NU,NU_EVAL_CONT,FREQ_INDX,NCF)
-	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-	  CALL TUNE(2,'SET_PHOT')
 !
 ! Compute quadrature weights for statistical equilibrium equations.
 ! TA is used as a work vector (dim ND)
@@ -1162,6 +1161,11 @@
 !
             CALL MPI_ALLREDUCE(CHI,TA,ND,MY_MPI_DP,MPI_SUM,MPI_COMM_WORLD,IERR); CHI(1:ND)=TA(1:ND)
             CALL MPI_ALLREDUCE(ETA,TA,ND,MY_MPI_DP,MPI_SUM,MPI_COMM_WORLD,IERR); ETA(1:ND)=TA(1:ND)
+!
+	    IF(LST_ITERATION .AND. WRITE_ETA)THEN
+	      TA=0.0_LDP; T1=NU(FREQ_INDX)
+	      CALL WRITE_ETA_CHI(R,V,TA,ETA,CHI,T1,NCF,ND)
+	    END IF
 !
 	    IF(LST_ITERATION .AND. 3 .EQ.4)THEN
 	      CALL MPI_REDUCE(MPI_IN_PLACE,AT_LEAST_ONE_NEG_OPAC,IONE,MPI_LOGICAL,MPI_LAND,IZERO,MPI_COMM_WORLD,IERR)

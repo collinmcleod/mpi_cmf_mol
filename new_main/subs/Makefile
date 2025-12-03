@@ -104,6 +104,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(vsebyj_multi_mpi_v1.o)\
       $(LIB)(vsebyj_x_mpi_v1.o)\
       $(LIB)(write_cmat.o)\
+      $(LIB)(write_eta_chi.o)\
       $(LIB)(write_seq_time_file_mpi_v1.o)\
       $(LIB)(update_ba_for_line_mpi_v1.o)\
       $(LIB)(wr_asci_steq_mpi_v1.o)\

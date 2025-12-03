@@ -5,6 +5,7 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered : 30-Nov-2025 : Added WR_ETA variable.
 ! Altered : 13-Jan-2024 : Added MAX_NO_GREY_ITERATIONS
 ! Altered : 19-Jun-2023 : Added SOL_ABUND_REF_SET
 ! Altered : 12-Aug-2022 : Added SN shock variables (following work by LUC.)
@@ -676,6 +677,8 @@
 	  WRITE_JH=.FALSE.
 	  IF(SN_MODEL)WRITE_JH=.TRUE.
 	  CALL RD_STORE_LOG(WRITE_JH,'WRITE_JH',L_FALSE,'Write out JH_AT_CURRENT_TIME')
+          WRITE_ETA=.FALSE.
+          CALL RD_STORE_LOG(WRITE_ETA,'WRITE_ETA',L_FALSE,'Output ETA (no es) and CHI on last iteration?')
 !
 	  WRITE(LUSCR,'()')
 	  CALL RD_STORE_NCHAR(GLOBAL_LINE_SWITCH,'GLOBAL_LINE',ISIX,L_TRUE,

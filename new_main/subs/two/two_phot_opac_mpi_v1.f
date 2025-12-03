@@ -7,6 +7,8 @@
 	USE MOD_J_TWO_PHOT_MPI_V1, ONLY : GET_J_FOR_TWO_PHOT
 	IMPLICIT NONE
 !
+! Altered 30-Nov-2025: Bug fix: TWO_PHOT_METHOD was inconsistent between processes, and was
+!                        not being reset after DTDR calculation.
 ! Altered 24-Sep-2023: Updated to use consistent physical constants (Long ver -- 15-Oct-23)
 ! Altered 14-Jul-2015: Added two options to improve two photon absorption.
 !                        USE_TWO  - Uses actual radiation field from EDDFACTOR file.
@@ -61,13 +63,12 @@
 	  FIRST=.FALSE.
 	  RETURN
 	END IF
-	IF(TWO_METHOD .NE. TWO_PHOTON_METHOD .AND. FIRST)THEN
+	IF(TWO_METHOD .NE. TWO_PHOTON_METHOD)THEN
 	  TWO_METHOD=TWO_PHOTON_METHOD
 	  IF(MYPE .EQ. 0)THEN
 	    WRITE(LUER,*)'Using ',TRIM(TWO_METHOD),' method for two-photon decay'
 	    FLUSH(LUER)
 	  END IF
-	  FIRST=.FALSE.
 	END IF
 	FIRST=.FALSE.
 !
