@@ -219,7 +219,7 @@
 	CHARACTER(LEN=300) STRING
 	CHARACTER(LEN=5) IST_STR,IEND_STR
 !
-        STRING='Possible recombination error for '//DESCRIPTOR//' at depths: '
+        STRING='Error for '//DESCRIPTOR(1:8)//' at depths: '
         IST=0; IEND=0; IST_STR=' '
 	CHK_VAL=1.0_LDP
 	MAX_VAL=0.0_LDP
@@ -247,7 +247,10 @@
 	IF(IST_STR .NE. ' ')THEN
 	  IF(FIRST)THEN
 	    WRITE(6,'(A)')' '; FIRST=.FALSE.
+	    WRITE(6,'(1X,80A,/)')('*',I=1,80)
+	    WRITE(6,'(A)')' ERROR -- some ionization/recobination equations are not satisfied.'
 	    WRITE(6,'(A)')' In the following the maximum % error is printed in ()'
+	    WRITE(6,'(/,1X,80A)')('*',I=1,80)
 	  END IF
 	  I=INDEX(STRING,':,')
 	  STRING(I+1:)=STRING(I+2:)

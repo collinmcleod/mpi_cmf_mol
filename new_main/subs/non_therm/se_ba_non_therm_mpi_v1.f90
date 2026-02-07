@@ -133,10 +133,8 @@
 	          ONE_ELEC=.FALSE.
 	        ELSE
 	          NUP_F=THD(IT)%ION_LEV(J)
-!	          NUP=ATM(ID+1)%F_TO_S_XzV(NUP_F)
-!                 SE_ION_LEV=SE(ID)%ION_LEV_TO_EQ_PNT(NUP)
-	          GUPPER=ATM(ID+1)%GXzV_F(1)                    !NUP_F)
-                  SE_ION_LEV=ATM(ID)%NXzV+1                     !NUP -- assume all to ground state at  present.
+	          GUPPER=ATM(ID+1)%GXzV_F(1)
+                  SE_ION_LEV=ATM(ID)%NXzV+1                      !NUP -- assume all to ground state at  present.
 	          ION_EXC_EN=0.0_LDP                             !=ATM(ID+1)%EDGEXzV_F(1)-ATM(ID+1)%EDGEXzV_F(NUP_F)
 	          ONE_ELEC=.TRUE.
 	        END IF
@@ -171,15 +169,12 @@
 	            GUPPER=THD(IT)%SUM_GION
 	          ELSE
 	            NUP_F=THD(IT)%ION_LEV(J)
-! 	            NUP=ATM(ID+1)%F_TO_S_XzV(NUP)
-!	            SE_ION_LEV=SE(ID)%ION_LEV_TO_EQ_PNT(NUP)
-	            GUPPER=ATM(ID+1)%GXzV_F(1)                    !NUP_F)
+	            GUPPER=ATM(ID+1)%GXzV_F(1)
+                    SE_ION_LEV=ATM(ID)%NXzV+1
 	          END IF
-                  SE_ION_LEV=ATM(ID)%NXzV+1               !NUP -- assume all to ground state at  present.
 	          DO I=1,THD(IT)%N_STATES
 	            NL_F=THD(IT)%ATOM_STATES(I); NL=ATM(ID)%F_TO_S_XzV(NL_F)
 	            T1=RATE*GUPPER/THD(IT)%SUM_GION * ATM(ID)%XzVLTE_F_ON_S(NL_F,DPTH_INDX)
-!&	                         (ATM(ID)%XzVLTE_F(NL_F,DPTH_INDX)/ATM(ID)%XzVLTE(NL,DPTH_INDX))
 	            SE(ID)%BA_PAR(NL,NL,DPTH_INDX)=SE(ID)%BA_PAR(NL,NL,DPTH_INDX)-T1
 	            SE(ID)%BA_PAR(SE_ION_LEV,NL,DPTH_INDX)=SE(ID)%BA_PAR(SE_ION_LEV,NL,DPTH_INDX)+T1
 	            BA_T_PAR_EHB(NL,DPTH_INDX)=BA_T_PAR_EHB(NL,DPTH_INDX)-Hz_to_erg*T1*(ATM(ID)%EDGEXzV_F(NL_F)+ION_EXC_EN)

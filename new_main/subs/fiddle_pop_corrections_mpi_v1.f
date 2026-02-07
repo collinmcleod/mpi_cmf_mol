@@ -10,6 +10,7 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered: 06-Feb-2026 -- Fixed RELAXATION bug related to MPI.
 ! Altered: 14-Feb-2014 -- Changed to V2 -- added MAX_dT_COR to call.
 ! Altered: 01-Jan-2014 -- Modified to use standard read routines. Some cleaning and
 !                           meaning of POP_LIM altered.
@@ -38,6 +39,7 @@
 	REAL(KIND=LDP) T_LIM(ND)
 !
 	REAL(KIND=LDP) RELAX_VARIABLE
+	REAL(KIND=LDP) LAMBDA_RELAX_VARIABLE
 	REAL(KIND=LDP) T_LIM_VARIABLE
 	REAL(KIND=LDP) POP_LIM_VARIABLE
 !
@@ -68,11 +70,13 @@
         LIT_LIM=1.0_LDP-CHANGE_LIM
 	MIN_SCALE=1.0E+20_LDP
 	CALL GET_LU(LU_SUM,'In FIDDLE_POP_CORRECTIONS_MPI_V1')
+	WRITE(6,*)'Called FIDDLE_POP_CORRECTIONS_MPI_V1',MYPE; FLUSH(UNIT=6)
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 ! Set default parameters.
 !
 	L_ST=1; L_END=ND
+	LAMBDA_RELAX_VARIABLE=1.0_LDP
 	RELAX_VARIABLE=1.0_LDP
 	T_LIM_VARIABLE=MAX_dT_COR
 	POP_LIM_VARIABLE=100.0_LDP*CHANGE_LIM		!=>implies no effect
@@ -96,14 +100,15 @@
 !     specified depth. POP LIMIT only effects corrections bigger than POP LIMIT.
 !
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-!	OPEN(UNIT=LU_SUM,FILE='ADJUST_CORRECTIONS',STATUS='OLD',ACTION='READ',IOSTAT=IOS)
 	IOS=100
+	OPEN(UNIT=LU_SUM,FILE='ADJUST_CORRECTIONS',STATUS='OLD',ACTION='READ',IOSTAT=IOS)
 	IF(IOS .EQ. 0)THEN
 	  CALL RD_OPTIONS_INTO_STORE(LU_SUM,LU_SCR)
 	  CALL RD_STORE_INT(L_ST,  'L_ST',L_FALSE,'Beginning depth')
 	  CALL RD_STORE_INT(L_END,'L_END',L_FALSE,'Final depth')
 	  CALL RD_STORE_DBLE(T_LIM_VARIABLE,'T_LIM',L_FALSE,'Maximum fracton correcton to T')
 	  CALL RD_STORE_DBLE(RELAX_VARIABLE,'RELAX',L_FALSE,'Relaxation variable')
+	  CALL RD_STORE_DBLE(LAMBDA_RELAX_VARIABLE,'LAM_RELAX',L_FALSE,'Lambda relaxation variable')
 	  CALL RD_STORE_DBLE(POP_LIM_VARIABLE,'MAX_CHNG',L_FALSE,'1 + Maximum fractional increase (> 1)')
 	  CALL RD_STORE_INT(CONSISTENCY_CNT,'CONSIS_CNT',L_FALSE,'Check whether adjacent pops consistent every ? iterations')
 	  CALL CLEAN_RD_STORE()
@@ -112,9 +117,11 @@
 	    WRITE(6,*)'Error in depth indices in ADJUST_CORRECTIONS -- invalid range'
 	    WRITE(6,*)'Depth indices=',L_ST,L_END
 	    L_ST=1; L_END=ND
-	    RELAX_VARIABLE=1.0_LDP; T_LIM_VARIABLE=0.2_LDP
+	    RELAX_VARIABLE=1.0_LDP; T_LIM_VARIABLE=0.2_LDP; LAMBDA_RELAX_VARIABLE=1.0_LDP
 	    POP_LIM_VARIABLE=100.0_LDP*CHANGE_LIM		!=>implies no effect
 	  END IF
+	  L_ST=MAX(L_ST,DST)
+	  L_END=MIN(L_END,DEND)
 !
 	  IF(T_LIM_VARIABLE .LT. 0.0_LDP .OR. T_LIM_VARIABLE .GT. 0.20_LDP)THEN
 	    WRITE(6,*)'Error for T LIMIT in ADJUST_CORRECTIONS -- invalid value'
@@ -135,24 +142,28 @@
 	  DO L=L_ST,L_END
 	    POP_LIM(L)=POP_LIM_VARIABLE
 	  END DO
+	  IF(LAMBDA_IT)RELAX_VARIABLE=LAMBDA_RELAX_VARIABLE
 !
 	  IF(RELAX_VARIABLE .LT. 0.0_LDP .OR. RELAX_VARIABLE .GT. 2.0_LDP)THEN
 	    WRITE(6,*)'Error for relaxation parameter in ADJUST_CORRECTIONS -- invalid value'
 	    WRITE(6,*)'Valid range is 0.0 to 2.0 '
 	    WRITE(6,*)'Relaxation parameter read in is',RELAX_VARIABLE
+	    WRITE(6,*)'Relaxation parameter set to unity.'
 	    RELAX_VARIABLE=1.0_LDP
+	  ELSE
+	    WRITE(6,*)'RELAX_VARIABLE=',RELAX_VARIABLE,MYPE; FLUSH(UNIT=6)
 	  END IF
 	  DO L=L_ST,L_END
 	    RELAX_PARAM(L)=RELAX_VARIABLE
 	  END DO
 	ELSE
 	  IF(MYPE .EQ. 0)WRITE(6,'(/,1X,A,I5,4X,L1)')'Skipped read ADJUST_CORRECTIONS (MYPE,LAMBDA_IT=)',MYPE,LAMBDA_IT
+	  RELAX_PARAM=1.0_LDP
 	END IF
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 !
 	INQUIRE(UNIT=LU_SUM,OPENED=FILE_OPEN)
 	IF(FILE_OPEN)CLOSE(LU_SUM)
-	IF(LAMBDA_IT)RELAX_PARAM(1:ND)=1.0_LDP
 	IF(LAMBDA_IT)POP_LIM(1:ND)=100.0_LDP*CHANGE_LIM
 !
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
@@ -173,7 +184,6 @@
 !
 	    T3=MAX( T_LIM(I),ABS(STEQ(NT,I)) )
 	    SCALE_FAC=MIN( T_LIM(I)/T3,SCALE_FAC )
-	    MIN_SCALE=MIN(SCALE_FAC,MIN_SCALE)
 	    IF(STEQ(NT,I) .NE. 0 .AND. POPS(NT,I) .GT. T_MIN .AND.
 	1                      POPS(NT,I)*(1.0_LDP-STEQ(NT,I)*SCALE_FAC) .LT. T_MIN)THEN
 	      SCALE_FAC=(1.0_LDP-T_MIN/POPS(NT,I))/STEQ(NT,I)
@@ -184,7 +194,12 @@
 ! When RELAX_PARAM > 1, BIG_LIM and LIT_LIM ensure that we don't get
 ! negatve populations.
 !
-	    IF(SCALE_FAC .EQ. 1.0_LDP)SCALE_FAC=RELAX_PARAM(I)
+            IF(SCALE_FAC .GE. 1.0_LDP .AND. RELAX_PARAM(I) .GT. 1.0_LDP)THEN
+              SCALE_FAC=RELAX_PARAM(I)
+	    ELSE
+	     SCALE_FAC=MIN(SCALE_FAC,RELAX_PARAM(I))
+	    END IF
+	    MIN_SCALE=MIN(SCALE_FAC,MIN_SCALE)
 !
 ! Ensure population change doesn't change population by too large an amount.
 ! POP_LIM allows us to force smaller corrections at some depths even while

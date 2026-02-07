@@ -9,9 +9,10 @@ LIB=$(LIB_DIR)libsubs.a
 #
 # Entries for library
 #
-OBJ = $(LIB)(allocate_shared_mem.o)\
-      $(LIB)(usr_option.o)\
+#
+OBJ = $(LIB)(usr_option.o)\
       $(LIB)(usr_list_opt.o)\
+      $(LIB)(allocate_shared_mem.o)\
       $(LIB)(allocate_shared_mpi_mem.o)\
       $(LIB)(chk_little_endian.o)\
       $(LIB)(chk_string.o)\

@@ -1,3 +1,18 @@
+!
+! Routine to allocate shared memory. The type of variable is not needed for this routine --
+! only the array size and the variable size is needed.
+!
+! After calling this routine you need to call C_F_POINTER:
+!
+!       CALL C_F_POINTER(BASEPTR,VEC,[NX,NY] where VEC[NX,NY...] is a pointer ot the appropiate type.
+!
+! In the calling routine you aso need: 
+!
+!       USE ISO_C_BINDING, ONLY : C_PTR, C_F_POINTER
+!       TYPE(C_PTR) BASEPTR
+!
+! Altered: 03-Feb-2025 : Intent deleted for VAR_SIZE. Now compiles on MAC.
+!
 	MODULE ALLOCATE_SHARED_MEM
 	PUBLIC ALLOCATE_MPI_MEM
 !
@@ -10,16 +25,16 @@
 !
 ! Arguments
 !
-! This line, and the declaration of X, are the two type dependent lines
-! in this subroutine.
-!
 	INTEGER, INTENT(inout) :: WIN_ID            !Identifies the shared momory
 	INTEGER, INTENT(in) :: SHARE_COMM	    !Communicator
-	TYPE(C_PTR),    INTENT(out) :: BASEPTR
+	TYPE(C_PTR) :: BASEPTR
 	INTEGER(KIND=MPI_ADDRESS_KIND) :: WINDOW_SIZE
 !
+!NB: Giving this variable INTENT(in) cause the mpif90 on my mac to fail (no valid MPI_WIN_SHARED_QUERY)
+!
+	INTEGER :: VAR_SIZE		            !Size (in bytes) of each element in array
+!
 	INTEGER, INTENT(in) :: ARRAY_SIZE	    !Size of array to be created
-	INTEGER, INTENT(in) :: VAR_SIZE	            !Size (in bytes) of each element in array
 	INTEGER, INTENT(in) :: OWNER                !Thread on which memory will be located
 !
 	INTEGER :: IER
@@ -33,7 +48,6 @@
 	IF(OWNER .NE. MYPE)WINDOW_SIZE=0
 !
 	CALL MPI_WIN_ALLOCATE_SHARED(WINDOW_SIZE, VAR_SIZE, MPI_INFO_NULL, SHARE_COMM, BASEPTR, WIN_ID ,IER)
-!	CALL MPI_WIN_ALLOCATE_SHARED(WINDOW_SIZE, VAR_SIZE, MPI_INFO_NULL, MPI_COMM_WORLD, BASEPTR, WIN_ID ,IER)
 	IF (MYPE /= OWNER) CALL MPI_WIN_SHARED_QUERY(WIN_ID, 0, WINDOW_SIZE, var_size, BASEPTR, IER)
 
 	RETURN

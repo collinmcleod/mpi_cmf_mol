@@ -8,7 +8,9 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
-! Aletred 18-Nov-2023 - Fixed issue with TR option.
+! Altered 06-Feb-2026 - For TR option, we interpolate in a population-like variable when
+!                         the departure coefficent is less than 10^{-20}.
+! Altered 18-Nov-2023 - Fixed issue with TR option.
 ! Altered 21-Aug-2023 - Fixed issue with TR option and rounding.
 ! Altered 20-Aug-2022 - Error/warning messages improved for TR option.
 ! Altered 31-May-2022 - Added RNS option: R grid not scaled.
@@ -69,6 +71,7 @@
 !
 	REAL(KIND=LDP) T_EXCITE,FX,DELTA_T
 	REAL(KIND=LDP) T1,T2
+	REAL(KIND=LDP) XP,XP1
 	REAL(KIND=LDP) TMAX,TMIN
 	REAL(KIND=LDP) RTAU1,RTAU1_OLD
 	REAL(KIND=LDP), PARAMETER :: RONE=1.0_LDP
@@ -335,7 +338,13 @@
 	          T1=RONE
 	        END IF
 	        DO K=1,NZ
-	           DHEN(K,I)=T1*DPOP(K,JINT+1)+(RONE-T1)*DPOP(K,JINT)
+	          IF(DPOP(K,JINT) .LT. -10.0_LDP)THEN
+	            XP1=DPOP(K,JINT+1)+HDKT*EDGE(K)/OLD_T(JINT+1)
+	            XP =DPOP(K,JINT)  +HDKT*EDGE(K)/OLD_T(JINT)
+	            DHEN(K,I)=T1*XP1+(RONE-T1)*XP-HDKT*EDGE(K)/T(I)
+	          ELSE
+	            DHEN(K,I)=T1*DPOP(K,JINT+1)+(RONE-T1)*DPOP(K,JINT)
+	          END IF
 	        END DO
 	        DI(I)=EXP(T1*OLD_DI(JINT+1)+(RONE-T1)*OLD_DI(JINT))
 	      END IF

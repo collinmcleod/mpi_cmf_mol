@@ -160,7 +160,7 @@
 !
 	  I=5*ND
 	  CALL ALLOCATE_MPI_MEM(IZERO,I,J,BASEPTR,MPI_COMM_WORLD,TRI_ID)
-	  CALL C_F_POINTER(BASEPTR,TA,[ND,5])
+	  CALL C_F_POINTER(BASEPTR,TRI_VECS_SAV,[ND,5])
 !
 	  ALLOCATE (TA(ND),STAT=IOS)
 	  IF(IOS .EQ. 0)ALLOCATE (TB(ND),STAT=IOS)
@@ -268,27 +268,11 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered: 03-Feb-2-26 : Changed variable passed to C_F_POINTER to pointer.
 ! Altered: 14-Nov-2025 : Moved computation of H outside accuracy check.
-! Altered: 29-Apr-2018 : Changed to V9: XM_CHK_OPTION and J_CHK_OPTION installed.
-! Altered: 17-Oct-2016 : Changed to V8: H_CHK_OPTION inserted into call.
-!                          Will allow greater flexibility in testing etc.
-! Altered: 30-Aug-2016 : Shifted H_ON_J_PREV later in the code so that it is allocated.
-!                          For some reason, the PG and INTEL compilers did not give
-!                          an error when the non-allocated array was zeroed.
-! Altered: 17-Feb-2015 : Check that |r^2.H| < r^2.J
-!                          Modified error output to MOM_J_ERRORS
-!                          [OSPREY/cur_cmf_gam: 24-Jan-2015]
-! Altered: 15-Feb-2014 : Changed to V7. Added IB_STAB_FACTOR to call.
-! Altered: 28-Jan-2012 : Minor bug fix. dLOG_NU was being used with HOLLOW option when INIT was true.
-! Altered: 25-Aug-2010 : Bug fix with IN_NBC_SAVE/ IN_HBC_SAVE. Both values
-!                          incorrectly set because of type'o.
-! Altered: 17-Dec-2009 : Call changed: changed to V6
-!                        INNER_BND_METH and OUTER_BND_METH inserted.
-! Altered: 15-Nov-2009 : Bug fix: LOG(CHI_SM(1:ND))--> LOG(CHI_SM(1:ND_SM))
-!                          Also output warning when ND is different.
-! Created: 31-Dec-2004 : Based on MOM_J_REL_V1
 !                        Removed all *PREV quantities from call and placed
-!                          in module.
+!                        in module. Called changed to MOM_JREL_MPI_V1.
+!                        Adapted from MOM_JREL_V9.
 !
 	INTEGER ND_SM
 !

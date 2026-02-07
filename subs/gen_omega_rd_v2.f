@@ -172,6 +172,7 @@
 	  WRITE(LUER,*)'Error reading collisonal data from '//FILE_NAME
 	  WRITE(LUER,*)'MAX_TRANS is too small:',MAX_TRANS
 	  WRITE(LUER,*)'NUM_TRANS =',NUM_TRANS
+	  WRITE(LUER,*)'Subroutine is GEN_OMEGA_RD_V2'
 	  STOP
 	END IF
 	STRING=' '
@@ -191,6 +192,7 @@
 	  WRITE(LUER,*)'Error reading collisonal data from '//FILE_NAME
 	  WRITE(LUER,*)'MAX_TVALS too small -- MAX_TAVLS= ',MAX_TVALS
 	  WRITE(LUER,*)'NUM_TVALS = ',NUM_TVALS
+	  WRITE(LUER,*)'Subroutine is GEN_OMEGA_RD_V2'
 	  STOP
 	END IF
 !

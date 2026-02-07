@@ -91,6 +91,12 @@
 	        LOC_NT_2E=ROOT(ID-1)%NTIXzV_2E
 	      END IF
 	    END IF
+!
+! Note: We now define the recombination coefficient with respect to the total population 
+! of the next ionization stage rather than the lowest super-level. This was done because in
+! SN models, and some stellar models, the lowest term is split, and not a single super-level.
+! This change will yield more consistent recombination coefficients.
+! 
 	    IF(ATM(ID+1)%XzV_PRES)THEN
 	      TMP_ION=0.0D0
 	      DO I=1,ND
