@@ -1,0 +1,23 @@
+************************************************************************************************************************************
+ 
+                 Energy Level and statistical weight for CO2 (Carbon Dioxide)
+
+  Reference: NIST Chemistry WebBook, CO2
+
+		This file serves as a placeholder, as CO2 is only used to calculate the abundance of carbon monoxide
+		CO2 has no true levels included in CMFGEN
+		
+Created 16-Sep-2021 by Collin McLeod		
+
+ 
+                g          E(cm^-1)     10^15 Hz      eV         Lam(A)       ID      ARAD         C4          C6
+************************************************************************************************************************************
+ 
+17-Oct-2000                                      !Format date
+16-Sep-2021                                      !Date
+1                                                !Number of energy levels
+111118.945                                       !Ionization energy
+1.0                                              !Screened nuclear charge
+0                                                !Number of transitions
+ 
+GROUND        1.0          0.000000    3.331264    13.777      8.99936E+02     1   0.000E+00   0.000E+00   0.000E+00

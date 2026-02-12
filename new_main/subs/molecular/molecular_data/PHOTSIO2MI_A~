@@ -1,0 +1,27 @@
+ ****************************************************************************************
+ ****************************************************************************************
+
+ Crude photoionization cross-sections for Hydroxyl, following a simple power law
+ in \nu
+ Ion statistical weight chosen arbitrarily
+
+ ****************************************************************************************
+ ****************************************************************************************
+
+29-Sep-2021 12:11:29                   !Date
+1                                      !Number of energy levels
+1                                      !Number of photoionization routes
+1.0                                    !Screened nuclear charge
+UNKNOWN                                !Final state in ion
+0.0                                    !Excitation energy of final state
+1.0                                    !Statistical weight of ion
+Megabarns                              !Cross-section unit
+False                                  !Split J levels
+3                                      !Total number of data pairs
+
+GROUND                                 !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+1.0D0
+1.0D0
+2.0D0

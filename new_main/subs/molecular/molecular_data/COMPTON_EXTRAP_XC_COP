@@ -1,0 +1,54 @@
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+DATABASE:         Itikawa database
+PERMLINK:         www.lxcat.net/Itikawa
+DESCRIPTION:      A set of recommended cross section data (angle integrated) for electron collisions with H2, N2, O2,
+                  CO, H2O, and CO2. The data are taken from the tables in the references listed for each species.  The
+                  recommendations are based on available experimental data.  In that sense, the present sets of cross
+                  sections are not complete.  Uncertainty estimates are given in the references.
+CONTACT:          Yukikazu Itikawa
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+************************************************************************************************************************
+
+COMMENT: Y. Itikawa, J. Phys. Chem. Ref. Data 44, 013105 (2015) doi: 10.1063/1.4913926.
+
+********************************************************** CO **********************************************************
+
+IONIZATION
+CO -> C + 0+
+ 2.500000e+1
+SPECIES: e / CO
+PROCESS: E + CO -> E + E + C + 0+, Ionization
+PARAM.:  E = 25 eV
+COMMENT: Table 14.
+UPDATED: 2016-02-23 11:52:08
+COLUMNS: Energy (eV) | Cross section (cm^2)
+-----------------------------
+
+25  !Number of points
+
+1.000000000000000056e-01 0.000000000000000000e+00
+1.000000000000000000e+00 0.000000000000000000e+00
+5.000000000000000000e+00 0.000000000000000000e+00
+1.000000000000000000e+01 0.000000000000000000e+00
+2.000000000000000000e+01 0.000000000000000000e+00
+2.500000000000000000e+01 0.000000000000000000e+00
+3.000000000000000000e+01 9.000000000000000259e-19
+3.500000000000000000e+01 3.800000000000000580e-18
+4.000000000000000000e+01 6.180000000000000242e-18
+5.000000000000000000e+01 1.320000000000000064e-17
+6.000000000000000000e+01 1.990000000000000042e-17
+7.000000000000000000e+01 2.499999999999999948e-17
+8.000000000000000000e+01 2.779999999999999690e-17
+9.000000000000000000e+01 2.979999999999999859e-17
+1.000000000000000000e+02 3.090000000000000044e-17
+1.250000000000000000e+02 3.159999999999999825e-17
+1.500000000000000000e+02 3.129999999999999831e-17
+2.000000000000000000e+02 2.739999999999999903e-17
+2.500000000000000000e+02 2.450000000000000060e-17
+3.000000000000000000e+02 2.160000000000000216e-17
+4.000000000000000000e+02 1.750000000000000087e-17
+5.000000000000000000e+02 1.429999999999999941e-17
+7.000000000000000000e+02 1.150000000000000044e-17
+1.000000000000000000e+03 8.159999999999999721e-18
+1.001000000000000000e+03 8.509492220444251120e-18

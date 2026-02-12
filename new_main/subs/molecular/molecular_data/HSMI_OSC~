@@ -1,0 +1,23 @@
+************************************************************************************************************************************
+ 
+                 Energy Level and statistical weight for CH (Methylidyne)
+
+  Reference: NIST Chemistry WebBook, CH
+
+		This file serves as a placeholder, as CH is only used to calculate the abundance of carbon monoxide/silicon monoxide
+		CH has no true levels included in CMFGEN
+		
+Created 04-Mar-2021 by Collin McLeod		
+
+ 
+                g          E(cm^-1)     10^15 Hz      eV         Lam(A)       ID      ARAD         C4          C6
+************************************************************************************************************************************
+ 
+17-Oct-2000                                      !Format date
+04-Mar-2021                                      !Date
+1                                                !Number of energy levels
+85819.3672                                       !Ionization energy
+1.0                                              !Screened nuclear charge
+0                                                !Number of transitions
+ 
+GROUND        1.0          0.000000    2.572741     10.640      1.16527E+03     1   0.000E+00   0.000E+00   0.000E+00

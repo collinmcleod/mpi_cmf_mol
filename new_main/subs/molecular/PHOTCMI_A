@@ -1,0 +1,5870 @@
+ ****************************************************************************************
+ ****************************************************************************************
+
+ Crude photoionization cross-sections for Carbon Monoxide, based on CMI_PHOT_DATA
+
+ ****************************************************************************************
+ ****************************************************************************************
+
+09-Oct-2023 15:50:47                   !Date
+836                                    !Number of energy levels
+1                                      !Number of photoionization routes
+1.0                                    !Screened nuclear charge
+UNKNOWN                                !Final state in ion
+0.0                                    !Excitation energy of final state
+57182.0                                !Statistical weight of ion
+Megabarns                              !Cross-section unit
+True                                   !Split J levels
+2508                                   !Total number of data pairs
+
+Rovibration_vJ|0[0]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+1.0D0
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[1]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+1.0D0
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[2]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+1.0D0
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[3]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[4]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[5]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[6]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[7]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[8]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[9]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[10]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[11]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[12]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[13]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[14]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[15]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[16]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[17]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[18]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[19]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[20]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[21]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[22]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[23]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[24]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[25]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[26]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[27]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[28]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[29]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[30]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[31]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[32]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[0]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[1]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[33]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[2]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[3]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[4]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[5]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[6]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[7]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[34]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[8]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[9]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[10]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[11]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[35]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[12]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[13]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[14]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[36]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[15]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[16]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[37]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[17]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[18]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[38]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[19]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[20]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[39]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[21]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[22]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[40]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[23]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[24]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[41]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[25]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[42]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[26]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[27]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[43]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[28]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[44]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[29]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[30]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[45]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[31]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[46]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[32]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[0]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[1]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[2]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[33]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[3]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[4]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[47]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[5]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[6]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[7]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[8]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[34]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[9]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[10]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[48]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[11]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[35]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[12]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[13]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[14]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[36]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[49]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[15]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[16]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[37]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[17]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[50]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[18]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[38]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[19]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[20]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[51]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[39]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[21]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[22]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[40]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[52]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[23]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[24]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[41]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[53]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[25]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[42]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[26]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[54]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[27]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[43]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[28]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[55]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[44]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[29]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[30]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[45]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[56]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[31]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[46]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[32]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[57]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[0]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[1]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[2]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[33]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[3]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[4]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[5]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[47]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[6]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[7]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[8]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[34]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[58]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[9]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[10]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[48]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[11]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[35]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[12]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[13]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[59]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[14]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[36]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[49]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[15]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[16]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[37]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[17]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[60]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[50]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[18]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[38]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[19]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[20]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[51]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[61]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[39]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[21]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[22]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[40]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[52]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[23]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[62]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[24]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[41]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[53]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[25]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[42]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[63]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[26]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[54]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[27]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[43]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[28]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[64]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[55]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[29]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[44]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[30]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[65]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[45]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[56]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[31]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[46]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[32]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[57]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[66]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[0]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[1]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[2]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[3]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[33]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[4]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[5]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[47]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[6]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[7]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[8]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[34]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[9]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[58]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[10]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[67]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[11]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[48]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[35]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[12]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[13]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[14]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[59]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[36]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[49]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[15]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[68]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[16]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[37]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[17]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[50]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[60]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[18]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[38]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[19]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[69]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[20]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[51]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[39]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[61]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[21]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[22]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[40]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[70]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[52]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[23]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[62]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[24]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[41]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[53]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[25]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[71]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[42]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[26]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[63]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[27]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[54]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[43]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[28]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[72]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[64]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[55]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[29]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[44]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[30]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[45]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[65]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[73]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[56]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[31]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[32]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[46]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[57]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[66]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[0]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[1]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[2]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[3]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[74]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[33]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[4]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[5]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[6]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[47]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[7]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[8]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[34]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[9]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[58]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[10]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[11]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[67]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[48]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[12]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[35]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|0[75]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[13]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[14]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[59]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[36]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[15]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[49]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[68]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[16]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[37]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[17]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[18]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[50]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[60]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[38]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[19]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[69]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[20]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[51]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[39]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[21]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[61]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[22]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[40]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[52]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[70]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[23]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[62]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[24]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[41]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[25]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[53]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[71]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[26]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[42]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[63]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[27]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[54]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[43]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[28]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[72]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[64]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[29]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[55]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[44]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[30]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[45]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[65]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[73]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[56]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[31]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[32]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[46]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[0]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[57]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[1]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[2]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[3]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[66]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[4]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[33]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[5]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[74]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[6]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[47]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[7]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[8]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[34]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[9]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[10]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[58]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[11]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[67]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[48]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[12]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[35]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[13]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|1[75]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[14]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[36]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[59]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[15]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[49]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[16]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[68]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[17]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[37]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[18]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[50]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[60]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[19]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[38]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[20]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[69]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[51]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[39]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[21]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[61]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[22]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[40]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[23]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[52]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[70]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[24]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[62]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[41]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[25]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[53]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[26]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[42]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[71]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[63]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[27]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[54]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[43]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[28]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[72]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[64]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[29]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[44]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[55]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[30]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[45]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[65]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[31]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[56]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[73]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[32]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[46]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[0]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[1]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[2]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[3]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[57]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[4]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[33]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[66]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[5]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[6]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[74]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[7]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[47]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[8]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[9]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[34]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[10]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[58]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[11]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[12]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[48]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[67]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[35]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[13]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|2[75]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[14]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[36]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[15]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[59]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[49]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[16]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[68]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[17]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[37]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[18]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[50]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[60]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[19]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[38]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[20]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[69]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[51]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[21]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[39]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[61]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[22]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[40]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[23]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[52]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[70]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[24]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[62]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[41]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[25]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[53]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[26]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[42]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[71]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[63]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[27]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[54]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[43]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[28]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[29]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[72]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[64]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[44]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[55]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[30]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[45]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[31]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[56]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[65]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[73]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[32]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[46]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[0]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[1]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[2]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[3]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[4]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[57]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[33]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[5]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[6]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[66]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[7]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[47]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[8]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[74]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[9]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[34]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[10]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[11]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[58]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[12]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[48]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[35]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[67]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[13]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[14]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|3[75]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[36]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[15]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[59]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[49]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[16]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[17]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[37]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[68]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[18]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[50]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[19]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[60]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[38]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[20]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[69]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[21]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[51]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[39]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[61]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[22]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[40]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[23]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[52]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[70]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[24]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[62]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[41]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[25]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[53]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[26]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[42]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[71]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[63]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[27]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[54]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[43]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[28]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[29]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[64]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[72]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[44]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[55]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[30]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[45]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[31]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[56]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[65]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[73]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[32]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[46]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[0]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[1]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[2]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[3]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[4]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[5]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[33]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[57]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[6]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[7]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[66]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[8]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[47]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[9]                    !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[74]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[34]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[10]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[11]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[58]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[12]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[35]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[48]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[13]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[67]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[14]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[15]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[36]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|4[75]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[59]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[16]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[49]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[17]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[37]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[68]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[18]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[50]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[19]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[60]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[38]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[20]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[21]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[69]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[39]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[51]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[22]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[61]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[23]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[40]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[52]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[24]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[70]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[41]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[62]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[25]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[53]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[26]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[42]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[27]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[71]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[63]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[54]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[43]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[28]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[29]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[44]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[64]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[72]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[55]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[30]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[45]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[31]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[56]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[65]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[73]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[32]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[46]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[0]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[1]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[2]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[3]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[4]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[5]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[33]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[6]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[57]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[7]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[8]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[66]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[47]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[9]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[34]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[10]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[74]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[11]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[12]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[58]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[35]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[13]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[48]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[14]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[67]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[15]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[36]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|5[75]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[16]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[49]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[59]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[17]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[37]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[18]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[68]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[19]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[50]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[38]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[60]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[20]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[21]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[39]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[51]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[69]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[22]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[61]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[23]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[40]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[52]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[24]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[70]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[41]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[25]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[62]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[53]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[26]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[42]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[27]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[71]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[63]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[54]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[43]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[28]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[29]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[44]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[64]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[55]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[72]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[30]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[45]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[31]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[56]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[65]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[32]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[73]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[46]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[33]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[57]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[66]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[47]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[34]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[74]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[58]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[35]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[48]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[67]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[36]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|6[75]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[49]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[59]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[37]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[68]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[50]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[38]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[60]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[39]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[51]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[69]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[61]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[40]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[52]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[41]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[70]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[62]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[53]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[42]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[71]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[63]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[54]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[43]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[44]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[64]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[55]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[72]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[45]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[56]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[65]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[73]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[46]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[57]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[47]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[66]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[74]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[58]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[48]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[67]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[49]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|7[75]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[59]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[68]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[50]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[60]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[51]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[69]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[61]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[52]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[70]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[62]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[53]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[63]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[71]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[54]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[55]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[64]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[72]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[56]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[65]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[73]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[57]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[66]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[74]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[58]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[67]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[59]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|8[75]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[68]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[60]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[69]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[61]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[70]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[62]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[63]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[71]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[64]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[72]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[65]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[73]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[66]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[74]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[67]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|9[75]                   !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[68]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[69]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[70]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[71]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[72]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[73]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[74]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0
+
+Rovibration_vJ|10[75]                  !Configuration name
+1                                      !Type of cross-section
+3                                      !Number of cross-section points
+0.0000
+1.0D0
+2.0D0

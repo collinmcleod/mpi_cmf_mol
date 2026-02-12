@@ -1,0 +1,65 @@
+# Include local system definitions
+
+include ../../../Makefile_definitions
+
+# Library where object files will/are stored
+# FX =  -Mextend -Mbackslash    -Ktrap=fp
+
+LIB=$(LIB_DIR)libsubs.a
+LIB_MOD=$(LIB_DIR)libmod.a
+
+#
+# Entries in a library
+#
+OBJ = $(LIB)(rd_mol_rxn_mpi.o)\
+      $(LIB)(set_mol_rxn_lev_mpi.o)\
+      $(LIB)(verify_mol_rxn.o)\
+      $(LIB)(steq_ba_mol_rxn_mpi.o)\
+      $(LIB)(print_mol_info.o)\
+      $(LIB)(vj_from_name.o)
+
+all : $(LIB)
+	rm -f *.o
+
+$(LIB) : $(OBJ)	
+
+MOL =  $(LIB_DIR)libmod.a(mol_rxn_mod.o)
+ST =  $(LIB_DIR)libmod.a(steq_data_mod.o)
+CMF = $(LIB_DIR)libmod.a(mod_cmfgen.o)
+NT = $(LIB_DIR)libmod.a(mod_non_therm.o)
+#KIND = $(LIB_DIR)libmod.a(set_kind_module.o)
+
+# General rules to make obects in a library and object files
+
+$(LIB)(%.o) : %.f90 $(MOL)
+	$(F90) -c $(FG) $< 
+	ar $(AR_OPTION) $(LIB) $*.o
+
+# Specific rules
+
+$(LIB)(print_mol_info.o) : print_mol_info.f90 $(MOL) $(CMF)
+	$(F90) -c $(FG) print_mol_info.f90
+	ar ruv $(LIB) print_mol_info.o
+
+$(LIB)(steq_ba_mol_rxn_mpi.o) : steq_ba_mol_rxn_mpi.f90 $(MOL) $(ST) $(CMF) $(NT)
+	$(F90) -c $(FG) steq_ba_mol_rxn_mpi.f90
+	ar ruv $(LIB) steq_ba_mol_rxn_mpi.o
+
+$(LIB)(set_mol_rxn_lev_mpi.o) : set_mol_rxn_lev_mpi.f90 $(MOL) $(CMF)
+	$(F90) -c $(FG) set_mol_rxn_lev_mpi.f90
+	ar ruv $(LIB) set_mol_rxn_lev_mpi.o
+
+$(MOD):
+	(cd ../mod_subs ; make)
+
+$(MOL):
+	(cd ../mod_subs ; make)
+
+$(ST):
+	(cd ../mod_subs ; make)
+
+clean :
+	rm -f *.o 
+
+clean_lib :
+	rm $(LIB)

@@ -1,0 +1,46 @@
+!
+
+Cross-sections for dissociation of carbon monoxide by collisions with high-energy electrons
+(alternatively called non-thermal or Compton electrons)
+
+CO + e- -> C + O + e-
+
+Data come from Itikawa (2015) DOI: 10.1063/1.4913926
+
+Format:
+
+Energy (eV)
+Cross-section (cm^2)
+
+*****************************************************************************************************
+
+14        !Number of cross-section points
+
+ 13.5        
+ 1.08D-15
+ 18.5        
+ 2.84D-15
+ 21.0       
+ 4.80D-15
+ 23.5       
+ 5.20D-15
+ 28.5       
+ 6.58D-15
+ 33.5       
+ 6.56D-15
+ 38.5       
+ 7.50D-15
+ 48.5       
+ 7.56D-15
+ 58.5       
+ 7.50D-15
+ 73.5       
+ 6.95D-15
+ 98.5       
+ 6.58D-15
+123.5       
+ 6.47D-15
+148.5       
+ 5.86D-15
+198.5       
+ 4.36D-15

@@ -1,0 +1,149 @@
+ *************************************************************************************
+
+Ro-vibrational Energy Levels and Transitions for Carbon Monoxide, up to v=  2 and J= 10
+
+ Data taken from Li et al., 2015.  Accessed 2021. URL: https://ui.adsabs.harvard.edu/abs/2015ApJS..216...15L/abstract
+
+                      Level Name     g       E(cm^-1)    10^15 Hz       eV       Lam(A)      ID        ARAD        GAM2        GAM4
+ *************************************************************************************
+
+17-Oct-2000				           !Format date
+15-Apr-2021                                        !Date Created
+33                                                 !Number of energy levels
+113030.4776                                        !Ionization energy
+1.0                                                !Screened nuclear charge
+90                                                 !Number of transitions
+
+Rovibration_vJ|0|0|                1.0         0.0000     3.38857   14.014    8.847E+02       1   0.000E+00   0.000E+00   0.000E+00
+Rovibration_vJ|0|1|                3.0         3.8450     3.38845   14.014    8.847E+02       2   7.207E-08   0.000E+00   0.000E+00
+Rovibration_vJ|0|2|                5.0        11.5350     3.38822   14.013    8.848E+02       3   6.914E-07   0.000E+00   0.000E+00
+Rovibration_vJ|0|3|                7.0        23.0695     3.38788   14.011    8.849E+02       4   2.497E-06   0.000E+00   0.000E+00
+Rovibration_vJ|0|4|                9.0        38.4481     3.38742   14.009    8.850E+02       5   6.129E-06   0.000E+00   0.000E+00
+Rovibration_vJ|0|5|               11.0        57.6704     3.38684   14.007    8.852E+02       6   1.222E-05   0.000E+00   0.000E+00
+Rovibration_vJ|0|6|               13.0        80.7354     3.38615   14.004    8.853E+02       7   2.138E-05   0.000E+00   0.000E+00
+Rovibration_vJ|0|7|               15.0       107.6424     3.38534   14.001    8.856E+02       8   3.423E-05   0.000E+00   0.000E+00
+Rovibration_vJ|0|8|               17.0       138.3903     3.38442   13.997    8.858E+02       9   5.135E-05   0.000E+00   0.000E+00
+Rovibration_vJ|0|9|               19.0       172.9780     3.38338   13.993    8.861E+02      10   7.330E-05   0.000E+00   0.000E+00
+Rovibration_vJ|0|10|              21.0       211.4041     3.38223   13.988    8.864E+02      11   1.006E-04   0.000E+00   0.000E+00
+Rovibration_vJ|1|0|                1.0      2143.2711     3.32432   13.748    9.018E+02      12   3.546E+01   0.000E+00   0.000E+00
+Rovibration_vJ|1|1|                3.0      2147.0811     3.32420   13.748    9.018E+02      13   3.546E+01   0.000E+00   0.000E+00
+Rovibration_vJ|1|2|                5.0      2154.7010     3.32397   13.747    9.019E+02      14   3.546E+01   0.000E+00   0.000E+00
+Rovibration_vJ|1|3|                7.0      2166.1305     3.32363   13.745    9.020E+02      15   3.546E+01   0.000E+00   0.000E+00
+Rovibration_vJ|1|4|                9.0      2181.3692     3.32317   13.744    9.021E+02      16   3.546E+01   0.000E+00   0.000E+00
+Rovibration_vJ|1|5|               11.0      2200.4164     3.32260   13.741    9.023E+02      17   3.545E+01   0.000E+00   0.000E+00
+Rovibration_vJ|1|6|               13.0      2223.2714     3.32192   13.738    9.025E+02      18   3.545E+01   0.000E+00   0.000E+00
+Rovibration_vJ|1|7|               15.0      2249.9333     3.32112   13.735    9.027E+02      19   3.545E+01   0.000E+00   0.000E+00
+Rovibration_vJ|1|8|               17.0      2280.4012     3.32021   13.731    9.029E+02      20   3.545E+01   0.000E+00   0.000E+00
+Rovibration_vJ|1|9|               19.0      2314.6738     3.31918   13.727    9.032E+02      21   3.543E+01   0.000E+00   0.000E+00
+Rovibration_vJ|1|10|              21.0      2352.7499     3.31804   13.722    9.035E+02      22   1.791E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|0|                1.0      4260.0622     3.26086   13.486    9.194E+02      23   6.922E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|1|                3.0      4263.8372     3.26074   13.485    9.194E+02      24   6.922E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|2|                5.0      4271.3871     3.26052   13.484    9.195E+02      25   6.922E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|3|                7.0      4282.7116     3.26018   13.483    9.196E+02      26   6.921E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|4|                9.0      4297.8102     3.25972   13.481    9.197E+02      27   6.921E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|5|               11.0      4316.6824     3.25916   13.479    9.198E+02      28   6.920E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|6|               13.0      4339.3274     3.25848   13.476    9.200E+02      29   6.920E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|7|               15.0      4365.7443     3.25769   13.473    9.203E+02      30   6.919E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|8|               17.0      4395.9321     3.25678   13.469    9.205E+02      31   6.919E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|9|               19.0      4429.8897     3.25576   13.465    9.208E+02      32   6.918E+01   0.000E+00   0.000E+00
+Rovibration_vJ|2|10|              21.0      4467.6157     3.25463   13.460    9.211E+02      33   3.496E+01   0.000E+00   0.000E+00
+
+
+ ****************************************************************************************
+
+ oscillator strengths
+
+ ****************************************************************************************
+
+  Transition                                                      f           A          Lam(A)      i-j    Trans. #
+
+Rovibration_vJ|0|0|         -Rovibration_vJ|0|1|             2.1925E-08  7.2070E-08   2.601E+07       1-   2        1
+Rovibration_vJ|0|0|         -Rovibration_vJ|1|1|             1.1659E-05  1.1950E+01   4.657E+04       1-  13        2
+Rovibration_vJ|0|0|         -Rovibration_vJ|2|1|             8.6264E-08  3.4870E-01   2.345E+04       1-  24        3
+Rovibration_vJ|0|1|         -Rovibration_vJ|0|2|             2.9214E-08  6.9140E-07   1.300E+07       2-   3        4
+Rovibration_vJ|0|1|         -Rovibration_vJ|1|0|             3.8715E-06  3.5460E+01   4.674E+04       2-  12        5
+Rovibration_vJ|0|1|         -Rovibration_vJ|1|2|             7.7884E-06  1.4420E+01   4.649E+04       2-  14        6
+Rovibration_vJ|0|1|         -Rovibration_vJ|2|0|             2.8414E-08  1.0300E+00   2.350E+04       2-  23        7
+Rovibration_vJ|0|1|         -Rovibration_vJ|2|2|             5.7871E-08  4.2180E-01   2.343E+04       2-  25        8
+Rovibration_vJ|0|2|         -Rovibration_vJ|0|3|             3.9392E-08  2.4970E-06   8.670E+06       3-   4        9
+Rovibration_vJ|0|2|         -Rovibration_vJ|1|1|             4.6371E-06  2.3510E+01   4.683E+04       3-  13       10
+Rovibration_vJ|0|2|         -Rovibration_vJ|1|3|             7.0260E-06  1.5540E+01   4.641E+04       3-  15       11
+Rovibration_vJ|0|2|         -Rovibration_vJ|2|1|             3.3892E-08  6.8130E-01   2.352E+04       3-  24       12
+Rovibration_vJ|0|2|         -Rovibration_vJ|2|3|             5.2394E-08  4.5540E-01   2.341E+04       3-  26       13
+Rovibration_vJ|0|3|         -Rovibration_vJ|0|4|             4.9952E-08  6.1290E-06   6.503E+06       4-   5       14
+Rovibration_vJ|0|3|         -Rovibration_vJ|1|2|             4.9585E-06  2.1040E+01   4.691E+04       4-  14       15
+Rovibration_vJ|0|3|         -Rovibration_vJ|1|4|             6.7034E-06  1.6200E+01   4.633E+04       4-  16       16
+Rovibration_vJ|0|3|         -Rovibration_vJ|2|2|             3.6098E-08  6.0840E-01   2.354E+04       4-  25       17
+Rovibration_vJ|0|3|         -Rovibration_vJ|2|4|             5.0210E-08  4.7600E-01   2.339E+04       4-  27       18
+Rovibration_vJ|0|4|         -Rovibration_vJ|0|5|             6.0600E-08  1.2220E-05   5.202E+06       5-   6       19
+Rovibration_vJ|0|4|         -Rovibration_vJ|1|3|             5.1308E-06  1.9920E+01   4.700E+04       5-  15       20
+Rovibration_vJ|0|4|         -Rovibration_vJ|1|5|             6.5271E-06  1.6650E+01   4.625E+04       5-  17       21
+Rovibration_vJ|0|4|         -Rovibration_vJ|2|3|             3.7214E-08  5.7490E-01   2.356E+04       5-  26       22
+Rovibration_vJ|0|4|         -Rovibration_vJ|2|5|             4.9114E-08  4.9060E-01   2.337E+04       5-  28       23
+Rovibration_vJ|0|5|         -Rovibration_vJ|0|6|             7.1204E-08  2.1380E-05   4.336E+06       6-   7       24
+Rovibration_vJ|0|5|         -Rovibration_vJ|1|4|             5.2382E-06  1.9260E+01   4.709E+04       6-  16       25
+Rovibration_vJ|0|5|         -Rovibration_vJ|1|6|             6.4224E-06  1.7000E+01   4.618E+04       6-  18       26
+Rovibration_vJ|0|5|         -Rovibration_vJ|2|4|             3.7838E-08  5.5460E-01   2.358E+04       6-  27       27
+Rovibration_vJ|0|5|         -Rovibration_vJ|2|6|             4.8516E-08  5.0200E-01   2.336E+04       6-  29       28
+Rovibration_vJ|0|6|         -Rovibration_vJ|0|7|             8.1787E-08  3.4230E-05   3.717E+06       7-   8       29
+Rovibration_vJ|0|6|         -Rovibration_vJ|1|5|             5.3079E-06  1.8800E+01   4.718E+04       7-  17       30
+Rovibration_vJ|0|6|         -Rovibration_vJ|1|7|             6.3526E-06  1.7280E+01   4.610E+04       7-  19       31
+Rovibration_vJ|0|6|         -Rovibration_vJ|2|5|             3.8191E-08  5.4020E-01   2.361E+04       7-  28       32
+Rovibration_vJ|0|6|         -Rovibration_vJ|2|7|             4.8189E-08  5.1150E-01   2.334E+04       7-  30       33
+Rovibration_vJ|0|7|         -Rovibration_vJ|0|8|             9.2284E-08  5.1350E-05   3.252E+06       8-   9       34
+Rovibration_vJ|0|7|         -Rovibration_vJ|1|6|             5.3558E-06  1.8450E+01   4.727E+04       8-  18       35
+Rovibration_vJ|0|7|         -Rovibration_vJ|1|8|             6.3056E-06  1.7520E+01   4.602E+04       8-  20       36
+Rovibration_vJ|0|7|         -Rovibration_vJ|2|6|             3.8390E-08  5.2910E-01   2.363E+04       8-  29       37
+Rovibration_vJ|0|7|         -Rovibration_vJ|2|8|             4.8027E-08  5.1980E-01   2.332E+04       8-  31       38
+Rovibration_vJ|0|8|         -Rovibration_vJ|0|9|             1.0267E-07  7.3300E-05   2.891E+06       9-  10       39
+Rovibration_vJ|0|8|         -Rovibration_vJ|1|7|             5.3908E-06  1.8170E+01   4.736E+04       9-  19       40
+Rovibration_vJ|0|8|         -Rovibration_vJ|1|9|             6.2690E-06  1.7720E+01   4.595E+04       9-  21       41
+Rovibration_vJ|0|8|         -Rovibration_vJ|2|7|             3.8492E-08  5.2000E-01   2.366E+04       9-  30       42
+Rovibration_vJ|0|8|         -Rovibration_vJ|2|9|             4.7974E-08  5.2730E-01   2.330E+04       9-  32       43
+Rovibration_vJ|0|9|         -Rovibration_vJ|0|10|            1.1289E-07  1.0060E-04   2.602E+06      10-  11       44
+Rovibration_vJ|0|9|         -Rovibration_vJ|1|8|             5.4154E-06  1.7930E+01   4.745E+04      10-  20       45
+Rovibration_vJ|0|9|         -Rovibration_vJ|1|10|            6.2459E-06  1.7910E+01   4.588E+04      10-  22       46
+Rovibration_vJ|0|9|         -Rovibration_vJ|2|8|             3.8519E-08  5.1210E-01   2.368E+04      10-  31       47
+Rovibration_vJ|0|9|         -Rovibration_vJ|2|10|            4.7993E-08  5.3420E-01   2.328E+04      10-  33       48
+Rovibration_vJ|0|10|        -Rovibration_vJ|1|9|             5.4303E-06  1.7710E+01   4.755E+04      11-  21       49
+Rovibration_vJ|0|10|        -Rovibration_vJ|2|9|             3.8500E-08  5.0510E-01   2.371E+04      11-  32       50
+Rovibration_vJ|1|0|         -Rovibration_vJ|1|1|             1.2796E-08  4.1300E-08   2.625E+07      12-  13       51
+Rovibration_vJ|1|0|         -Rovibration_vJ|2|1|             2.2984E-05  2.2980E+01   4.716E+04      12-  24       52
+Rovibration_vJ|1|1|         -Rovibration_vJ|1|2|             1.7046E-08  3.9610E-07   1.312E+07      13-  14       53
+Rovibration_vJ|1|1|         -Rovibration_vJ|2|0|             7.6325E-06  6.8190E+01   4.733E+04      13-  23       54
+Rovibration_vJ|1|1|         -Rovibration_vJ|2|2|             1.5354E-05  2.7730E+01   4.707E+04      13-  25       55
+Rovibration_vJ|1|2|         -Rovibration_vJ|1|3|             2.2976E-08  1.4300E-06   8.749E+06      14-  15       56
+Rovibration_vJ|1|2|         -Rovibration_vJ|2|1|             9.1419E-06  4.5210E+01   4.741E+04      14-  24       57
+Rovibration_vJ|1|2|         -Rovibration_vJ|2|3|             1.3844E-05  2.9870E+01   4.699E+04      14-  26       58
+Rovibration_vJ|1|3|         -Rovibration_vJ|1|4|             2.9127E-08  3.5090E-06   6.562E+06      15-  16       59
+Rovibration_vJ|1|3|         -Rovibration_vJ|2|2|             9.7756E-06  4.0460E+01   4.750E+04      15-  25       60
+Rovibration_vJ|1|3|         -Rovibration_vJ|2|4|             1.3209E-05  3.1140E+01   4.691E+04      15-  27       61
+Rovibration_vJ|1|4|         -Rovibration_vJ|1|5|             3.5304E-08  6.9900E-06   5.250E+06      16-  17       62
+Rovibration_vJ|1|4|         -Rovibration_vJ|2|3|             1.0117E-05  3.8310E+01   4.759E+04      16-  26       63
+Rovibration_vJ|1|4|         -Rovibration_vJ|2|5|             1.2868E-05  3.2020E+01   4.683E+04      16-  28       64
+Rovibration_vJ|1|5|         -Rovibration_vJ|1|6|             4.1449E-08  1.2220E-05   4.375E+06      17-  18       65
+Rovibration_vJ|1|5|         -Rovibration_vJ|2|4|             1.0328E-05  3.7040E+01   4.768E+04      17-  27       66
+Rovibration_vJ|1|5|         -Rovibration_vJ|2|6|             1.2660E-05  3.2690E+01   4.675E+04      17-  29       67
+Rovibration_vJ|1|6|         -Rovibration_vJ|1|7|             4.7574E-08  1.9550E-05   3.751E+06      18-  19       68
+Rovibration_vJ|1|6|         -Rovibration_vJ|2|5|             1.0464E-05  3.6150E+01   4.777E+04      18-  28       69
+Rovibration_vJ|1|6|         -Rovibration_vJ|2|7|             1.2519E-05  3.3220E+01   4.668E+04      18-  30       70
+Rovibration_vJ|1|7|         -Rovibration_vJ|1|8|             5.3629E-08  2.9300E-05   3.282E+06      19-  20       71
+Rovibration_vJ|1|7|         -Rovibration_vJ|2|6|             1.0560E-05  3.5480E+01   4.786E+04      19-  29       72
+Rovibration_vJ|1|7|         -Rovibration_vJ|2|8|             1.2426E-05  3.3680E+01   4.660E+04      19-  31       73
+Rovibration_vJ|1|8|         -Rovibration_vJ|1|9|             5.9599E-08  4.1780E-05   2.918E+06      20-  21       74
+Rovibration_vJ|1|8|         -Rovibration_vJ|2|7|             1.0628E-05  3.4940E+01   4.795E+04      20-  30       75
+Rovibration_vJ|1|8|         -Rovibration_vJ|2|9|             1.2356E-05  3.4070E+01   4.652E+04      20-  32       76
+Rovibration_vJ|1|9|         -Rovibration_vJ|1|10|            6.5479E-08  5.7290E-05   2.626E+06      21-  22       77
+Rovibration_vJ|1|9|         -Rovibration_vJ|2|8|             1.0677E-05  3.4480E+01   4.805E+04      21-  31       78
+Rovibration_vJ|1|9|         -Rovibration_vJ|2|10|            1.2308E-05  3.4430E+01   4.645E+04      21-  33       79
+Rovibration_vJ|1|10|        -Rovibration_vJ|2|9|             1.0714E-05  3.4080E+01   4.814E+04      22-  32       80
+Rovibration_vJ|2|0|         -Rovibration_vJ|2|1|             6.1448E-09  1.9470E-08   2.649E+07      23-  24       81
+Rovibration_vJ|2|1|         -Rovibration_vJ|2|2|             8.1841E-09  1.8670E-07   1.325E+07      24-  25       82
+Rovibration_vJ|2|2|         -Rovibration_vJ|2|3|             1.1028E-08  6.7380E-07   8.830E+06      25-  26       83
+Rovibration_vJ|2|3|         -Rovibration_vJ|2|4|             1.3960E-08  1.6510E-06   6.623E+06      26-  27       84
+Rovibration_vJ|2|4|         -Rovibration_vJ|2|5|             1.6906E-08  3.2860E-06   5.299E+06      27-  28       85
+Rovibration_vJ|2|5|         -Rovibration_vJ|2|6|             1.9829E-08  5.7390E-06   4.416E+06      28-  29       86
+Rovibration_vJ|2|6|         -Rovibration_vJ|2|7|             2.2718E-08  9.1650E-06   3.785E+06      29-  30       87
+Rovibration_vJ|2|7|         -Rovibration_vJ|2|8|             2.5562E-08  1.3710E-05   3.313E+06      30-  31       88
+Rovibration_vJ|2|8|         -Rovibration_vJ|2|9|             2.8350E-08  1.9510E-05   2.945E+06      31-  32       89
+Rovibration_vJ|2|9|         -Rovibration_vJ|2|10|            3.1062E-08  2.6680E-05   2.651E+06      32-  33       90

@@ -1,0 +1,24 @@
+************************************************************************************************************************************
+ 
+                 Energy Level and statistical weight for SIN (Silicon Nitride)
+
+  Reference: NIST Chemistry WebBook, SIN
+
+		This file serves as a placeholder, as SIN is only used to calculate the abundance of carbon monoxide/silicon monoxide
+		SIN has no true levels included in CMFGEN
+		NIST data for silicon nitride covers a range of possible (calculated) ionization energies. I have chosen a median value of 9.5 eV, but this is just a placeholder
+		
+Created 04-Mar-2021 by Collin McLeod		
+
+ 
+                g          E(cm^-1)     10^15 Hz      eV         Lam(A)       ID      ARAD         C4          C6
+************************************************************************************************************************************
+ 
+17-Oct-2000                                      !Format date
+04-Mar-2021                                      !Date
+1                                                !Number of energy levels
+76624.4350                                       !Ionization energy
+1.0                                              !Screened nuclear charge
+0                                                !Number of transitions
+ 
+GROUND        1.0          0.000000    2.297090      9.500      1.30510E+03     1   0.000E+00   0.000E+00   0.000E+00

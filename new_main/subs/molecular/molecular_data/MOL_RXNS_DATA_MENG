@@ -1,0 +1,470 @@
+*********************************************************************************************************
+*********************************************************************************************************
+
+List of molecular reactions to be included in CMFGEN, following the format initially created
+for the charge exchange reactions (with modifications).
+
+The format should be as follows:
+
+xx   Number of molecular reactions
+xx   Format date
+xx   Modification date
+
+For a reaction of the form 
+
+   Q1 + Q2 --> P1 + P2
+
+should be specified as (at least two spaces between values)
+
+SPECIESQ1  LEVELQ1  SPECIESQ2  LEVELQ2  SPECIESP1  LEVELP1  SPECIESP2  LEVELP2
+RXN TYPE 
+NUMBER OF COEFFICIENTS (3 for most reactions)
+COEFF1
+COEFF2
+...
+TLOW
+THI
+
+Note that, for all molecular reactions, ALL PRODUCTS AND REACTANTS are assumed to be in their GROUND STATES ONLY
+Hence all level names in this file are ground state names
+
+For reactions which involve electrons, the species should be listed as ELEC with level name ELECTRON, and will be
+dealt with in the ensuing codes.
+
+TLO and THI specify the temperature range of validity of the formula (units 10^4 K)
+Outside the specified range, the rxn rate is computed using the relevant temperature limit
+
+THIS FILE USES THE Meng et al. (2022) RATE FOR RADIATIVE ASSOCIATION OF C + O 
+
+*********************************************************************************************************
+*********************************************************************************************************
+
+48			!Number of molecular reactions
+11-Aug-2021             !Format date
+24-Aug-2021		!Modification date
+
+C2MI  GROUND  O2M2  ION  C2M2  ION  O2MI  GROUND
+1
+3
+4.10D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+C2MI  GROUND  O2  2s2_2p3_4So  C2M2  ION  OI  2s2_2p4_3Pe
+1
+3
+4.80D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+CI  2s2_2p2_3Pe  C2M2  ION  C2  2s2_2p_2Po  C2MI  GROUND
+1
+3
+1.10D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+CI  2s2_2p2_3Pe  COM2  ION  C2  2s2_2p_2Po  COMI  Rovibration_vJ
+1
+3
+1.10D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+CI  2s2_2p2_3Pe  O2M2  ION  C2  2s2_2p_2Po  O2MI  GROUND
+1
+3
+5.20D-11
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+C2  2s2_2p_2Po  C2OMI  GROUND  CI  2s2_2p2_3Pe  C2OM2  ION
+1
+3
+1.00D-9
+-0.50D0
+0.0D0
+1.0D-3
+4.1D0
+
+CO2M2  ION  O2MI  GROUND  CO2MI  GROUND  O2M2  ION
+1
+3
+5.30D-11
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+CO2M2  ION  OI  2s2_2p4_3Pe  CO2MI  GROUND  O2  2s2_2p3_4So
+1
+3
+9.62D-11
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+COMI  Rovibration_vJ  O2  2s2_2p3_4So  COM2  ION  OI  2s2_2p4_3Pe
+1
+3
+4.90D-12
+0.50D0
+4.58D+03
+0.2D0
+1.0D0
+
+COM2  ION  C2MI  GROUND  COMI  Rovibration_vJ  C2M2  ION
+1
+3
+8.40D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+COM2  ION  CO2MI  GROUND  COMI  Rovibration_vJ  CO2M2  ION
+1
+3
+1.00D-09
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+COM2  ION  O2MI  GROUND  COMI  Rovibration_vJ  O2M2  ION
+1
+3
+1.20D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+COM2  ION  OI  2s2_2p4_3Pe  COMI  Rovibration_vJ  O2  2s2_2p3_4So
+1
+3
+1.40D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+O2  2s2_2p3_4So  O2MI  GROUND  OI  2s2_2p4_3Pe  O2M2  ION
+1
+3
+1.90D-11
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+C2MI  GROUND  O2M2  ION  COMI  Rovibration_vJ  COM2  ION
+1
+3
+4.10D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+C2MI  GROUND  O2  2s2_2p3_4So  CI  2s2_2p2_3Pe  COM2  ION
+1
+3
+4.80D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+C2M2  ION  O2MI  GROUND  COMI  Rovibration_vJ  COM2  ION
+1
+3
+8.00D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+C2M2  ION  OI  2s2_2p4_3Pe  CI  2s2_2p2_3Pe  COM2  ION
+1
+3
+3.10D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+CI  2s2_2p2_3Pe  O2M2  ION  COM2  ION  OI  2s2_2p4_3Pe
+1
+3
+5.20D-11
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+C2  2s2_2p_2Po  CO2MI  GROUND  COMI  Rovibration_vJ  COM2  ION
+1
+3
+1.10D-9
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+C2  2s2_2p_2Po  O2MI  GROUND  COMI  Rovibration_vJ  O2  2s2_2p3_4So
+1
+3
+4.54D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+C2  2s2_2p_2Po  O2MI  GROUND  COM2  ION  OI  2s2_2p4_3Pe
+1
+3
+3.42D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+CO2MI  GROUND  O2  2s2_2p3_4So  COMI  Rovibration_vJ  O2M2  ION
+1
+3
+9.40D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+CO2M2  ION  OI  2s2_2p4_3Pe  COMI  Rovibration_vJ  O2M2  ION
+1
+3
+1.64D-10
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+CI  2s2_2p2_3Pe  CO2MI  GROUND  COMI  Rovibration_vJ  COMI  Rovibration_vJ
+1
+3
+1.00D-15
+0.0D0
+0.0D0
+1.0D-3
+4.1D0
+
+C2MI  GROUND  O2MI  GROUND  COMI  Rovibration_vJ  COMI  Rovibration_vJ
+1
+3
+1.50D-11
+0.0D0
+4.3D3
+2.98D-2
+1.30D-1
+
+C2MI  GROUND  OI  2s2_2p4_3Pe  CI  2s2_2p2_3Pe  COMI  Rovibration_vJ
+1
+3
+2.00D-10
+-1.20D-1
+0.0D0
+1.0D-3
+8.0D-1
+
+C2OMI  GROUND  OI  2s2_2p4_3Pe  COMI  Rovibration_vJ  COMI  Rovibration_vJ
+1
+3
+8.59D-11
+0.0D0
+0.0D0
+2.95D-2
+2.96D-2
+
+CI  2s2_2p2_3Pe  C2OMI  GROUND  COMI  Rovibration_vJ  C2MI  GROUND
+1
+3
+2.00D-10
+0.0D0
+0.0D0
+1.0D-3
+3.0D-2
+
+CI  2s2_2p2_3Pe  COMI  Rovibration_vJ  C2MI  GROUND  OI  2s2_2p4_3Pe
+1
+3
+2.94D-11
+5.0D-1
+5.80250D4
+1.934D-1
+4.1D0
+
+CI  2s2_2p2_3Pe  O2MI  GROUND  COMI  Rovibration_vJ  OI  2s2_2p4_3Pe
+1
+3
+5.56D-11
+4.10D-1
+-2.69D1
+1.0D-3
+8.0D-1
+
+CO2MI  GROUND  OI  2s2_2p4_3Pe  COMI  Rovibration_vJ  O2MI  GROUND
+1
+3
+2.46D-11
+0.0D0
+2.6567D4
+3.0D-2
+6.0D-1
+
+COMI  Rovibration_vJ  O2MI  GROUND  CO2MI  GROUND  OI  2s2_2p4_3Pe
+1
+3
+5.99D-12
+0.0D0
+2.4075D4
+3.0D-2
+6.0D-1
+
+COMI  Rovibration_vJ  OI  2s2_2p4_3Pe  CI  2s2_2p2_3Pe  O2MI  GROUND
+1
+3
+1.00D-16
+0.0D0
+0.0D0
+1.0D-4
+1.1D-4
+
+CI  2s2_2p2_3Pe  CI  2s2_2p2_3Pe  C2MI  GROUND  NOATOM  NOLEVEL
+1
+3
+4.36D-18
+3.5D-1
+1.613D2
+1.0D-3
+4.1D0
+
+CI  2s2_2p2_3Pe  C2  2s2_2p_2Po  C2M2  ION  NOATOM  NOLEVEL
+1
+3
+4.01D-18
+1.7D-1
+1.015D2
+1.0D-3
+4.1D0
+
+CI  2s2_2p2_3Pe  OI  2s2_2p4_3Pe  COMI  Rovibration_vJ  NOATOM  NOLEVEL
+1
+3
+2.195D-17
+0.5389D0
+4.8882D0
+1.0D-1
+5.00D0
+
+CI  2s2_2p2_3Pe  O2  2s2_2p3_4So  COM2  ION  NOATOM  NOLEVEL
+1
+3
+5.00D-10
+-3.7D0
+8.0D2
+2.0D-1
+1.0D0
+
+C2  2s2_2p_2Po  OI  2s2_2p4_3Pe  COM2  ION  NOATOM  NOLEVEL
+1
+3
+3.14D-18
+-1.5D-1
+6.80D1
+1.0D-3
+1.39D0
+
+OI  2s2_2p4_3Pe  OI  2s2_2p4_3Pe  O2MI  GROUND  NOATOM  NOLEVEL
+1
+3
+4.90D-20
+1.58D0
+0.0D0
+1.0D-3
+3.0D-2
+
+COM2  ION  ELEC  ELECTRON  CI  2s2_2p2_3Pe  OI  2s2_2p4_3Pe
+1
+3
+2.00D-7
+-4.8D-1
+0.0D0
+1.0D-3
+4.1D0
+
+CO2M2  ION  ELEC  ELECTRON  COMI  Rovibration_vJ  OI  2s2_2p4_3Pe
+1
+3
+3.80D-7
+-5.0D-1
+0.0D0
+1.0D-3
+3.0D-2
+
+C2M2  ION  ELEC  ELECTRON  CI  2s2_2p2_3Pe  CI  2s2_2p2_3Pe
+1
+3
+3.0D-7
+-5.0D-1
+0.0D0
+1.0D-3
+3.0D-2
+
+C2OM2  ION  ELEC  ELECTRON  COMI  Rovibration_vJ  CI  2s2_2p2_3Pe
+1
+3
+3.0D-7
+-5.0D-1
+0.0D0
+1.0D-3
+3.0D-2
+
+O2M2  ION  ELEC  ELECTRON  OI  2s2_2p4_3Pe  OI  2s2_2p4_3Pe
+1
+3
+1.95D-7
+-7.0D-1
+0.0D0
+1.0D-3
+3.0D-2
+
+COMI  Rovibration_vJ  ELEC  ELECTRON  OI  2s2_2p4_3Pe  CI  2s2_2p2_3Pe
+3
+1
+1.0D0
+1.0D-3
+3.0D-2
+
+COMI  Rovibration_vJ  ELEC  ELECTRON  OI  2s2_2p4_3Pe  C2  2s2_2p_2Po
+3
+1
+2.0D0
+1.0D-3
+3.0D-2
+
+COMI  Rovibration_vJ  ELEC  ELECTRON  O2  2s2_2p3_4So  CI  2s2_2p2_3Pe
+3
+1
+3.0D0
+1.0D-3
+3.0D-2
