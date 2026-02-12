@@ -14,6 +14,7 @@ OPTION=$(FG)
 MOD = $(LIB_MOD)(mod_cmfgen.o)\
       $(LIB_MOD)(ang_qw_mod.o)\
       $(LIB_MOD)(chg_exch_mod_v3.o)\
+      $(LIB_MOD)(mol_rxn_mod.o)\
       $(LIB_MOD)(cmf_sob_mod.o)\
       $(LIB_MOD)(control_variable_mod.o)\
       $(LIB_MOD)(eddfac_rec_defs_mod.o)\

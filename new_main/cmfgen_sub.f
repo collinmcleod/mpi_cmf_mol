@@ -226,6 +226,7 @@
 ! Collisional routines.
 !
 	EXTERNAL OMEGA_GEN_V3
+	EXTERNAL OMEGA_GEN_V4
 !
 ! Wind variablity arrays.
 !
@@ -435,6 +436,11 @@
 	LOGICAL VERBOSE
 	LOGICAL F_TO_S_RD_ERROR
 	LOGICAL TMP_LOGICAL
+!
+! A couple variables for writing out line cooling due to carbon monoxide
+!
+	REAL(KIND=LDP), ALLOCATABLE :: COMI_NET_COOLING(:),CO_POPS(:)
+	INTEGER :: CO_COUNTER, CO_VARIABLE
 !
 ! Inidicates approximate frequencies for which TAU at outer boundary is written
 ! to OUTGEN on the last iteration.
@@ -697,6 +703,12 @@
 !
 	CALL RD_CHG_EXCH_V3(LUIN,INCL_CHG_EXCH)
 !
+! Read in data for molecular reactions
+!
+	IF (INCL_MOL_RXN) THEN
+	   CALL RD_MOL_RXN_V3(LUIN,INCL_MOL_RXN,MOL_RXN_SCALE,CO_FORM_SCALE,TREAT_NON_THERMAL_ELECTRONS,SIL_COMP_SCALE)
+	END IF
+!
 ! Read in X-ray photoionization cross-sections.
 !
 	CALL RD_XRAY_FITS(LUIN)
@@ -774,7 +786,7 @@
 	      TMP_STRING=TRIM(ION_ID(ID))//'_F_TO_S'
 	      CALL RD_F_TO_S_IDS_V4( ATM(ID)%F_TO_S_XzV, ATM(ID)%INT_SEQ_XzV,
 	1           ATM(ID)%XzVLEVNAME_F, ATM(ID)%NXzV_F, ATM(ID)%NXzV,
-	1           LUIN,TMP_STRING,SL_OPTION,dE_OPTION,F_TO_S_RD_ERROR)
+	1           LUIN,TMP_STRING,SL_OPTION,dE_OPTION,F_TO_S_RD_ERROR,IS_MOLECULE(ISPEC))
 	      CALL RDPHOT_GEN_V2( ATM(ID)%EDGEXzV_F, ATM(ID)%XzVLEVNAME_F,
 	1           ATM(ID)%GIONXzV_F,AT_NO(SPECIES_LNK(ID)),
 	1           ATM(ID)%ZXzV, ATM(ID)%NXzV_F,
@@ -1429,6 +1441,15 @@
 	        WRITE(LU_POP,'(1X,A,T30,I5)')'ND:',ND
 	        WRITE(LU_POP,'(1X,A,T30,1P,E12.5)')
 	1              TRIM(SPECIES(ISPEC))//'/He abundance:',AT_ABUND(ISPEC)
+		IF (IS_MOLECULE(ISPEC)) THEN
+		   DO I=1,ND
+		      POP_SPECIES(I,ISPEC) = 0.0D0
+		      DO J=1,ATM(SPECIES_BEG_ID(ISPEC))%NXzV_F
+			 POP_SPECIES(I,ISPEC) = POP_SPECIES(I,ISPEC)+ATM(SPECIES_BEG_ID(ISPEC))%XzV_F(J,I)
+		      END DO
+		      POP_SPECIES(I,ISPEC) = POP_SPECIES(I,ISPEC)+ATM(SPECIES_BEG_ID(ISPEC))%DXzV_F(I)
+		   END DO
+		END IF
      	        WRITE(LU_POP,'(1X,1P8E16.7)')POP_SPECIES(1:ND,ISPEC)
 	        DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
 	          CALL RITE_ASC( ATM(ID)%XzV_PRES, ROOT(ID)%XzV_F,ROOT(ID)%DXzV_F,
@@ -1463,10 +1484,17 @@
 	1              ATM(ID)%NXzV_F,ND,
 	1              ATM(ID+1)%XzV_PRES,FIRST)
 	          TMP_STRING=TRIM(ION_ID(ID))//'OUT'
-	          CALL WRITEDC_V3( ROOT(ID)%XzV_F, ROOT(ID)%LOG_XzVLTE_F,
-	1              ATM(ID)%NXzV_F, ROOT(ID)%DXzV_F,IONE,
-	1              R,T,ED,V,CLUMP_FAC,LUM,ND,
-	1              TRIM(TMP_STRING),'DC',IONE)
+		  IF (IS_MOLECULE(ISPEC)) THEN
+		     CALL WRITEDC_V3( ROOT(ID)%XzV, ROOT(ID)%LOG_XzVLTE,
+	1		  ATM(ID)%NXzV, ROOT(ID)%DXzV,IONE,
+	1		  R,T,ED,V,CLUMP_FAC,LUM,ND,
+	1		  TRIM(TMP_STRING//'2'),'DC',IONE)
+		  END IF
+		  CALL WRITEDC_V3( ROOT(ID)%XzV_F, ROOT(ID)%LOG_XzVLTE_F,
+	1		  ATM(ID)%NXzV_F, ROOT(ID)%DXzV_F,IONE,
+	1		  R,T,ED,V,CLUMP_FAC,LUM,ND,
+	1		  TRIM(TMP_STRING),'DC',IONE)
+
 	        END IF
 	      END  DO
 	    END DO

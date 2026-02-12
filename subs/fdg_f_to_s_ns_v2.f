@@ -2,10 +2,13 @@
 ! Routine to read in the vector describing the matching of actual atomic levels
 ! to that in the model atom with super levels.
 !
-	SUBROUTINE FDG_F_TO_S_NS_V2(NF,NS,NV,FL_OPTION,SL_OPTION,dE_OPTION,IL_OPTION,LUIN,FILENAME)
+!
+	SUBROUTINE FDG_F_TO_S_NS_V2(NF,NS,NV,FL_OPTION,SL_OPTION,dE_OPTION,IL_OPTION,LUIN,FILENAME,IS_MOL)
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered 21-Mar-2023: added additional is_mol argument: superlevels in molecules
+! should never be split or altered. Updated to V2
 ! Altered 5-Feb-2009: Inserted FL_OPTION into call. (Still V1).
 !
 	INTEGER NF
@@ -17,6 +20,7 @@
 	CHARACTER(LEN=*) SL_OPTION
 	CHARACTER(LEN=*) dE_OPTION
 	CHARACTER(LEN=*) IL_OPTION
+	LOGICAL IS_MOL
 !
 	INTEGER ERROR_LU
 	EXTERNAL ERROR_LU
@@ -34,6 +38,11 @@
 	CHARACTER*132 STRING
 !
 	IF(NF .EQ. NS)RETURN
+!
+! Line added Dec 1, 2021 by Collin McLeod: do not split levels for molecules
+!
+	IF(IS_MOL) RETURN
+!
 	IF(FL_OPTION .EQ . ' ' .AND. IL_OPTION .EQ. ' ' .AND.
 	1  SL_OPTION .EQ. ' ' .AND. dE_OPTION .EQ. ' ')RETURN
 !

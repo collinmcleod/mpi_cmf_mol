@@ -10,7 +10,9 @@
 	USE SET_KIND_MODULE
 	USE MOD_CMFGEN
 	USE STEQ_DATA_MOD
+	USE CONTROL_VARIABLE_MOD, ONLY : INCL_MOL_RXN
 	IMPLICIT NONE
+	
 !
 ! Altered 01-Sep-2016 : TIME_SEQ_NO changed from integer to real.
 ! Altered 29-Nov-2011 : POPS added to call and changed to V3. IChange hadling of non
@@ -61,6 +63,7 @@
 	EXTERNAL ERROR_LU
 	LOGICAL VERBOSE
 	LOGICAL, PARAMETER :: L_TRUE=.TRUE.
+	LOGICAL, PARAMETER :: L_FALSE=.FALSE.
 !
 	SUM(:,:)=0.0_LDP
 	DO ID=1,NUM_IONS
@@ -85,11 +88,17 @@
 !
 ! The three L_TRUE indicate that we correct OLD_POPS for both advection (i.e., the expansions
 ! of the SN), radioactive decay, and that we normalize the population of each species so
-! that the continuity equation is exactly satisfied.
+! that the continuity equation is exactly satisfied. If molecular reactions are important,
+! we should not normalize the populations (as the continuity equation is significantly altered)
 !
 	LU=7
-	CALL GET_POPS_AT_PREV_TIME_STEP_V5(POPS,OLD_POPS,OLD_R,
-	1         L_TRUE,L_TRUE,L_TRUE,TIME_SEQ_NO,ND,NT,LU)
+	IF (INCL_MOL_RXN) THEN
+	   CALL GET_POPS_AT_PREV_TIME_STEP_V5(POPS,OLD_POPS,OLD_R,
+	1	L_TRUE,L_TRUE,L_FALSE,TIME_SEQ_NO,ND,NT,LU)
+	ELSE
+	   CALL GET_POPS_AT_PREV_TIME_STEP_V5(POPS,OLD_POPS,OLD_R,
+	1	L_TRUE,L_TRUE,L_TRUE,TIME_SEQ_NO,ND,NT,LU)
+	END IF
 !
 ! The relaxation factor should be < 1, and is used to adjust the importance of the
 ! advection terms. It should be 1 for the final model. It should only be used to

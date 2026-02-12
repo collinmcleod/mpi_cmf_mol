@@ -5,7 +5,6 @@
 	USE MPI
 	IMPLICIT NONE
 !
-! Altered : 30-Nov-2025 : Added WR_ETA variable.
 ! Altered : 13-Jan-2024 : Added MAX_NO_GREY_ITERATIONS
 ! Altered : 19-Jun-2023 : Added SOL_ABUND_REF_SET
 ! Altered : 12-Aug-2022 : Added SN shock variables (following work by LUC.)
@@ -730,7 +729,7 @@
 	  ELSE IF(MIN_OPAC_OPTION .EQ. 'ABS')THEN
 	    CALL RD_STORE_DBLE(MIN_OP_TAU,'MIN_OP_TAU',L_TRUE,'Minimum optical depth used to set min abs. opacity')
 	  END IF
-!    
+!
 	  CALL RD_STORE_LOG(OVERLAP,'ALLOW_OL',L_TRUE,
 	1           'Allow for overlap of close lines (SOB only) ?')
 	  CALL RD_STORE_DBLE(OVER_FREQ_DIF,'OL_DIF',L_TRUE,
@@ -738,6 +737,15 @@
 	  OVER_FREQ_DIF=OVER_FREQ_DIF/2.998E+05_LDP
 !
 	  CALL RD_STORE_LOG(INCL_CHG_EXCH,'INC_CHG',L_TRUE,'Include charge exchange reactions?')
+	  CALL RD_STORE_LOG(INCL_MOL_RXN,'INC_MOL',L_TRUE,'Include molecular reactions?')
+	  MOL_RXN_SCALE=1.0_LDP !Default
+	  CALL RD_STORE_DBLE(MOL_RXN_SCALE,'MOL_SCL',L_FALSE,'value by which to scale molecular reaction rates')
+	  CO_FORM_SCALE=1.0_LDP
+	  CALL RD_STORE_DBLE(CO_FORM_SCALE,'CO_FORM_SCL',L_FALSE,'Value by which to scale CO formation reaction rates')
+	  INCL_MOL_COMP=.TRUE.
+	  CALL RD_STORE_LOG(INCL_MOL_COMP,'MOL_COMP',L_FALSE,'Include non-thermal molecular reactions?')
+	  SIL_COMP_SCALE=1.018267E+00 !Default value, from fits to data on Compton ionization
+	  CALL RD_STORE_DBLE(SIL_COMP_SCALE,'SIL_COMP_SCL',L_FALSE,'Value by which to scale Compton reaction rates to apply to SiO')
 	  CALL RD_STORE_LOG(INCL_TWO_PHOT,'INC_TWO',L_TRUE,'Include two photon transitions?')
 	  TWO_PHOTON_METHOD='USE_RAD'
 	  CALL RD_STORE_CHAR(TWO_PHOTON_METHOD,'TWO_METH',L_FALSE,'USE_RAD, LTE, NOSTIM or OLD_DEFAULT')
@@ -772,9 +780,17 @@
 	  SCL_LINE_DENSITY_LIMIT=1.0E+30_LDP
 	  CALL RD_STORE_DBLE(SCL_LINE_DENSITY_LIMIT,'SCL_DEN_LIM',L_FALSE,
 	1            'Density beyond which line cooling scaling is switched off')
-	  INCLUDE_dSLdT=.FALSE.
+	  IF (INCL_MOL_RXN) THEN
+	     INCLUDE_dSLdT=.TRUE.
+	  ELSE
+	     INCLUDE_dSLdT=.FALSE.
+	  END IF
 	  CALL RD_STORE_LOG(INCLUDE_dSLdT,'INCL_dSLdT',L_FALSE,
 	1            'Include variation in distribution of level populations in a SL with T?')
+	  IF (INCL_MOL_RXN .AND. .NOT. INCLUDE_dSLdT) THEN
+	     WRITE(LUER,*) 'Molecules included but INCL_dSLdT set to FALSE'
+	     WRITE(LUER,*) 'Will likely give inconsistent temperature results'
+	  END IF
 	  NEW_LINE_BA=.FALSE.
 	  IF(SN_MODEL)NEW_LINE_BA=.TRUE.
 	  INDX_BA_METH_RD=45
@@ -1000,7 +1016,7 @@
 !
 	  USE_ELEC_HEAT_BAL=.FALSE.
 	  CALL RD_STORE_LOG(USE_ELEC_HEAT_BAL,'USE_EHB',L_FALSE,
-	1            'Use electron heating/cooling balance as T constraint?')
+	1      'Use electron heating/cooling balance as T constraint?')
 	  DEPTH_INDX_EHB=0
 	  CALL RD_STORE_INT(DEPTH_INDX_EHB,'D_INDX_EHB',USE_ELEC_HEAT_BAL,
 	1            'Upper depth for using EHB for constraining T')

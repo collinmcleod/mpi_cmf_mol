@@ -9,7 +9,7 @@
 !
 ! Number of atomic species (e.g. H, C, N is 3 species).
 !
-	INTEGER, PARAMETER :: NUM_SPECIES=28
+	INTEGER, PARAMETER :: NUM_SPECIES=49
 !
 ! Maximum number of ionization stages per species. For H, need at this number
 ! has to be 2 or higher (as I and II). A setting of 10 implies that we can treat
@@ -32,6 +32,10 @@
 	REAL(KIND=LDP) AT_ABUND(NUM_SPECIES)		!Fractional species abundance
 	REAL(KIND=LDP) SOL_MASS_FRAC(NUM_SPECIES)	!Solar mass fraction
 	REAL(KIND=LDP) SOL_ABUND_HSCL(NUM_SPECIES)	!Solar abundance with H=12.0
+!
+	LOGICAL IS_MOLECULE(NUM_SPECIES) !True if the given species is one of CO, C2, O2, CO2, or C2O
+	CHARACTER(10) MOL_ATOMS(NUM_SPECIES,2)
+	INTEGER MOL_ATM_NUMS(NUM_SPECIES,2)
 !
 ! Total population density of each species (#/cm^3).
 !
@@ -60,9 +64,9 @@
 !
 ! Abbreviation for species used to identify ions (e.g. Ca for calcium).
 !
-	CHARACTER*2  SPECIES_ABR(NUM_SPECIES)
+	CHARACTER*6  SPECIES_ABR(NUM_SPECIES)
 !
-	CHARACTER*5  GEN_ION_ID(MAX_IONS_PER_SPECIES)
+	CHARACTER*8  GEN_ION_ID(MAX_IONS_PER_SPECIES)
 !
 ! Link from ion identification to parent species.
 !
@@ -142,6 +146,11 @@
 	  REAL(KIND=LDP), ALLOCATABLE :: DIERECOM(:)
 	  REAL(KIND=LDP), ALLOCATABLE :: ADDRECOM(:)
 	  REAL(KIND=LDP), ALLOCATABLE :: X_RECOM(:)
+!
+! Vectors to check creation/destruction by molecular reactions
+!
+	  REAL(KIND=LDP), ALLOCATABLE :: MOL_CRXzV(:)
+	  REAL(KIND=LDP), ALLOCATABLE :: MOL_DRXzV(:)
 !
 	  REAL(KIND=LDP), ALLOCATABLE :: DIECOOL(:)
 	  REAL(KIND=LDP), ALLOCATABLE :: X_COOL(:)

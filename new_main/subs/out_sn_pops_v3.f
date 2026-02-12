@@ -73,7 +73,7 @@
 !
 	DO I=1,NUM_SPECIES
 	  TMP_STR=TRIM(SPECIES(I))//' mass fraction'
-	  IF(SUM(POP_SPECIES(:,I))  .NE. 0.0_LDP)THEN
+!	  IF(SUM(POP_SPECIES(:,I))  .NE. 0.0_LDP)THEN
 	    TMP_VEC=0.0_LDP
 	    DONE_ISO=.FALSE.
 	    DO IS=1,NUM_ISOTOPES
@@ -86,10 +86,10 @@
 	      TMP_VEC=1.66E-24_LDP*POP_SPECIES(:,I)*AT_MASS(I)/DENSITY
 	    END IF
 	    CALL OUT_SN_VEC(TMP_VEC,ND,TMP_STR,LU)
-	  ELSE
-	    WRITE(LU,'(/,A)')TRIM(TMP_STR)
-	    WRITE(LU,'(2X,I5,A)')ND,'*0.00000D0'
-	  END IF
+!	  ELSE
+!	    WRITE(LU,'(/,A)')TRIM(TMP_STR)
+!	    WRITE(LU,'(2X,I5,A)')ND,'*0.00000D0'
+!	  END IF
 	END DO
 !
 ! We only write out the isotope data when the isotope data was read in.
@@ -98,13 +98,13 @@
 	  IF(ISO(IS)%READ_ISO_POPS)THEN
 	    WRITE(TMP_STR(1:3),'(I3)')ISO(IS)%BARYON_NUMBER
 	    TMP_STR=TRIM(ISO(IS)%SPECIES)//TMP_STR(1:3)//' mass fraction'
-	    IF(SUM(ISO(IS)%POP) .NE. 0.0_LDP)THEN
+!	    IF(SUM(ISO(IS)%POP) .NE. 0.0_LDP)THEN
 	      TMP_VEC=1.66E-24_LDP*ISO(IS)%POP*ISO(IS)%MASS/DENSITY
 	      CALL OUT_SN_VEC(TMP_VEC,ND,TMP_STR,LU)
-	    ELSE
-	      WRITE(LU,'(/,A)')TRIM(TMP_STR)
-	      WRITE(LU,'(2X,I5,A)')ND,'*0.00000D0'
-	    END IF
+!	    ELSE
+!	      WRITE(LU,'(/,A)')TRIM(TMP_STR)
+!	      WRITE(LU,'(2X,I5,A)')ND,'*0.00000D0'
+!	    END IF
 	  END IF
 	END DO
 !

@@ -7,9 +7,6 @@
 	END MODULE  MOD_PHOT_THREAD_INFO
 !
 ! Subroutine to compute the photoionization cross-sections for all species.
-! In this routine, each processor computes a separate photoionization
-! cross-section. The data are then shared to other processors using
-! the MPI_BCAST command.
 !
 	SUBROUTINE SET_PHOT_CROSS_SECTIONS_V1(FREQ,NU,NU_EVAL_CONT,CUR_ML,NCF)
 	USE SET_KIND_MODULE
@@ -42,13 +39,7 @@
 	  END DO
 	  ALLOCATE(ALPHA_VEC(K))
 	  FIRST = .FALSE.
-	  IF(MYPE .EQ. 0)THEN
-	    WRITE(6,*)'Using BCAST version to compute photoionization cross-sections.'
-            WRITE(6,*)'Each processor computes a phot. cross-sections for a different frequency.'
-            WRITE(6,*)'These are share using the MPI_BCAST command.'
-            WRITE(6,*)'Called file is set_phot_cross-sections_v1.f'
-	    WRITE(6,*)'Allocated COMP_FREQ,ALPHA_VEC in SET_PHOT_CROSS_SECTIONS_V1'
-	  END IF
+	  IF(MYPE .EQ. 0)WRITE(6,*)'Allocated COMP_FREQ,ALPHA_VEC in SET_PHOT_CROSS_SECTIONS_V1'
 	  FLUSH(UNIT=6)
 	END IF
 !

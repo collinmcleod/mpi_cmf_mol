@@ -38,10 +38,17 @@
 	1       ID,COL_FILE,OMEGA_GEN,
 	1       EQGS,NUM_BNDS,ND,NION,NT,
 	1       COMPUTE_BA,FIXED_T,LAST_ITERATION,
-	1       DST,DEND)
+	1       DST,DEND,IS_A_MOLECULE)
 	USE SET_KIND_MODULE
 	USE STEQ_DATA_MOD
 	IMPLICIT NONE
+! 
+! Altered 24-Oct-2023 - changed call to subcol_multi_v7 (molecular collision stuff)
+!
+! Altered 23-Mar-2022 by Collin McLeod - changed number conservation treatment for molecules
+!
+! Altered 11-Oct-2021 by Collin McLeod - added condition for molecules (which do not have
+! the same number balance equation treatment)
 !
 ! Altered 13-Jul-2019 - Changed to V10. Now compute electon energy balance equations
 !                          and its variation.
@@ -122,6 +129,8 @@
 !
 	REAL(KIND=LDP) POP(ND)		!Population of species.
 !
+	LOGICAL IS_A_MOLECULE   !If the species is a molecule, its number balance equation behaves differently
+!
 	REAL(KIND=LDP) CHIBF,CHIFF,HDKT,TWOHCSQ
 	COMMON/CONSTANTS/ CHIBF,CHIFF,HDKT,TWOHCSQ
 !
@@ -170,7 +179,7 @@
 	  TMP_VEC_COOL(1)=0.0_LDP		!Initialize cooling rate even
 !                                                        though not used here.
           CALL TUNE(1,'SUBCOL')
-	  CALL SUBCOL_MULTI_V6(
+	  CALL SUBCOL_MULTI_V7(
 	1         OMEGA_F,dln_OMEGA_F_dlnT,
 	1         CNM,DCNM,
 	1         HN_S(1,I),HNST_S(1,I),dlnHNST_S_dlnT(1,I),N_S,
@@ -178,7 +187,7 @@
 	1         A_F,G_F,LEVNAME_F,N_F,
 	1         ZION,ID,COL_FILE,OMEGA_GEN,
 	1         F_TO_S_MAPPING,TMP_VEC_COOL,T(I),TMP_VEC_ED,IONE,
-	1         COMPUTE_BA,FIXED_T,LAST_ITERATION)
+	1         COMPUTE_BA,FIXED_T,LAST_ITERATION,IS_A_MOLECULE)
           CALL TUNE(2,'SUBCOL')
 !
 ! 
@@ -307,7 +316,11 @@
 ! ground state to be an important variable, JJ should never be zero.
 !
 	  IF(.NOT. NEXT_PRES)THEN
-	    SE(ID)%STEQ(EQ_NUM_CONV,I)=SE(ID)%STEQ(EQ_NUM_CONV,I)+DI_S(I)-POP(I)
+	     IF (IS_A_MOLECULE) THEN
+		SE(ID)%STEQ(EQ_NUM_CONV,I)=SE(ID)%STEQ(EQ_NUM_CONV,I)+DI_S(I)-POP(I)
+	     ELSE
+		SE(ID)%STEQ(EQ_NUM_CONV,I)=SE(ID)%STEQ(EQ_NUM_CONV,I)+DI_S(I)-POP(I)
+	     END IF
 	    STEQ_ED(I)=STEQ_ED(I)+DI_S(I)*ZION
 	  END IF
 	  IF(COMPUTE_BA .AND. .NOT. NEXT_PRES)THEN

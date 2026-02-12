@@ -112,7 +112,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
 
 #cmf_sub_sonic_hydro.o
 
-all : $(LIB) XNUC XAUTO XCHG XTWO XNON
+all : $(LIB) XNUC XAUTO XCHG XTWO XNON XMOL
 	cp -f $(INSTALL_DIR)perm_mod_file jnk.mod
 	mv -f *.mod $(MOD_DIR)
 	rm -f *.o
@@ -121,6 +121,7 @@ $(LIB) : $(OBJ)
 
 STEQ=$(LIB_MOD)(steq_data_mod.o)
 CHG=$(LIB_MOD)(chg_exch_mod_v3.o)
+MOL=$(LIB_MOD)(mol_rxn_mod.o)
 MOD=$(LIB_MOD)(mod_cmfgen.o)
 DIS=$(LIB_MOD)(mod_lev_dis_blk.o)
 CONT=$(LIB_MOD)(control_variable_mod.o)
@@ -220,6 +221,9 @@ $(DIS):
 $(CHG):
 	(cd chg ; make)
 
+$(MOL):
+	(cd molecular ; make)
+
 XNUC:
 	(make -f Make_nuc)
 
@@ -227,6 +231,8 @@ XAUTO:
 	(cd auto; make)
 XCHG:
 	(cd chg; make)
+XMOL:
+	(cd molecular; make)
 XTWO:
 	(cd two; make)
 XNON:

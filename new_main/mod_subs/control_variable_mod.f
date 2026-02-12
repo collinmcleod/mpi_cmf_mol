@@ -1,7 +1,6 @@
 	MODULE CONTROL_VARIABLE_MOD
 	USE SET_KIND_MODULE
 !
-! Altered : 30-Nov-2025 : Added WR_ETA variable.
 ! Altered : 13-Jan-2024 : Added MAX_NO_GREY_ITERATIONS
 ! Altered : 12-Aug-2022 : Added SN shock variables (following work by LUC.)
 ! Altered : 06-Jun-2022 : Added COMP_STEQ_T_EHB
@@ -113,7 +112,7 @@
 	LOGICAL TREAT_NON_THERMAL_ELECTRONS     !
 	LOGICAL ADD_DEC_NRG_SLOWLY
 	LOGICAL READ_NON_THERM_SPEC
-	LOGICAL VERBOSE_NON_THERMAL_OUTPUT
+	LOGICAL VERBOSE_NON_THERMAL_OUTPUT	
 	REAL(KIND=LDP) DEC_NRG_SCL_FAC_BEG
 	REAL(KIND=LDP) DEC_NRG_SCL_FAC
 	REAL(KIND=LDP) NT_OMIT_ION_SCALE        !Ion omitted if < NT_OMIT_ION_SCL*(largest ion pop.).
@@ -321,9 +320,9 @@
 	CHARACTER(LEN=10) CMF_FORM_OPTIONS		!Used for formal solution.
 	CHARACTER(LEN=10) NEG_OPAC_OPTION
 	CHARACTER(LEN=12) TWO_PHOTON_METHOD
-!
+
 	CHARACTER(LEN=12) MIN_OPAC_OPTION
-	REAL*8 MIN_OP_TAU
+	REAL(KIND=LDP) MIN_OP_TAU
 !
 ! Specifies method used to compute optical depth.
 !
@@ -520,7 +519,7 @@
 	LOGICAL DO_SRCE_VAR_ONLY
 	LOGICAL FIX_ALL_SPECIES
 	LOGICAL SET_POPS_D2_EQ_D1
-!
+
 	INTEGER DEPTH_INDX_EHB
 	LOGICAL USE_ELEC_HEAT_BAL
 	LOGICAL COMP_STEQ_T_EHB
@@ -543,6 +542,11 @@
 !
 	LOGICAL INCL_ADIABATIC   	!Include adiabatic cooling
 	LOGICAL INCL_CHG_EXCH		!Include charge exchange reactions.
+	LOGICAL INCL_MOL_RXN	        !Include molecular reactions
+	REAL(KIND=LDP)  MOL_RXN_SCALE	!Scale molecular reaction rates
+	REAL(KIND=LDP)  CO_FORM_SCALE           !Scale production of CO by mol rxns
+	LOGICAL INCL_MOL_COMP	!Include non-thermal dissociation rxns
+	REAL(KIND=LDP)  SIL_COMP_SCALE  !Scale Compton rxn rates for SiO
 	LOGICAL INCL_TWO_PHOT		!Include two-photon transitions
 	LOGICAL INCL_RAY_SCAT           !Include Rayleigh scattering.
 	LOGICAL INCL_PENNING_ION        !Include H/He Pening ionization

@@ -23,10 +23,12 @@ OBJ= $(LIB)(ave_level_energy.o)\
      $(LIB)(genopaeta_mpi_v1.o)\
      $(LIB)(genosc_v8.o)\
      $(LIB)(genosc_v9.o)\
+     $(LIB)(set_phot_cross_sections_v1.o)\
      $(LIB)(get_num_phot_routes_v1.o)\
      $(LIB)(get_scl_xray_fluxes_v1.o)\
      $(LIB)(newpertjd.o)\
      $(LIB)(omega_gen_v3.o)\
+     $(LIB)(omega_gen_v4.o)\
      $(LIB)(phot_data_mod.o)\
      $(LIB)(quad_multi_mpi_v1.o)\
      $(LIB)(rayleigh_scat.o)\
@@ -44,13 +46,11 @@ OBJ= $(LIB)(ave_level_energy.o)\
      $(LIB)(set_x_freq_v2.o)\
      $(LIB)(subcol_multi_v4.o)\
      $(LIB)(subcol_multi_v6.o)\
+     $(LIB)(subcol_multi_v7.o)\
      $(LIB)(sub_phot_gen_mpi_v2.o)\
      $(LIB)(xcross_v2.o)\
      $(LIB)(xray_data_mod.o)\
      $(LIB)(var_op_v6.o)
- 
-#     $(LIB)(set_phot_sections_sing_v1.o)\
-#    $(LIB)(set_phot_cross_sections_v1.o)\
 
 all : $(LIB)
 	cp -f $(INSTALL_DIR)perm_mod_file jnk.mod

@@ -121,14 +121,16 @@
 ! Check data is available for all species.
 !
 	DO ISPEC=1,NUM_SPECIES
-	  K=NINT(AT_NO(ISPEC))
-	  IF(IP(1,K) .EQ. 0.0_LDP)THEN
-	    WRITE(LUER,*)'Error in CHECK_IONS_PRESENT'
-	    WRITE(LUER,*)'Requested ionization data for atomic species is not availabe'
-	    WRITE(LUER,*)'Requested atomic No is ',K
-	    WRITE(LUER,*)'Need to add requested data to check_ions_present'
-	    STOP
-	  END IF
+	   IF (.NOT. IS_MOLECULE(ISPEC)) THEN
+	      K=NINT(AT_NO(ISPEC))
+	      IF(IP(1,K) .EQ. 0.0_LDP)THEN
+		 WRITE(LUER,*)'Error in CHECK_IONS_PRESENT'
+		 WRITE(LUER,*)'Requested ionization data for atomic species is not availabe'
+		 WRITE(LUER,*)'Requested atomic No is ',K
+		 WRITE(LUER,*)'Need to add requested data to check_ions_present'
+		 STOP
+	      END IF
+	   END IF
 	END DO
 !
 ! Determine ionization fractions.
@@ -197,6 +199,7 @@
 	WRITE(LUWARN,'(A,A)')' Checking whether lower ionization stages ',
 	1                             'need to be included in model'
 	DO ISPEC=1,NUM_SPECIES
+	   IF (IS_MOLECULE(ISPEC)) EXIT
 	  ID=1
 	  K=NINT(AT_NO(ISPEC))
 	  IF(SPECIES_PRES(ISPEC))ID=SPECIES_BEG_ID(ISPEC)
@@ -234,12 +237,14 @@
 	FIRST_TIME=.TRUE.
 	EXTRA_INT_EN=0.0_LDP
 	DO ISPEC=1,NUM_SPECIES
+	   IF (IS_MOLECULE(ISPEC)) EXIT
 	  IF(SPECIES_PRES(ISPEC))THEN
 	    ID=SPECIES_END_ID(ISPEC)-1
 	    J=ATM(ID)%ZXzV+2
 	    K=NINT(AT_NO(ISPEC))
 	    ION_FRAC=1.0_LDP
 	    DO ID=J,MIN(K,NUM_IP_IONS)
+	       IF ( K .GE. 99) EXIT
 	       IF(IP(ID,K) .EQ. 0.0_LDP)THEN
 	         WRITE(LUER,*)'Error in CHECK_IONS_PRESENT'
 	         WRITE(LUER,*)'Requested ionization data for atomic species is not availabe'
@@ -280,7 +285,7 @@
 !
 	INTERNAL_ENERGY=0.0_LDP
 	DO ISPEC=1,NUM_SPECIES
-	  IF(SPECIES_PRES(ISPEC))THEN
+	  IF(SPECIES_PRES(ISPEC) .AND. .NOT. IS_MOLECULE(ISPEC) )THEN
 	    DO ID=SPECIES_BEG_ID(ISPEC),SPECIES_END_ID(ISPEC)-1
 	      T1=0.0_LDP
 	      K=DPTH_INDX
