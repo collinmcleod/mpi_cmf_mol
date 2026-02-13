@@ -19,6 +19,7 @@
 	INTEGER NM_POS
 	CHARACTER(LEN=120) TMP_NAME
 	CHARACTER(LEN=120) STRING
+	CHARACTER(LEN=40) TMP_ION_NAME
 !
 	INTEGER, PARAMETER :: LU_ER=6
 	INTEGER, PARAMETER :: LU_IN=7
@@ -144,21 +145,21 @@
 !
 ! Find level(s) in ion.
 !
-
 	             TMP_NAME=ADJUSTL(STRING(NM_POS:))
 	             IF(MYPE .EQ. 0)THEN
 	               IF(ID .EQ. 1)THEN
 	                 WRITE(LU_ER,*)'Check WARNINGS to see what Arnaud cross-sectons have been read in'
-	                 WRITE(LU_WARN,'(//,A3,A7,A33,A23,/)')'ID','Ion','Arn.  level','Ion level'
+	                 WRITE(LU_WARN,'(//,A3,A7,A28,A23,3X,A,5X,A20,/)')  &
+	                                   'ID','Ion','Arn. final state',' GS level', &
+                                           'Xray Eqn.','Final State'
 	               END IF
-	               WRITE(LU_WARN,'(I3,A7,3X,A30,3X,A20)')ID,TRIM(ION_ID(ID)),TRIM(TMP_NAME), &
-	                                                        TRIM(ATM(ID)%XZVLEVNAME_F(1))
 	             END IF
+	             TMP_ION_NAME=' '
 	             IF(ID .EQ. SPECIES_END_ID(ISPEC)-1)THEN
 	               THD(IT)%SUM_GION=ATM(ID)%GIONXzV_F
 	               THD(IT)%N_ION_ROUTES=1
-	               THD(IT)%ION_LEV(1)=1
 	               THD(IT)%ION_LEV(1)=SE(ID)%XRAY_EQ
+	               TMP_ION_NAME='Final ion'
 	             ELSE
 	               THD(IT)%SUM_GION=0.0_LDP
 	               THD(IT)%N_ION_ROUTES=0
@@ -170,18 +171,27 @@
 	                   THD(IT)%N_ION_ROUTES = THD(IT)%N_ION_ROUTES + 1
 	                   THD(IT)%ION_LEV(THD(IT)%N_ION_ROUTES)=I
 	                   THD(IT)%SUM_GION=THD(IT)%SUM_GION+ATM(ID_ION)%GXzV_F(I)
+	                   TMP_ION_NAME=ATM(ID_ION)%XZVLEVNAME_F(I)
 	                 END IF
 	               END DO
 	               IF(INDEX(TMP_NAME,'&') .NE. 0 .AND. THD(IT)%N_ION_ROUTES .EQ.0)THEN
 	                 THD(IT)%SUM_GION=ATM(ID+1)%GIONXzV_F
+	                 TMP_ION_NAME=ATM(ID+1)%XZVLEVNAME_F(1)
 	                 THD(IT)%N_ION_ROUTES=1
 	                 IF(SE(ID)%XRAY_EQ .EQ. 0)THEN
 	                    THD(IT)%ION_LEV(THD(IT)%N_ION_ROUTES)=ATM(ID)%NXzV+1
 	                 ELSE
 	                   THD(IT)%ION_LEV(THD(IT)%N_ION_ROUTES)=SE(ID)%XRAY_EQ
 	                 END IF
-	                 IF(MYPE .EQ. 0)WRITE(6,*)'SE(ID)%XRAY_EQ=',SE(ID)%XRAY_EQ,TRIM(ATM(ID_ION)%XZVLEVNAME_F(1))
 	               END IF
+	             END IF
+	             IF(MYPE .EQ. 0)THEN
+	               DO J=1,THD(IT)%N_ION_ROUTES
+	                 WRITE(LU_WARN,'(I3,A7,3X,A30,3X,A20,7X,I5,5X,A20)')           &
+	                           ID,TRIM(ION_ID(ID)),TRIM(TMP_NAME),               &
+	                           TRIM(ATM(ID)%XZVLEVNAME_F(1)),                    &
+	                           THD(IT)%ION_LEV(J),TRIM(TMP_ION_NAME)
+	                END DO
 	             END IF
 !
 	             IF(THD(IT)%N_ION_ROUTES .EQ. 0)THEN

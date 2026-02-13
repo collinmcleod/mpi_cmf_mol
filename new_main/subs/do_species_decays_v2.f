@@ -63,6 +63,7 @@
 	  WRITE(LUER,*)' '
 	  WRITE(LUER,*)'Summary of chains contributing to radioactive energy depostions.'
 	  WRITE(LUER,*)' '
+	  WRITE(LUER,'(49X,A,6X,A)')'E(Lsun)','Ek(Lsun)'
 !
 ! Testing file for KDW25 for gamma-ray code
 !

@@ -51,6 +51,7 @@
 	CALL GEN_ASCI_OPEN(LUIN,'VADAT','OLD',' ','READ',IZERO,IOS)
 	IF(IOS .NE. 0)THEN
 	  WRITE(LUER,*)'Error opening VADAT in CMFGEN, IOS=',IOS
+	  CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	  STOP
 	END IF
 	CALL RD_OPTIONS_INTO_STORE(LUIN,LUSCR)
@@ -108,6 +109,7 @@
 	  ELSE IF(VELTYPE .EQ. 5)THEN
 	    WRITE(LUER,*)'Velocity law 5 not implemented in this version',
 	1                 ' of CMFGEN'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  ELSE IF(VELTYPE .EQ. 6)THEN
 	    CALL RD_STORE_DBLE(VCORE,'VCORE',L_TRUE,
@@ -183,6 +185,7 @@
 	  ELSE
 	    WRITE(LUER,*)'Velocity law ',VELTYPE, ' not implemented',
 	1                ' in this version of CMFGEN'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 !
@@ -205,7 +208,18 @@
 	  TEFF_PNT_SRCE=0.0_LDP
 	  PNT_SRCE_MOD=.FALSE.
 	  CALL RD_STORE_LOG(PNT_SRCE_MOD,'PNT_SRCE',L_FALSE,'Include point source with hollow shell')
-	  IF(PNT_SRCE_MOD)THEN
+	  IF(PNT_SRCE_MOD .AND. SN_MODEL)THEN
+	    CALL RD_STORE_DBLE(R_PNT_SRCE,'R_PNT',L_TRUE,'Radius of point source in Rsun')
+	    CALL RD_STORE_DBLE(TEFF_PNT_SRCE,'TEFF_PNT',L_FALSE,'Effective T of point source in 10^4K')
+	    IF(TEFF_PNT_SRCE .NE. 0.0_LDP)THEN
+	      WRITE(6,*)'Error reading TEFF_PNT_SRCE from VADAT.'
+	      WRITE(6,*)'   For a SN point source model, TEFF_PNT_SRCE can only '
+	      WRITE(6,*)'   be set in the file POINT_SOURE_DATA'
+	      WRITE(6,*)'   Remove TEFF_PNT_SRCE (or comment out with !) in VADAT'
+	      CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
+	      STOP
+	    END IF
+	  ELSE IF(PNT_SRCE_MOD)THEN
 	    CALL RD_STORE_DBLE(R_PNT_SRCE,'R_PNT',L_TRUE,'Radius of point source in Rsun')
 	    CALL RD_STORE_DBLE(TEFF_PNT_SRCE,'TEFF_PNT',L_TRUE,'Effective T of point source in 10^4K')
 	    NC_PNT_SRCE=2
@@ -228,6 +242,7 @@
             WRITE(LUER,'(A)')' TEFF will not be VALID unless hydro-iterations are performed.'
             WRITE(LUER,'(A)')' Remove TEFF if you are not going to do a hdyro iteration'
             WRITE(LUER,'(A)')' In this case TEFF is set by L, R and Mdot'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 
@@ -245,6 +260,7 @@
 	  IF(N_CLUMP_PAR .GT. N_CLUMP_PAR_MAX)THEN
 	    WRITE(LUER,*)'Error in CMFGEN'
 	    WRITE(LUER,*)'N_CLUMP_PAR too large: N_CLUMP_PAR=',N_CLUMP_PAR
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 	  CLUMP_PAR(:)=0.0_LDP
@@ -454,6 +470,7 @@
 	1        'the resonancze zone')
           IF(EXT_LINE_VAR .LT. 0.0_LDP .OR. EXT_LINE_VAR .GT. 2.0_LDP)THEN
 	    WRITE(LUER,*)'Error in CMFGEN --- invalid range for EXT_LINE_VAR'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 	  NEW_VAR_STORAGE_METHOD=.TRUE.
@@ -486,6 +503,7 @@
 	      WRITE(LUER,*)'Error in RD_CONTROL_VARIABLES'
 	      WRITE(LUER,*)'Inconsistent inner boundary condition'
 	      WRITE(LUER,*)'DIF option and IB_METH are inconsistent'
+	      CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	      STOP
 	    END IF
 	  ELSE
@@ -718,6 +736,7 @@
 	     WRITE(LUER,*)'Error in CMFGEN_SUB'
 	     WRITE(LUER,*)'Invalid NEG_OPAC_OPTION'
 	     WRITE(LUER,*)'Valid options are SRCE_CHK and ESEC_CHK'
+	     CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	     STOP
 	  END IF
 	  CALL RD_STORE_LOG(SETZERO,'He2_RES=0',L_TRUE,
@@ -1039,6 +1058,7 @@
 	  IF(MAX_dT_COR .LE. 0.0_LDP .OR. MAX_dT_COR .GT. 0.201_LDP)THEN
 	    WRITE(LUER,*)' Error: MAX_dT in VADAT has an invalid value of',MAX_dT_COR
 	    WRITE(LUER,*)' Require 0 < MAX_dT_COR < 0.2'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 	  CALL RD_STORE_DBLE(MAX_CHNG_LIM,'MAX_CHNG',L_TRUE,
@@ -1084,6 +1104,7 @@
 	  IF(PLANE_PARALLEL_NO_V .AND. PLANE_PARALLEL)THEN
 	    WRITE(LUER,*)'Error in control parameters in VADAT'
 	    WRITE(LUER,*)'PP_NOV and PP_MOD cannot both be true at the sdame time'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 !
@@ -1117,6 +1138,7 @@
 	  IF(INCL_REL_TERMS .AND. .NOT. USE_J_REL)THEN
 	    WRITE(LUER,*)'Error in control parameters in VADAT'
 	    WRITE(LUER,*)'Can only include relativistic terms if USE_J_REL is set to TRUE'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 	  IF(USE_J_REL .AND. INCL_REL_TERMS)INCL_ADVEC_TERMS_IN_TRANS_EQ=.TRUE.
@@ -1125,16 +1147,19 @@
 	  IF(INCL_ADVEC_TERMS_IN_TRANS_EQ .AND. .NOT. USE_J_REL)THEN
 	    WRITE(LUER,*)'Error in control parameters in VADAT'
 	    WRITE(LUER,*)'Can only include advection terms in transfer equation if USE_J_REL is set to TRUE'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 	  IF(USE_DJDT_RTE .AND. USE_J_REL)THEN
 	    WRITE(LUER,*)'Error in control parameters in VADAT'
 	    WRITE(LUER,*)'USE_DJDT_RTE and USE_J_REL cannot be TRUE at the same time'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 	  IF( (PLANE_PARALLEL .OR. PLANE_PARALLEL_NO_V) .AND. (USE_DJDT_RTE .OR. USE_J_REL) )THEN
 	    WRITE(LUER,*)'Error in control parameters in VADAT'
 	    WRITE(LUER,*)'USE_DJDT_RET and USE_J_REL cannot be TRUE at the same time'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 !
@@ -1183,8 +1208,9 @@
 	  CALL RD_STORE_INT(ITS_PER_NG,'ITS/NG',L_TRUE,
 	1         'Number of iterations between NG accelerations (>=4)')
 	  IF(ITS_PER_NG .LT. 4)THEN
-	     WRITE(LUER,*)'Error in CMFGEN - ITS_PER_NG too small'
-	     STOP
+	    WRITE(LUER,*)'Error in CMFGEN - ITS_PER_NG too small'
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
+	    STOP
 	  END IF
 !
 	  WRITE(LUSCR,'()')

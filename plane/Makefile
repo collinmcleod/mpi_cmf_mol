@@ -32,6 +32,7 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(characteristics_v2_gam.o)\
       $(LIB)(cmf_formal_rel_v4.o)\
       $(LIB)(cmf_formal_rel_v5.o)\
+      $(LIB)(cmf_formal_rel_mpi_v2.o)\
       $(LIB)(cmf_formal_rel_mpi_v1.o)\
       $(LIB)(cmf_formal_rel_v4_gam.o)\
       $(LIB)(cmf_rel_dust_qw.o)\
@@ -88,6 +89,8 @@ OBJ = $(LIB)(add_dust_eta.o)\
       $(LIB)(pp_mom_cmf_v1.o)\
       $(LIB)(rel_variables.o)\
       $(LIB)(runge_kutta.o)\
+      $(LIB)(set_pnt_source_rad.o)\
+      $(LIB)(solve_cmf_formal_mpi_v2.o)\
       $(LIB)(solve_cmf_formal_mpi_v1.o)\
       $(LIB)(solve_cmf_formal_v2.o)\
       $(LIB)(solve_cmf_formal_v3.o)\

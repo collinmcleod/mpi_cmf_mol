@@ -107,6 +107,7 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered: 10-Feb-2026 : Added point source flux for ZERO_FLUX inner boudary option.
 ! Altered: 29-Oct-2019 - Changed to V6. XM_CHK_OPTION added to call.
 ! Altered: 18-Oct-2019 - Changed to V5. J_CHK_OPTION added to call.
 ! Altered: 17-Oct-2016 - Changed to V4. H_CHK_OPTION added to call.
@@ -483,7 +484,7 @@
 !
 	ELSE IF(INNER_BND_METH .EQ. 'ZERO_FLUX')THEN
 !
-	  RSQH_AT_IB=0.0_LDP
+	  RSQH_AT_IB=RSQH_IB_PNT_SRCE
 	  PSI(ND)=0.0_LDP
 	  PSIPREV(ND)=0.0_LDP
 	  DJDT(ND)=0.0_LDP

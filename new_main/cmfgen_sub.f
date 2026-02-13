@@ -90,7 +90,7 @@
 	INTEGER NCF
 	LOGICAL, PARAMETER :: IMPURITY_CODE=.FALSE.
 !
-	CHARACTER(LEN=12), PARAMETER :: PRODATE='10-Feb-2025'		!Must be changed after alterations
+	CHARACTER(LEN=12), PARAMETER :: PRODATE='12-Feb-2026'		!Must be changed after alterations
 !
 ! 
 !
@@ -843,9 +843,9 @@
 ! since some of the model information is read in.
 !
 	  CALL DATE_TIME(TIME)
-	  WRITE(LUMOD,'(//,'' Model Started on:'',15X,(A))')TIME
+	  WRITE(LUMOD,'(//,'' Model Started on:'',20X,(A))')TIME
 	  WRITE(LUMOD,
-	1       '('' Main program last changed on:'',3X,(A))')PRODATE
+	1       '('' Main program (MPI) last changed on:'',2X,(A))')PRODATE
 	  WRITE(LUMOD,'()')
 	  FMT='(5X,I8,5X,''!Number of depth points'')'
 	  WRITE(LUMOD,FMT)ND

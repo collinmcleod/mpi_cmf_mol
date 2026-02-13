@@ -2,7 +2,8 @@
 ! Altered 20-Sep-2025: Fixed broadcasting of IREC.
 !
 	  IF(MYPE .EQ. 0)THEN
-	    WRITE(6,*)'Start of end iteration section',MYPE,MAXCH,FIXED_T
+	    WRITE(6,'(/,39X,A,8X,A,9X,A)')'MYPE','MAXCH','FIXED_T'
+	    WRITE(6,*)'Start of end iteration section      ',MYPE,MAXCH,FIXED_T
 	    FLUSH(UNIT=6)
 	  END IF
 !

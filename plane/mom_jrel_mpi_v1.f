@@ -268,6 +268,7 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered: 10-Feb-2026 : Added point source flux for ZERO_FLUX inner boudary option.
 ! Altered: 03-Feb-2-26 : Changed variable passed to C_F_POINTER to pointer.
 ! Altered: 14-Nov-2025 : Moved computation of H outside accuracy check.
 !                        Removed all *PREV quantities from call and placed
@@ -826,7 +827,7 @@
 	  ELSE IF(INNER_BND_METH .EQ. 'ZERO_FLUX')THEN
 	    TA(ND)=-Q(ND-1)*(K_ON_J(ND-1)+VdHdR_TERM(ND-1))/DTAU_H(ND-1)
 	    TB(ND)=(K_ON_J(ND)+VdHdR_TERM(ND))/DTAU_H(ND-1)
-	    XM(ND)=0.0_LDP
+	    XM(ND)=GAM_REL(ND)*RSQH_IB_PNT_SRCE
 !
 ! Done to stablize solution: 8-Feb-2014
 !

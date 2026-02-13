@@ -59,7 +59,13 @@
 	    WRITE(LUER,*)'DO_CO_MOV_DDT should also be set to TRUE.'
 	    IF(STOP_IF_BAD_PARAM)STOP
 	  END IF
-!
+	  IF(PNT_SRCE_MOD .AND. INNER_BND_METH .NE. 'ZERO_FLUX')THEN
+	    WRITE(LUER,*)'Error: inconsistency in control parameters in VADAT'
+	    WRITE(LUER,*)'SN model has POINT_SRC_MOD set to true.'
+	    WRITE(LUER,*)'In this case INNER_BND_METH must be set to ZERO_FLUX'
+	    IF(STOP_IF_BAD_PARAM)STOP
+	  END IF	    
+
 ! AS TIME_SEQ_NO is not actually used, this check is not necessary.
 !
 !	  IF(USE_DJDT_RTE .AND. (TIME_SEQ_NO .EQ. 1) )THEN
