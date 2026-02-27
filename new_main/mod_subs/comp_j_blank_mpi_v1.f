@@ -897,7 +897,7 @@ C
 	1                       RJ(ND),TC(ND),T2
 	    IF(FREQ_INDX .EQ. NCF)CLOSE(UNIT=LU_JCOMP)
 	  END IF
-	  IF(FREQ_INDX .EQ. NCF)THEN
+	  IF(FREQ_INDX .EQ. NCF .AND. MYPE .EQ. 0)THEN
 	    IF(MYPE .EQ. 0)WRITE(LUER,*)'Average number of calls to FG_J_CMF is',(1.0_LDP*FG_COUNT)/NCF
 	    T1=ABS(RJ(1))+ABS(TC(1))
 	    IF(T1 .NE. 0)T1=ABS(200.0_LDP*(RJ(1)-TC(1))/T1)

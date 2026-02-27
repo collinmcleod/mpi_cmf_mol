@@ -22,6 +22,7 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered 18-Feb-2025: Fixed write error.
 ! Altered 13-Aug-2025: Now writes out which g.s. rate equations are replaced (2-Sep-2025).
 ! Altered 12-Aug-2025: ION equations written to STEQ_VALS.
 ! Altered 10-Jun-2024: Now use diagonal solution when tridiagonal solution fails.
@@ -515,7 +516,9 @@
 	    EXIT
 !
 	  ELSE IF(IT_COUNTER .EQ. MAX_NUM_ITS .AND. MAXVAL(ERR_EST) .LT. 1.0E-02_LDP)THEN
-	    WRITE(6,*)'Solution of tri-diaginal equations may not be full converged'
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(6,*)'Solution of tri-diaginal equations may not be full converged'
+	    END IF
 	    STEQ(:,DST:DEND)=NEW_EST(:,DST:DEND)
 	    EXIT
 !
@@ -523,8 +526,10 @@
 !
 ! Use diagonal solution.
 !
-	    WRITE(6,'(/,A)')' Solution of tri-diagonal equations failed to converged: MYPE=',MYPE
-	    WRITE(6,'(A,/)')' Using diagonal solution'
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(6,'(/,A,I3)')' Solution of tri-diagonal equations failed to converged: MYPE=',MYPE
+	      WRITE(6,'(A,/)')' Using diagonal solution'
+	    END IF
 	    DO K=DST,DEND
 	      STEQ(:,K)=STEQ_STORE(:,K)
 	      DO J=1,N
