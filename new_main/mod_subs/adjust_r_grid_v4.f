@@ -6,9 +6,11 @@
 	USE SET_KIND_MODULE
 	USE MOD_CMFGEN
 	USE UPDATE_KEYWORD_INTERFACE
+	USE MPI
 	IMPLICIT NONE
 !
-! Aleterd 20-Aug-2016 : Introduced OB_ONLY option
+! Altered 16-MAr-2026 : Fixes for MPI operation
+! Altered 20-Aug-2016 : Introduced OB_ONLY option
 ! Altered 19-Aug-2015 : Check on makig sure SIGMA > -1 (cur_hmi, 23-Jun-2105)
 ! Altered 02-Dec-2012 : Changed calls to DO_TAU_REGRID and DO_VEL_REGRID.
 !                       Now open R_REGRIDDING_LOG in this routine.
@@ -69,6 +71,7 @@
 	INTEGER NUM_IBND_PARAMS		!Number of points inserted near inner boundary.
 	INTEGER NUM_OBND_PARAMS		!Number of points inserted near outer boundary.
 !
+!
 ! The parameters describe on what iteration we should do the first grid adjustement,
 ! how often we should do  a grid adjustment, and how many grid adjustemnts should  be
 ! done. NO_R_REV is adjusted downwards after each iteration, and is output to ADJUST_R_DEFAULTS.
@@ -91,6 +94,9 @@
 	LOGICAL, PARAMETER :: L_TRUE=.TRUE.
 	LOGICAL ONLY_OB_DONE
 	CHARACTER(LEN=80) STRING
+!
+	INTEGER, PARAMETER :: LEN_OP_ID=20
+	CHARACTER(LEN=LEN_OP_ID) OP_IDENTIFIER, TMP_IDENTIFIER
 !
 	IF(MYPE .EQ. 0)WRITE(T_OUT,'(/,1X,A)')'Entering ADJUST_R_GRID_V4'
 !
@@ -130,12 +136,15 @@
 	1  MOD( (MAIN_COUNTER-STRT_R_REV),FREQ_R_REV ) .NE. 0)THEN
 	     IF(MYPE .EQ. 0)WRITE(T_OUT,'(A,I4)')' No R revision required on this iteration'
 	     CALL CLEAN_RD_STORE()
-	     RETURN
+	     OP_IDENTIFIER='No revision'
+	     GOTO 1000
 	END IF
 !
-        CALL GET_LU(LU)
-	OPEN(UNIT=LU,FILE='R_REGRIDDING_LOG',STATUS='UNKNOWN',ACTION='WRITE')
-	CALL SET_LINE_BUFFERING(LU)		!Switches off line buffering
+	IF(MYPE .EQ. 0)THEN
+          CALL GET_LU(LU)
+	  OPEN(UNIT=LU,FILE='R_REGRIDDING_LOG',STATUS='UNKNOWN',ACTION='WRITE')
+	  CALL SET_LINE_BUFFERING(LU)		!Switches off line buffering
+	END IF
 !
 ! Save existing grid, which will be used for the interplations.
 !
@@ -154,8 +163,10 @@
 	  CALL RD_STORE_DBLE(DTAU2_ON_DTAU1,'D2OND1',L_FALSE,'~DTAU(2)/DTAU(1) at outer boudary')
 	  R(2)=(T2*R(3)+DTAU2_ON_DTAU1*T1*R(1))/(T2+T1*DTAU2_ON_DTAU1)
 	  IF(R(2) .GE. R(1) .OR. R(2) .LE. R(3))THEN
-	    WRITE(T_OUT,'(A)')' Error -- invalid R(2) computed with OB_ONLY'
-	    WRITE(T_OUT,'(A)')' Skipping outer boundary adjustment'
+	    IF(MYPE .EQ. 0)THEN
+	      WRITE(T_OUT,'(A)')' Error -- invalid R(2) computed with OB_ONLY'
+	      WRITE(T_OUT,'(A)')' Skipping outer boundary adjustment'
+	    END IF
 	  ELSE
 	    ONLY_OB_DONE=.TRUE.
 	  END IF
@@ -163,7 +174,8 @@
 	  WRITE(T_OUT,'(A)')'Error- REGRIDDING_METHOD (GRID_METH option) not recognized in ADJUST_R_GRID_V4 '
 	  WRITE(T_OUT,'(A)')'REGRIDDING_METHOD =',TRIM(REGRIDDING_METHOD)
 	  CALL CLEAN_RD_STORE()
-	  RETURN
+	  OP_IDENTIFIER='Option not reconized'
+	  GOTO 1000
 	END IF
 	CALL CLEAN_RD_STORE()
 !
@@ -177,7 +189,8 @@
 	IF(T1 .LT. 1.0E-03_LDP .AND. .NOT. ONLY_OB_DONE)THEN
 	  R=R_OLD
 	  WRITE(T_OUT,*)'As grid is identical to 1 part in 1000, interpolation not necessary'
-	  RETURN
+	  OP_IDENTIFIER='Grid identical'
+	  GOTO 1000
 	ELSE
 
 ! We now need to regrid all the populations. All interpolations (except
@@ -214,20 +227,23 @@
 !
 	  IF(ERROR)THEN
 	    WRITE(6,*)'Error in ADJUST_R_GRID_V4 - SIGMA is not monotonic'
-	    WRITE(6,*)'J, V(J) and SIGMA(J) follows'
+	    WRITE(6,*)'J, V(J) and SIGMA(J) follows. MPPE=',MYPE
 	    DO J=1,I
 	      WRITE(6,*)J,V(J),SIGMA(J)
 	    END DO
+	    CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	    STOP
 	  END IF
 !
-	  WRITE(LU,'(A,8(7X,A))')'!Index','        R','     Rold','   Log(R)','Log(Rold)','        V',
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(LU,'(A,8(7X,A))')'!Index','        R','     Rold','   Log(R)','Log(Rold)','        V',
 	1                               '     Vold','    Sigma','Sigma_old'
-	  WRITE(LU,'(A)')'!'
-	  DO I=1,ND
-	    WRITE(LU,'(I6,8ES16.5)')I,R(I),R_OLD(I),LOG_R(I),LOG_R_OLD(I),V(I),V_OLD(I),SIGMA(I),SIGMA_OLD(I)
-	  END DO
-	  CLOSE(LU)
+	    WRITE(LU,'(A)')'!'
+	    DO I=1,ND
+	      WRITE(LU,'(I6,8ES16.5)')I,R(I),R_OLD(I),LOG_R(I),LOG_R_OLD(I),V(I),V_OLD(I),SIGMA(I),SIGMA_OLD(I)
+	    END DO
+	    CLOSE(LU)
+	  END IF
 !
 ! Now interpolate all populations, temperature etc.
 !
@@ -240,8 +256,22 @@
 !
 	DONE_R_REV=.TRUE.
 	NO_R_REV=NO_R_REV-1
-        CALL UPDATE_KEYWORD(NO_R_REV,'[N_ITS]','ADJUST_R_DEFAULTS',L_TRUE,L_TRUE,LUIN)
-	WRITE(T_OUT,*)'Adjusted R grid in ADJUST_R_GRID_V4'
+	IF(MYPE .EQ. 0)THEN
+          CALL UPDATE_KEYWORD(NO_R_REV,'[N_ITS]','ADJUST_R_DEFAULTS',L_TRUE,L_TRUE,LUIN)
+	  WRITE(T_OUT,*)'Adjusted R grid in ADJUST_R_GRID_V4'
+	END IF
+	OP_IDENTIFIER='New grid'
+!
+1000	CONTINUE
+	TMP_IDENTIFIER=OP_IDENTIFIER
+	CALL MPI_BCAST(TMP_IDENTIFIER,LEN_OP_ID,MPI_CHAR,IZERO,MPI_COMM_WORLD,IERR)
+	IF(TMP_IDENTIFIER .NE. OP_IDENTIFIER)THEN
+	  WRITE(6,*)'Error in ADJUST_R_GRID_V4 -- inconsistent OP_IDENTIFIER'
+	  WRITE(6,*)'MYPE=',MYPE,'OP_IDENTIFIER=',OP_IDENTIFIER  	
+	  WRITE(6,*)'MYPE=',IZERO,'OP_IDENTIFIER=',TMP_IDENTIFIER  	
+	  CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
+	  STOP
+	END IF
 !
 	RETURN
 	END

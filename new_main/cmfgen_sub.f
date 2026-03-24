@@ -350,6 +350,7 @@
 	REAL(KIND=LDP) OBS_FLUX(NCF_MAX)
 	LOGICAL FIRST_OBS_COMP
 !
+	CHARACTER(LEN=3) MEM_UNIT
 	CHARACTER TIME*20
 	CHARACTER FMT*120
 	CHARACTER*20 SECTION,FORMAT_DATE*20
@@ -950,9 +951,10 @@
 	  WRITE_RVSIG=.FALSE.
 	ELSE IF(REVISE_R_GRID .OR. DO_HYDRO)THEN
 	   IF(.NOT. WRITE_RVSIG)THEN
-	     WRITE(LUER,*)'Error in CMFGEN_SUB with SCRTEMP'
+	     WRITE(LUER,*)'Error in CMFGEN_SUB with SCRTEMP : MYPE =0'
 	     WRITE(LUER,*)'Inconsistent format request: RVSIG must be written for each iteration'
 	     WRITE(LUER,*)'Restart a fresh model or use REWRITE_SCR to correct file format'
+	     CALL MPI_ABORT(MPI_COMM_WORLD,ERRORCODE,IERR)
 	     STOP
 	   END IF
 	END IF
@@ -1258,6 +1260,8 @@
 	IF(MYPE .EQ. 0)WRITE(6,'(/,A)')' About to start main iteration section'
 	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 	INCLUDE 'main_it_section.f'
+	CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	IF(MYPE .EQ. 0)WRITE(6,'(/,A)')' Exited end main iteration section'
 ! 
 9999	CONTINUE
 !
@@ -1489,15 +1493,25 @@
 	      IF(MYPE .EQ. 0)WRITE(6,*)'Successfully output OLD_MODEL_DATA'
 	    END IF
 !
-	    CLOSE(UNIT=LUER)
-	    CLOSE(UNIT=LU_SE)
-!
 	    IF(TREAT_NON_THERMAL_ELECTRONS .AND. WRITE_RATES)THEN
 	      CALL WRITE_NON_THERM_MPI_V1(dE_RAD_DECAY,NT,ND,DEC_NRG_SCL_FAC)
 	    END IF
 	  END IF
 !
-	  RETURN
+! T1 is returned in bytes
+!
+	  CALL GET_MAX_MEMORY(T1,T2,MEM_UNIT,' ',IZERO)
+	  CALL MPI_REDUCE(T1,T3,IONE,MY_MPI_DP,MPI_SUM,IZERO,MPI_COMM_WORLD,IERR)
+	  IF(MYPE .EQ. 0)THEN
+	    CALL CNVT_MEM_UNIT(T3,T2,MEM_UNIT)
+	    WRITE(6,'(/,A,F9.3,A,/)')' Total memory used by code is ',T2,MEM_UNIT
+	    FLUSH(UNIT=6)
+	    RETURN
+	  END IF
+!
+	  INQUIRE(FILE='OUTGEN',OPENED=FILE_OPEN)
+          IF(FILE_OPEN)CLOSE(UNIT=LUER)
+	  CLOSE(UNIT=LU_SE)
 	ELSE
 !
 	INCLUDE 'set_next_iteration.f'

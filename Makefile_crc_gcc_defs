@@ -6,6 +6,11 @@ ifeq ($(COMPILE_OPT),crc_gcc_nodebug)
  FD  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments   -fbacktrace -I$(MOD_DIR) 
  FFREE  = -O -fno-backslash -I$(MOD_DIR) -J$(MOD_DIR)
  FFRED  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
+
+ CCOMP=gcc
+ CG= -O
+ CF= -O0 -g
+
  BLAS=
  LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
     -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
@@ -20,6 +25,11 @@ ifeq ($(COMPILE_OPT),crc_gcc_debug)
  FD  = -g -O0  -ffixed-line-length-0 -fbounds-check -fno-backslash -fd-lines-as-comments   -fbacktrace -I$(MOD_DIR) 
  FFREE  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
  FFRED  = -g -fno-backslash -O0 -I$(MOD_DIR) -J$(MOD_DIR)
+
+ CCOMP=gcc
+ CG= -O0 -g
+ CF= -O0 -g
+
  BLAS=
  LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
     -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl

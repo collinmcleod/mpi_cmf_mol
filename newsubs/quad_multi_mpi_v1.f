@@ -30,6 +30,9 @@
 	IMPLICIT NONE
 	EXTERNAL SUB_PHOT_GEN
 !
+! Altered 12-Mar-2026 -- Added call back to SUB_PHOT_GEN_MPI_V2.
+!                        Fixed error that mainly influenced cooling rates, with
+!                          a smaller effect on phot/recoms for PHOT_IDs > 1.
 ! Altered 01-Oct-2025 -- Removed call to SUB_PHOT_GEN_MPI_V2 
 !                     -- Fixed bugs that have no effect.
 !
@@ -70,6 +73,7 @@
 !
 ! Local Variables,
 !
+	REAL(KIND=LDP) EDGE(N_F)
 	INTEGER I_S,I_F,J
 	INTEGER IPROC
 	INTEGER DPTH_INDX
@@ -104,6 +108,11 @@
 	DO IP=1,NPHOT
 !
 	  PHOT_ID=IP
+	  EDGE=EDGE_F
+	  IF(IP .GT. 1)THEN
+	    T1=0.0D0; J=-PHOT_ID
+            CALL SUB_PHOT_GEN_MPI_V2(ID,EDGE,T1,EDGE_F,N_F,J,L_TRUE)
+	  END IF
 !
 ! Get photoionization cross-sections for all levels. The first call returns
 ! the threshold cross-section when NU < EDGE.
@@ -169,13 +178,13 @@
 	        DO I_F=1,N_F
 	          I_S=F_TO_S_MAPPING(I_F)
 	          IF(ALPHA_VEC(I_F) .LE. 0.0_LDP)THEN
-	          ELSE IF(NU_CONT .GE. EDGE_F(I_F))THEN
+	          ELSE IF(NU_CONT .GE. EDGE(I_F))THEN
 	            T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
 	            WSE_S(I_S,J,IP)=WSE_S(I_S,J,IP) + T1*HNST_F_ON_S(I_F,J)
-	            WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE_F(I_F)*T1*HNST_F_ON_S(I_F,J)
+	            WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE(I_F)*T1*HNST_F_ON_S(I_F,J)
 	            T2=T1*HNST_F_ON_S(I_F,J)*(dlnHNST_S_dlnT(I_S,J)+1.5_LDP+HDKT*EDGE_F(I_F)/T(J))/T(J)
 	            dWSE_SdT(I_S,J,IP)=dWSE_SdT(I_S,J,IP) - T2
-	            dWCRdT(I_S,J,IP)=dWCRdT(I_S,J,IP) + EDGE_F(I_F)*T2
+	            dWCRdT(I_S,J,IP)=dWCRdT(I_S,J,IP) + EDGE(I_F)*T2
 !
 ! We only allow for level dissolutions when the ionizations are occurring to
 ! the ground state.
@@ -187,10 +196,10 @@
 	            IF(T3 .GT. PHOT_DIS_PARAMETER)THEN
 	              T3=T1*T3
 	              WSE_S(I_S,J,IP)=WSE_S(I_S,J,IP) + T3*HNST_F_ON_S(I_F,J)
-	              WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE_F(I_F)*T3*HNST_F_ON_S(I_F,J)
+	              WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE(I_F)*T3*HNST_F_ON_S(I_F,J)
 	              T2=T3*HNST_F_ON_S(I_F,J)*(dlnHNST_S_dlnT(I_S,J)+1.5_LDP+HDKT*EDGE_F(I_F)/T(J))/T(J)
 	              dWSE_SdT(I_S,J,IP)=dWSE_SdT(I_S,J,IP) - T2
-	              dWCRdT(I_S,J,IP)=dWCRdT(I_S,J,IP) + EDGE_F(I_F)*T2
+	              dWCRdT(I_S,J,IP)=dWCRdT(I_S,J,IP) + EDGE(I_F)*T2
 	            END IF
 	          END IF
 	        END DO
@@ -203,7 +212,7 @@
 	          ELSE IF(NU_CONT .GE. EDGE_F(I_F))THEN
 	            T1=FOUR_PI_D_H*ALPHA_VEC(I_F)
 	            WSE_S(I_S,J,IP)=WSE_S(I_S,J,IP) + T1*HNST_F_ON_S(I_F,J)
-	            WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE_F(I_F)*T1*HNST_F_ON_S(I_F,J)
+	            WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE(I_F)*T1*HNST_F_ON_S(I_F,J)
 !
 ! We only allow for level dissolutions when the ionizations are occurring to
 ! the ground state.
@@ -215,7 +224,7 @@
 	            IF(T3 .GT. PHOT_DIS_PARAMETER)THEN
 	              T3=T1*T3
 	              WSE_S(I_S,J,IP)=WSE_S(I_S,J,IP) + T3*HNST_F_ON_S(I_F,J)
-	              WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE_F(I_F)*T3*HNST_F_ON_S(I_F,J)
+	              WCR(I_S,J,IP)=WCR(I_S,J,IP) - EDGE(I_F)*T3*HNST_F_ON_S(I_F,J)
 	            END IF
 	          END IF
 	        END DO

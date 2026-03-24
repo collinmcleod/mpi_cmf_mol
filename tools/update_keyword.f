@@ -3,6 +3,7 @@
 ! in a CMFGEN input files. An example is an update of
 ! XFI1_BEG etc which change as the iteration procedes.
 !
+! Altered 10-Mar-2026: Added STATUS specifications when opening DATA_FILE.
 ! Altered 13-Nov-2017: Fixed minor bug with update_keyowrd_dp
 ! Altered 10-Jun-2015: PRIVATE made default for UPDATE_KEYWORD_INTERFACE
 ! Altered 10-Jun-2015: Subroutine cause gracefull stop if KEYWORD file cannot be opened.
@@ -216,7 +217,7 @@
 	INTEGER I
 !
 	IF(WR_FILE)THEN
-	  OPEN(UNIT=LU,FILE=TRIM(DATA_FILE),ACTION='WRITE')
+	  OPEN(UNIT=LU,FILE=TRIM(DATA_FILE),ACTION='WRITE',STATUS='REPLACE')
 	    DO I=1,NUM_RECS
 	       WRITE(LU,'(A)')TRIM(STORE(I))
 	    END DO
@@ -240,7 +241,7 @@
 	IF(RD_FILE)THEN
 	  LUER=ERROR_LU()
 	  ALLOCATE (STORE(MAX_RECS))
-	  OPEN(UNIT=LU,FILE=TRIM(DATA_FILE),ACTION='READ',IOSTAT=IOS)
+	  OPEN(UNIT=LU,FILE=TRIM(DATA_FILE),ACTION='READ',STATUS='OLD',IOSTAT=IOS)
 	    IF(IOS .NE. 0)THEN
 	      WRITE(LUER,*)'Error opening ',TRIM(DATA_FILE),' in RD_KEY_WRD_FILE'
 	      WRITE(LUER,*)'IOS=',IOS

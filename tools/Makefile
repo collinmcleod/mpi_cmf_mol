@@ -23,6 +23,8 @@ OBJ = $(LIB)(usr_option.o)\
       $(LIB)(form_sp_num.o)\
       $(LIB)(gen_in.o)\
       $(LIB)(get_lu.o)\
+      $(LIB)(get_max_memory.o)\
+      $(LIB)(get_max_rss.o)\
       $(LIB)(lambert_wm_fun.o)\
       $(LIB)(mod_color_pen_def.o)\
       $(LIB)(new_gen_in.o)\
@@ -50,13 +52,21 @@ all : $(LIB)
 	cp -f $(INSTALL_DIR)perm_mod_file jnk.mod
 	mv -f *.mod $(MOD_DIR)
 	rm -f *.o
-$(LIB) : $(OBJ)	
+$(LIB) : $(OBJ)
 
 # General rules to make obects in a library and object files
 
 $(LIB)(%.o) : %.f  $(LIB)(set_kind_module.o)
 	$(F90) -c $(FG)  $<
 	ar $(AR_OPTION) $(LIB) $*.o
+
+$(LIB)(get_max_memory.o) : get_max_memory.f90
+	$(F90) -c $(FFREE)  get_max_memory.f90
+	ar $(AR_OPTION) $(LIB) get_max_memory.o
+
+$(LIB)(get_max_rss.o) : get_max_rss.c 
+	$(CCOMP) $(GC) -c   get_max_rss.c
+	ar $(AR_OPTION) $(LIB) get_max_rss.o
 
 $(LIB)(set_kind_module.o) : set_kind_module.f 
 	$(F90) -c $(FG)  set_kind_module.f

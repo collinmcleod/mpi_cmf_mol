@@ -209,6 +209,7 @@
 	  PNT_SRCE_MOD=.FALSE.
 	  CALL RD_STORE_LOG(PNT_SRCE_MOD,'PNT_SRCE',L_FALSE,'Include point source with hollow shell')
 	  IF(PNT_SRCE_MOD .AND. SN_MODEL)THEN
+	    NC_PNT_SRCE=2
 	    CALL RD_STORE_DBLE(R_PNT_SRCE,'R_PNT',L_TRUE,'Radius of point source in Rsun')
 	    CALL RD_STORE_DBLE(TEFF_PNT_SRCE,'TEFF_PNT',L_FALSE,'Effective T of point source in 10^4K')
 	    IF(TEFF_PNT_SRCE .NE. 0.0_LDP)THEN
@@ -220,9 +221,9 @@
 	      STOP
 	    END IF
 	  ELSE IF(PNT_SRCE_MOD)THEN
+	    NC_PNT_SRCE=2
 	    CALL RD_STORE_DBLE(R_PNT_SRCE,'R_PNT',L_TRUE,'Radius of point source in Rsun')
 	    CALL RD_STORE_DBLE(TEFF_PNT_SRCE,'TEFF_PNT',L_TRUE,'Effective T of point source in 10^4K')
-	    NC_PNT_SRCE=2
 	  END IF
 !
 ! TEFF and LOGG only need to be present if DO_HYDRO is TRUE. Values will still be read
