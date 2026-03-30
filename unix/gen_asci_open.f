@@ -18,7 +18,6 @@ C
 	CHARACTER*(*) FILE_NAME,FILE_STATUS,FILE_POSIT,FILE_ACTION
 	CHARACTER*20  LOC_NAME,LOC_STATUS,LOC_POSIT,LOC_ACTION
 C
-C Altered 18-Feb-2026 -- Output error if a non-zero value of IOS is  returned.
 C Altered 29-Jul-2024 -- Now TRIM file name in OPEN statements.
 C
 	EXTERNAL ERROR_LU

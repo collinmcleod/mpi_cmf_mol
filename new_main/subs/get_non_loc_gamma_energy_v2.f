@@ -68,8 +68,8 @@
 	   READ(LU,*) T1
 	   IF (T1 .NE. SN_AGE_DAYS) THEN
 	      WRITE(LUER,'(A80)') 'New time for Gamma-ray transport calculation is incompatible'
-	      WRITE(LUER,'(A50)') 'Monte Carlo new time [days]',T1
-	      WRITE(LUER,'(A50)') 'CMFGEN new time [days]',SN_AGE_DAYS
+	      WRITE(LUER,'(A50,F12.4)') 'Monte Carlo new time [days]',T1
+	      WRITE(LUER,'(A50,F12.4)') 'CMFGEN new time [days]',SN_AGE_DAYS
 	      STOP
 	   ENDIF
 !

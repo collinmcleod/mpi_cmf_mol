@@ -2,8 +2,9 @@
 ! Altered 20-Sep-2025: Fixed broadcasting of IREC.
 !
 	  IF(MYPE .EQ. 0)THEN
-	    WRITE(6,'(/,39X,A,8X,A,9X,A)')'MYPE','MAXCH','FIXED_T'
-	    WRITE(6,*)'Start of end iteration section      ',MYPE,MAXCH,FIXED_T
+	    WRITE(6,'(/,39X,A,8X,A,6X,A)')'MYPE','MAXCH','FIXED_T'
+	    WRITE(6,'(A,T40,I4,ES13.3,12X,L1)')
+	1       ' Start of end iteration section:',MYPE,MAXCH,FIXED_T
 	    FLUSH(UNIT=6)
 	  END IF
 !
@@ -55,7 +56,6 @@
 !
 ! We do not do the scaling if there is intrinsic X-ray emssion from the star.
 ! DESIRED_XRAY_LUM should be in units of LSTAR.
-! Altered: 24-Feb-2026 -- Bug fig: Test need ABS
 !
 	    IF(OBS_XRAY_LUM_0P1 .LT. SUM(XRAY_LUM_0P1) .AND. SCALE_XRAY_LUM)THEN
 	      IF( ABS(LUM*DESIRED_XRAY_LUM/OBS_XRAY_LUM_0P1-1.0_LDP) .GT. ALLOWED_XRAY_FLUX_ERROR)THEN
@@ -245,7 +245,11 @@
 	  END IF
 	  CALL TUNE(ITWO,'GIT')
 	  CALL TUNE(ITHREE,' ')
-	  IF(MYPE .EQ. 0)WRITE(6,*)'End of iteration section',MYPE,MAXCH,FIXED_T
-	  FLUSH(UNIT=6)
+	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(6,'(A,T40,I4,ES13.3,12X,L1)')
+	1       ' End of end iteration section:',MYPE,MAXCH,FIXED_T
+	    FLUSH(UNIT=6)
+	  END IF
 !
 	  GOTO 20000				!Begin another iteration

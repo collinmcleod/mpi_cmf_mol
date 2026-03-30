@@ -35,6 +35,7 @@
 	USE LINE_MOD
 	IMPLICIT NONE
 !
+! Altered 29-Mar-2026 : Now call DET_LTE_ED_MPI_V1
 ! Altered 05-May-2025 : Fixed bug in call to - REGRID_LOG_DC_V1 -- passed root instead of ATM value (ATM(ID)%EDGEXzV_F)
 !
 	INTEGER NC
@@ -251,7 +252,8 @@
 	  IF(DC_INTERP_METHOD .EQ. 'LTE')THEN
 	    WRITE(LUER,*)'LTE assumed for departure coefficients.'
 	    T1=T_EXCITE_MIN
-	    CALL DET_LTE_ED(T1,ND,DO_LEV_DISSOLUTION)
+	    CALL DET_LTE_ED_MPI_V1(T1,ND,DO_LEV_DISSOLUTION)
+	    WRITE(LUER,*)'Called DET_LTE_ED_MPI_V1'; FLUSH(UNIT=LUER)
 	    DO ID=1,NUM_IONS-1
 	      IF(ROOT(ID)%XzV_PRES)THEN
 	        CALL SET_DC_LTE_V2(ROOT(ID)%XzV_F,ROOT(ID)%DXzV_F,ATM(ID)%EDGEXzV_F,ATM(ID)%NXzV_F,T,T1,ND)
