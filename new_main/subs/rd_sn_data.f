@@ -594,15 +594,17 @@
 	        IF( (T2 .LE. -2.0_LDP .OR. T2 .GT. 0.67_LDP) .AND. ISO(IS)%OLD_POP(I) .GT. 1.0E-10_LDP)THEN
 	          IF(FIRST_WARN .AND. MYPE .EQ. 0)THEN
 	            FIRST_WARN=.FALSE.
-	            WRITE(LUER,*)' '
-	            WRITE(LUER,*)'WARNING from RD_SN_DATA '
-	            WRITE(LUER,*)'The following isotopes have changed their abundance by over a factor of 3.'
-	            WRITE(LUER,*)'This may have occurred because you are using a revised NUCLEAR decay data file.'
-	            WRITE(LUER,*)'Do diff SN_HYDRO_DATA SN_HYDRO_FOR_NEXT_MODEL to see changes.'
-	            WRITE(LUER,*)'This may affect the heating, partyicularly when using energy'//
-	1                        ' deposition averaged over time.'
-	            WRITE(LUER,*)'It may be unimportat if the species is an impurity ion, such as'
-	            WRITE(LUER,*)'  56Ni at > 100 days and you are using a time step > than the half life of 56Ni.'
+	            WRITE(LUER,'(132A)')' '
+	            WRITE(LUER,'(132A)')' WARNING from RD_SN_DATA '
+	            WRITE(LUER,'(132A)')' The following isotopes have changed their abundance by over a factor of 3.'
+	            WRITE(LUER,'(132A)')' This may have occurred because you are using a revised NUCLEAR'//
+	1                                   ' decay data file.'
+	            WRITE(LUER,'(132A)')' Do diff SN_HYDRO_DATA SN_HYDRO_FOR_NEXT_MODEL to see changes.'
+	            WRITE(LUER,'(132A)')' This may affect the heating, particularly when using energy'//
+	1                                    ' deposition averaged over time.'
+	            WRITE(LUER,'(132A)')' It may be unimportant if the species is an impurity ion, such as'
+	            WRITE(LUER,'(132A)')'  56Ni at > 100 days and you are using a time step > than the half'//
+	1                                    '  life of 56Ni.'
 	            WRITE(LUER,'(3X,A,T12,I3)')TRIM(ISO(IS)%SPECIES),ISO(IS)%BARYON_NUMBER
 	          ELSE IF(MYPE .EQ. 0)THEN
 	            WRITE(LUER,'(3X,A,T12,I3)')TRIM(ISO(IS)%SPECIES),ISO(IS)%BARYON_NUMBER

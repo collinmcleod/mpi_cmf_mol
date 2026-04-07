@@ -246,10 +246,11 @@
 	          END IF
 	          I=INDEX(STRING,'  ')
 	          READ(STRING(I:),*)T1				!G lowest levels
-	          IF(FIRST)THEN
-	            WRITE(LUER,'(A)')'Warning -- ionization stage '//TRIM(ION_ID(ID))//'is no longer included in the model'
-	            WRITE(LUER,'(A,F5.1)')'The statistical weight of the ground term is: ',T1
-	            WRITE(LUER,'(A,F5.1)')'The statistical weight of the ion term is:    ',ATM(ID-1)%GIONXzV_F
+	          IF(FIRST .AND. MYPE .EQ. 0)THEN
+	            WRITE(LUER,'(A)')' Warning from read_seq_time_file_v1.f '
+	            WRITE(LUER,'(A)')' Ionization stage '//TRIM(ION_ID(ID))//'is no longer included in the model.'
+	            WRITE(LUER,'(A,5X,F5.1)')'The statistical weight of the ground term is: ',T1
+	            WRITE(LUER,'(A,5X,F5.1)')'The statistical weight of the ion term is:    ',ATM(ID-1)%GIONXzV_F
 	          END IF
 	          J=ATM(ID-1)%EQXzV+ATM(ID-1)%NXzV		!Small NXzV
 	          POPS(J,:)=TMP_XzV(1,:)*(ATM(ID-1)%GIONXzV_F/T1)

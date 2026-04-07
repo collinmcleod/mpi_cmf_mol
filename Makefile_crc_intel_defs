@@ -12,6 +12,11 @@ ifeq ($(COMPILE_OPT),crc_intel_nodebug)
  FD  = -g -O0  -fpe0 -check bounds  -extend-source  -traceback  -I$(MOD_DIR) 
  FFREE  = -O2 -nbs -traceback -check bounds -extend-source -I$(MOD_DIR)
  FFRED  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend-source -traceback  
+
+ CCOMP=mpiicc
+ CG= -O
+ CF= -O0 -g
+
  BLAS=
  LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
 -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
@@ -28,6 +33,11 @@ ifeq ($(COMPILE_OPT),crc_intel_debug)
  FD  = -g -O0  -fpe0 -check bounds  -extend-source  -traceback  -I$(MOD_DIR) 
  FFREE  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend-source -traceback  
  FFRED  = -g -fpe0 -nbs -traceback -O0 -I$(MOD_DIR) -check bounds  -extend-source -traceback  
+
+ CCOMP=icx
+ CG= -O0 -g
+ CF= -O0 -g
+
  BLAS=
  LAPACK= -lmkl_blas95_lp64 -lmkl_lapack95_lp64 \
 -Wl,--no-as-needed -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl

@@ -1026,6 +1026,5 @@
 	END IF
 !
 	CALL MPI_FINALIZE (ierr)
-	STOP
 !
 	END

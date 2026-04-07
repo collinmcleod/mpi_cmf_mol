@@ -47,6 +47,7 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered: 10-Feb-2026 : Added point source flux for ZERO_FLUX inner boudary option.
 ! Altered: 21-Sep-2021 : Fixed bug with J_CHK_OPTION='FORM_VAL' option.
 ! Altered: 02-May-2019 : FIxed problem whith H check.
 ! Altered: 29-Apr-2019 : Changed to V5. XM_CHK_OPTION and J_CHK_OPTION added to call.
@@ -423,7 +424,7 @@
 	  ELSE IF(INNER_BND_METH .EQ. 'ZERO_FLUX')THEN
 	    TA(ND)=-GAM_RSQ(ND-1)*Q(ND-1)*(K_ON_J(ND-1)+VdHdR_TERM(ND-1))/DTAU_H(ND-1)
 	    TB(ND)=GAM_RSQ(ND)*(K_ON_J(ND)+VdHdR_TERM(ND))/DTAU_H(ND-1)
-	    XM(ND)=0.0_LDP
+	    XM(ND)=RSQH_IB_PNT_SRCE
 	    XM(ND)=XM(ND)+IB_STAB_FACTOR*TB(ND)*(JPLUS_IB+JMIN_IB)
 	    TB(ND)=(1.0_LDP+IB_STAB_FACTOR)*TB(ND)
 	    RHS_JNU=JPLUS_IB+JMIN_IB

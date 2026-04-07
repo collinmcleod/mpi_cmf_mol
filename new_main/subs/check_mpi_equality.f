@@ -3,6 +3,7 @@
 	USE MPI
 	IMPLICIT NONE
 !
+! Altered 20-Feb-2026; Added flush statements and some cleaning.
 ! Altered 02-May-2025: Fixed error with vector checking.
 !
 	INTEGER N
@@ -21,13 +22,13 @@
 	NO_MATCH=.FALSE.
 	IF(MYPE .EQ. 0)NCHK=N
 	CALL MPI_BCAST(NCHK,IONE,MPI_INTEGER,IZERO,MPI_COMM_WORLD,IERR)
-	IF(NCHK .NE. N)THEN
-	   NO_MATCH=.TRUE.
-	   WRITE(6,*)'Invalid vector lengths',N,NCHK,MYPE
-	   WRITE(6,*)TRIM(MESSAGE)
-	END IF
+	IF(NCHK .NE. N)NO_MATCH=.TRUE.
 	CALL MPI_ALLREDUCE(MPI_IN_PLACE,NO_MATCH,IONE,MPI_LOGICAL,MPI_LOR,MPI_COMM_WORLD,IERR)
 	IF(NO_MATCH)THEN
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(6,*)'Invalid vector lengths',N,NCHK,MYPE
+	    WRITE(6,*)TRIM(MESSAGE); FLUSH(UNIT=6)
+	  END IF
 	  CALL MPI_ERR_CHECK(1,'BAD vector lengths')
 	  CALL MPI_FINALIZE(IERR)
 	  STOP
@@ -38,21 +39,25 @@
 	NO_MATCH=.FALSE.; COUNT=0
 	DO ML=1,N
 	  IF(WORK(ML) .NE. VECTOR(ML))THEN
-	    IF(.NOT. NO_MATCH)THEN
-	       NO_MATCH=.TRUE.
-	       WRITE(6,*)'Error -- vectors of different processes do not match',MYPE
-	       WRITE(6,*)TRIM(MESSAGE)
-	       WRITE(6,*)'Nvec=',N
-	       WRITE(6,'(9X,A2,10X,A2,9X,A9,12X,A6)')'ML','MYPE','Vec[MYPE]','Vec[0]'
-	    END IF
+	    IF(.NOT. NO_MATCH)NO_MATCH=.TRUE.
 	    COUNT=COUNT+1
-	    IF(COUNT .LE. 5)WRITE(6,*)ML,MYPE,VECTOR(ML),WORK(ML)
+	    IF(COUNT .LE. 5)THEN
+	      WRITE(6,*)ML,MYPE,VECTOR(ML),WORK(ML)
+	      FLUSH(UNIT=6)
+	    END IF
 	  END IF
 	END DO
-	IF(COUNT .NE. 0)WRITE(6,*)'Total number of mismatches is',COUNT,'from',N,'for MYPE',MYPE
 !
 	CALL MPI_ALLREDUCE(MPI_IN_PLACE,NO_MATCH,IONE,MPI_LOGICAL,MPI_LOR,MPI_COMM_WORLD,IERR)
 	IF(NO_MATCH)THEN
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(6,*)'Error -- vectors of different processes do not match'
+	    WRITE(6,*)TRIM(MESSAGE)
+	    WRITE(6,*)'Nvec=',N
+	    WRITE(6,'(9X,A2,10X,A2,9X,A9,12X,A6)')'ML','MYPE','Vec[MYPE]','Vec[0]'
+	  END IF
+	  IF(COUNT .NE. 0)WRITE(6,*)'Total number of mismatches is',COUNT,'from',N,'for MYPE',MYPE
+	  FLUSH(UNIT=6)
 	  CALL MPI_ERR_CHECK(1,'BAD matching vectors')
 	  CALL MPI_FINALIZE(IERR)
 	  STOP

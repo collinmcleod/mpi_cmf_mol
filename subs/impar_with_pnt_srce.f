@@ -5,6 +5,7 @@
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
+! Altered 10-Feb-2026 - Fixed potential bug when NC_PNT_SRC is not equal to 0 or 2.
 ! Altered 06-Jun-2019 - Renamed to IMPAR_WITH_PNT_SRCE.
 !                         Added R_PNT_SRCE,NC_PNT_SRCE to call.
 !                         Now handles rays for point source.
@@ -42,7 +43,7 @@
 	  P(NC_PNT_SRCE+1)=P(NC_PNT_SRCE)+1.0E-03_LDP*dP
 !
 	  T1=SQRT(RONE-(P(NC_PNT_SRCE+1)/RP)**2)
-	  DELMU=T1/(NC-2)
+	  DELMU=T1/(NC-NC_PNT_SRCE)
 	  DO I=NC_PNT_SRCE+2,NC
 	    P(I)=RP*SQRT(RONE-(DELMU*(NC-I+1))**2)
 	  END DO

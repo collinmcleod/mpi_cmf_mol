@@ -2,7 +2,9 @@
 ! Altered 20-Sep-2025: Fixed broadcasting of IREC.
 !
 	  IF(MYPE .EQ. 0)THEN
-	    WRITE(6,*)'Start of end iteration section',MYPE,MAXCH,FIXED_T
+	    WRITE(6,'(/,39X,A,8X,A,6X,A)')'MYPE','MAXCH','FIXED_T'
+	    WRITE(6,'(A,T40,I4,ES13.3,12X,L1)')
+	1       ' Start of end iteration section:',MYPE,MAXCH,FIXED_T
 	    FLUSH(UNIT=6)
 	  END IF
 !
@@ -56,7 +58,7 @@
 ! DESIRED_XRAY_LUM should be in units of LSTAR.
 !
 	    IF(OBS_XRAY_LUM_0P1 .LT. SUM(XRAY_LUM_0P1) .AND. SCALE_XRAY_LUM)THEN
-	      IF( (LUM*DESIRED_XRAY_LUM/OBS_XRAY_LUM_0P1-1.0_LDP) .GT. ALLOWED_XRAY_FLUX_ERROR)THEN
+	      IF( ABS(LUM*DESIRED_XRAY_LUM/OBS_XRAY_LUM_0P1-1.0_LDP) .GT. ALLOWED_XRAY_FLUX_ERROR)THEN
 	        T1=SQRT(LUM*DESIRED_XRAY_LUM/OBS_XRAY_LUM_0P1)
 	        IF(T1 .GT. 10.0_LDP)T1=10.0_LDP
 	        IF(T1 .LT. 0.1_LDP)T1=0.1_LDP
@@ -243,7 +245,11 @@
 	  END IF
 	  CALL TUNE(ITWO,'GIT')
 	  CALL TUNE(ITHREE,' ')
-	  IF(MYPE .EQ. 0)WRITE(6,*)'End of iteration section',MYPE,MAXCH,FIXED_T
-	  FLUSH(UNIT=6)
+	  CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+	  IF(MYPE .EQ. 0)THEN
+	    WRITE(6,'(A,T40,I4,ES13.3,12X,L1)')
+	1       ' End of end iteration section:',MYPE,MAXCH,FIXED_T
+	    FLUSH(UNIT=6)
+	  END IF
 !
 	  GOTO 20000				!Begin another iteration

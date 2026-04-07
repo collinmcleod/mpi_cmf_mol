@@ -37,22 +37,8 @@
 	USE CONTROL_VARIABLE_MOD
 	IMPLICIT NONE
 !
-! Altered : 09-Jun-2019 : Added POINT srce options - osiris (added to IBIS 17-Aug-2019)
-! Altered : 30-Apr-2019 : Changed to MOM_JREL_V9 (add XM_CHK_OPTION and J_CHK_OPTION).
-! Altered : 29-Apr-2019 : XM_CHK_OPTION added. Changed to MOM_J_DDT_V6.
-! Altered : 20-Apr-2019 : J_CHK_OPTION added. Changed to MOM_J_DDT_V5.
-! Altered : 17-Oct-2016 : H_CHK_OPTION added to moment routines.
-!                            Moment routines are: MOM_J_CMF_V11.F, MOM_J_DDT_V4.F, and MOM_JREL_V8.F.
-! Altered : 17-Feb-2015 : r^2.J and r^2.H now ouput on last iteration when using USE_LAM_ES option.
-! Altered : 14-Dec-2014 : RSQHNU etc now set to one when not computing J. This avoids issues with
-!                             possible NaNs.
-! Altered : 16-Dec-2013 : CMF_FORM_SOL_V2 (non EXT option) no longer called when ND > 199.
-!                             CMF_FORM_SOL_V2 is not parallelized and slows down large clumped models.
-! Altered : 16-Feb-2006 : CMF_FORM_SOL_V2 used for last iteration when MAXCH<100, and
-!                            not LAMBDA iteration. Sometimes it might be useful to
-!                            change so that CMF_FORM_SOL_V2 is also called when LMABDA
-!                            iteration used. FG_COUNt was not being initialized.
-! Finalized: 17-Dec-2004
+! Altered: 10-Feb-2026 -- Now call CMF_FORMAL_REL_MPI_V2.
+! Based on COMP_J_BLANK
 !
 	REAL(KIND=LDP) C_KMS
 	REAL(KIND=LDP) SPEED_OF_LIGHT
@@ -642,16 +628,17 @@ C
 !
 	     ELSE IF(USE_FORMAL_REL)THEN
 	       IF(FIRST_FREQ .AND. J_IT_COUNTER .EQ. 0 .AND. MYPE .EQ. 0)THEN
-	         WRITE(LUER,*)'Calling CMF_FORMAL_REL_MPI_V1 in COMP_J_BLANK'; FLUSH(UNIT=LUER)
+	         WRITE(LUER,*)'Calling CMF_FORMAL_REL_MPI_V2 in COMP_J_BLANK'; FLUSH(UNIT=LUER)
 	       END IF
-	       CALL CMF_FORMAL_REL_MPI_V1
+	       CALL CMF_FORMAL_REL_MPI_V2
 	1                 (TA,CHI_CLUMP,CHI_SCAT_CLUMP,V,SIGMA,R,P,
 	1                  TC,FEDD,HFLUX_AT_IB,HFLUX_AT_OB,IPLUS,
 	1                  FL,dLOG_NU,BNUE,DBB,
-	1                  INNER_BND_METH,THK_CONT,
+	1                  INNER_BND_METH,THK_CONT,PNT_SRCE_MOD,
 	1                  VDOP_VEC,DELV_FRAC_FG,REXT_FAC,
 	1                  DUST_SCAT_OPAC,G_HEN_GREEN,USE_HEN_GREEN,
-	1                  METHOD,FIRST_FREQ,NEW_FREQ,NC,NP,DST,DEND,ND)
+	1                  METHOD,FIRST_FREQ,NEW_FREQ,
+	1                  R_PNT_SRCE,NC_PNT_SRCE,NC,NP,DST,DEND,ND)
 !
 	     ELSE
 	       IF(FIRST_FREQ .AND. J_IT_COUNTER .EQ. 0. AND. MYPE .EQ. 0)THEN
@@ -910,7 +897,7 @@ C
 	1                       RJ(ND),TC(ND),T2
 	    IF(FREQ_INDX .EQ. NCF)CLOSE(UNIT=LU_JCOMP)
 	  END IF
-	  IF(FREQ_INDX .EQ. NCF)THEN
+	  IF(FREQ_INDX .EQ. NCF .AND. MYPE .EQ. 0)THEN
 	    IF(MYPE .EQ. 0)WRITE(LUER,*)'Average number of calls to FG_J_CMF is',(1.0_LDP*FG_COUNT)/NCF
 	    T1=ABS(RJ(1))+ABS(TC(1))
 	    IF(T1 .NE. 0)T1=ABS(200.0_LDP*(RJ(1)-TC(1))/T1)

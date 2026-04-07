@@ -820,7 +820,7 @@
 	  ELSE IF(INNER_BND_METH .EQ. 'ZERO_FLUX')THEN
 	    TA(ND)=-Q(ND-1)*(K_ON_J(ND-1)+VdHdR_TERM(ND-1))/DTAU_H(ND-1)
 	    TB(ND)=(K_ON_J(ND)+VdHdR_TERM(ND))/DTAU_H(ND-1)
-	    XM(ND)=0.0_LDP
+	    XM(ND)=GAM_REL(ND)*RSQH_IB_PNT_SRCE
 !
 ! Done to stablize solution: 8-Feb-2014
 !

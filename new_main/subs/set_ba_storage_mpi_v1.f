@@ -27,6 +27,7 @@
       EXTERNAL ERROR_LU
 !
       REAL(KIND=LDP) MEMORY
+      REAL(KIND=LDP) T1
       INTEGER I,NX,NY
 !
       LU_ER=ERROR_LU()
@@ -136,10 +137,14 @@
 !
       IF(MYPE .EQ. 0)THEN
         MEMORY=MEMORY+2*NT*ND*NUM_BNDS+NT*ND
+	T1=STORAGE_SIZE(T1)*MEMORY/(1024.0_LDP**3)/8
         WRITE(LU_ER,*)' '
-        WRITE(LU_ER,'(A,ES17.10,A)')' Amount of memory allocated for BA is:  ',MEMORY,' words'
+        WRITE(LU_ER,'(A,ES17.10,A,A,F9.3,A)')
+	1    ' Amount of memory allocated for BA is:  ',MEMORY,' words ','(',T1,' GB)'
         MEMORY=DFLOAT(NT)*NT*(NUM_BNDS+1)*ND
-        WRITE(LU_ER,'(A,ES17.10,A)')' Memory needed with full dependence is: ',MEMORY,' words'
+	T1=STORAGE_SIZE(T1)*MEMORY/(1024.0_LDP**3)/8
+        WRITE(LU_ER,'(A,ES17.10,A,A,F9.3,A)')
+	1    ' Memory needed with full dependence is: ',MEMORY,' words ','(',T1,' GB)'
       END IF
 !
       RETURN

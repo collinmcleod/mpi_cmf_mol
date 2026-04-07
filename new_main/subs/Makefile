@@ -37,7 +37,7 @@ OBJ = $(LIB)(add_par_to_full_mpi_v1.o)\
       $(LIB)(create_iv_links_v2.o)\
       $(LIB)(def_new_rg_v1.o)\
       $(LIB)(determine_nse.o)\
-      $(LIB)(det_lte_ed.o)\
+      $(LIB)(det_lte_ed_mpi_v1.o)\
       $(LIB)(ddt_work.o)\
       $(LIB)(do_cmf_hydro_mpi_v1.o)\
       $(LIB)(do_species_decays_v2.o)\

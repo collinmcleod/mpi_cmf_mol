@@ -143,6 +143,7 @@
 	USE MOD_RAY_MOM_STORE
 	IMPLICIT NONE
 !
+! Altered: 10-Feb-2026 : Added point source flux for ZERO_FLUX inner boudary option.
 ! Altered: 20-Aug-2023 : Fixed out-of bound issue with MOM_ERR_ON_FREQ in first error.
 ! Altered: 29-Apr-2018 : Added XM_CHK_OPTION. Changed to V6
 ! Altered: 18-Apr-2018 : Added J_CHK_OPTION
@@ -653,7 +654,7 @@
 	  IF(DO_TIME_VAR)THEN
 	    RECIP_CDELTAT=1.0E+10_LDP*RELAX_PARAM/SPEED_OF_LIGHT()/DELTA_TIME_SECS
 	    ROLD_ON_R=1.0_LDP-1.0E-05_LDP*V(ND)*DELTA_TIME_SECS/R(ND)
-	    IF(FIRST_TIME)THEN
+	    IF(FIRST_TIME .AND. MYPE .EQ. 0)THEN
 	       WRITE(LUER,'(4X,A,ES12.4)')' RECIP_CDELTAT=',RECIP_CDELTAT
 	       WRITE(LUER,'(4X,A,ES12.4)')'     ROLD_ON_R=',ROLD_ON_R
 	    END IF
@@ -842,7 +843,7 @@
 ! with DBB=0.0D0
 !
 	ELSE IF(INNER_BND_METH .EQ. 'ZERO_FLUX')THEN
-	  RSQH_AT_IB=0.0_LDP
+	  RSQH_AT_IB=RSQH_IB_PNT_SRCE   	 !RSQH_IB_PNT_SRCE is initialized to zero if not point source.
 	  TA(ND)=-F(ND-1)*Q(ND-1)/DTAU(ND-1)
 	  TB(ND)=F(ND)/DTAU(ND-1)
 	  XM(ND)=RSQH_AT_IB+RECIP_CDELTAt*(RSQH_AT_IB-ROLD_ON_R*RSQH_AT_IB_OLDt)/CHI(ND)
