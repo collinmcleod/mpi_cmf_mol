@@ -1,3 +1,5 @@
+Makefile_definitions
+.gitignore
 mod
 exe
 lib
@@ -7,3 +9,7 @@ lib_dbg
 *.mod
 *.o
 *.exe
+Makefile_definitions
+.gitignore
+new_main/subs/molecular/molecular_data/Table_S5.par
+./new_main/subs/molecular/molecular_data/Table_S5.par

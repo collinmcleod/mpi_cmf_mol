@@ -32,7 +32,7 @@ COMPILE_OPT=$(HOST)_$(COMPILER)_$(DEBUG)
 # Add location for mpi-cmfgen here/
 
 ifeq ($(HOST_COMPILE),crc_intel) 
- INSTALL_DIR=$(HOME)/mpi_cmfgen/
+ INSTALL_DIR=$(HOME)/mpi_cmfgen/mpi_cmfgen/
 endif
 
 ifeq ($(HOST_COMPILE),crc_gcc)
