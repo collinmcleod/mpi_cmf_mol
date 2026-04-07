@@ -3,14 +3,14 @@
 ! any ion. The valuse are output to an existing file (overwriting), or
 ! to a new file.
 !
-	SUBROUTINE WRRECOMCHK_MPI_V1(PR,RR,CPR,CRR,CHG_PR,CHG_RR,ADVEC_RR,
-	1                 DIERECOM,ADDRECOM,X_RECOM_1,X_RECOM_2,
+	SUBROUTINE WRRECOMCHK_MPI_V1(PR,RR,CPR,CRR,CHG_PR,CHG_RR,MOL_DR,MOL_CR,
+	1                 ADVEC_RR,DIERECOM,ADDRECOM,X_RECOM_1,X_RECOM_2,
 	1                 NT_ION_RATE,NT_ION_RATE_2E_1,NT_ION_RATE_2E_2,
 	1                 R,T,ED,DHYD,N,ND,LU,FILNAM,STRDESC,ID)
 	USE SET_KIND_MODULE
 	IMPLICIT NONE
 !
-! Altered 27-Oct-2025 : Create RECOM_SUM file, and output warning if ionization equilibrium 
+! Altered 27-Oct-2025 : Create RECOM_SUM file, and output warning if ionization equalibrium 
 !                          is not valid for an ion
 ! Created 28-Aug-2024 : Based on WRRECOM_CHK_V5
 !
@@ -21,7 +21,9 @@
 	REAL(KIND=LDP) CPR(ND)			!Collisional ioization rate
 	REAL(KIND=LDP) CRR(ND)			!Collisional recombination rate
 	REAL(KIND=LDP) CHG_PR(ND)		!Charge ionization rate
-	REAL(KIND=LDP) CHG_RR(ND)		!Charge recombination rate
+	REAL(KIND=LDP) CHG_RR(ND)               !Charge recombination rate
+	REAL(KIND=LDP) MOL_DR(ND)               !Molecular Reaction destruction rate
+	REAL(KIND=LDP) MOL_CR(ND)               !Molecular Reaction creation rate	
 	REAL(KIND=LDP) ADVEC_RR(ND)		!Advection recombination rate
 	REAL(KIND=LDP) DIERECOM(ND)
 	REAL(KIND=LDP) ADDRECOM(ND)
@@ -86,6 +88,11 @@
 	    WRITE(LU,999)(CHG_PR(J),J=MS,MF)
 	  END IF
 !
+	  IF (MOL_DR(MS) .NE. 0)THEN
+	     WRITE(LU,'(/3X,''Molecular Reaction Destruction Rate '') ')
+	     WRITE(LU,999)(MOL_DR(J),J=MS,MF)
+	  END IF
+!
 	  WRITE(LU,'(/,3X,(A),'' Recombination Rates'')')TRIM(STRDESC(ID))
 	  DO  I=1,N
 	    WRITE(LU,999)(RR(I,J),J=MS,MF)
@@ -97,6 +104,11 @@
 	  IF(CHG_PR(MS) .NE. 0)THEN
 	    WRITE(LU,'(/3X,''Charge Transfer Recombination Rate '') ')
 	    WRITE(LU,999)(CHG_RR(J),J=MS,MF)
+	  END IF
+!
+	  IF (MOL_CR(MS) .NE. 0)THEN
+	     WRITE(LU,'(/3X,''Molecular Reaction Creation Rate '') ')
+	     WRITE(LU,999)(MOL_CR(J),J=MS,MF)
 	  END IF
 !
 	  IF(ADVEC_SUM .NE. 0)THEN
@@ -159,12 +171,14 @@
 	      ABS_SUM=ABS_SUM+RR(I,J)+PR(I,J)
 	    END DO
 	    ABS_SUM=ABS_SUM+CRR(J)+CPR(J)+
-	1             CHG_PR(J)+CHG_RR(J)+
+	1	      CHG_PR(J)+CHG_RR(J)+
+	1	      MOL_CR(J)+MOL_DR(J)+
 	1             ABS(DIERECOM(J))+ABS(ADDRECOM(J))+ABS(ADVEC_RR(J))+
 	1             ABS(X_RECOM_1(J))+ABS(X_RECOM_2(J))+
 	1             ABS(NT_ION_RATE(J))+ABS(NT_ION_RATE_2E_1(J))+ABS(NT_ION_RATE_2E_2(J))
 	    NETRR(J)=200.0_LDP*(NETRR(J)+(CRR(J)-CPR(J))+
-	1                    (CHG_RR(J)-CHG_PR(J))+
+	1	             (CHG_RR(J)-CHG_PR(J))+
+	1	             (MOL_CR(J)-MOL_DR(J))+
 	1                    DIERECOM(J)+ADDRECOM(J)+ADVEC_RR(J)+
 	1                    X_RECOM_1(J)+X_RECOM_2(J)-
 	1                    NT_ION_RATE(J)-
@@ -219,7 +233,7 @@
 	CHARACTER(LEN=300) STRING
 	CHARACTER(LEN=5) IST_STR,IEND_STR
 !
-        STRING='Error for '//DESCRIPTOR(1:8)//' at depths: '
+	STRING='Error for '//DESCRIPTOR(1:8)//' at depths: '
         IST=0; IEND=0; IST_STR=' '
 	CHK_VAL=1.0_LDP
 	MAX_VAL=0.0_LDP
@@ -251,7 +265,7 @@
 	    WRITE(6,'(A)')' ERROR -- some ionization/recobination equations are not satisfied.'
 	    WRITE(6,'(A)')' In the following the maximum % error is printed in ()'
 	    WRITE(6,'(/,1X,80A)')('*',I=1,80)
-	  END IF
+	 END IF
 	  I=INDEX(STRING,':,')
 	  STRING(I+1:)=STRING(I+2:)
 	  WRITE(6,'(1X,A,A,F6.2,A)')TRIM(STRING),' (',MAX_VAL,'%)'

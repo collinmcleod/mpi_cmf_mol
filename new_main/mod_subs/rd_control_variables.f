@@ -746,6 +746,8 @@
 	  CALL RD_STORE_LOG(INCL_MOL_COMP,'MOL_COMP',L_FALSE,'Include non-thermal molecular reactions?')
 	  SIL_COMP_SCALE=1.018267E+00 !Default value, from fits to data on Compton ionization
 	  CALL RD_STORE_DBLE(SIL_COMP_SCALE,'SIL_COMP_SCL',L_FALSE,'Value by which to scale Compton reaction rates to apply to SiO')
+	  REPLACE_ALL=.FALSE.
+	  CALL RD_STORE_LOG(REPLACE_ALL,'REP_ALL',L_FALSE,'Replace all g.s. equations')
 	  CALL RD_STORE_LOG(INCL_TWO_PHOT,'INC_TWO',L_TRUE,'Include two photon transitions?')
 	  TWO_PHOTON_METHOD='USE_RAD'
 	  CALL RD_STORE_CHAR(TWO_PHOTON_METHOD,'TWO_METH',L_FALSE,'USE_RAD, LTE, NOSTIM or OLD_DEFAULT')

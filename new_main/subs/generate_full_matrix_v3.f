@@ -11,7 +11,7 @@
 	USE SET_KIND_MODULE
 	USE MOD_CMFGEN
 	USE STEQ_DATA_MOD
-	USE CONTROL_VARIABLE_MOD, ONLY : LTE_MODEL, USE_ELEC_HEAT_BAL, INCL_MOL_RXN
+	USE CONTROL_VARIABLE_MOD, ONLY : LTE_MODEL, USE_ELEC_HEAT_BAL, INCL_MOL_RXN, REPLACE_ALL
 	USE MOL_RXN_MOD
 	IMPLICIT NONE
 !
@@ -207,7 +207,7 @@
 			     DO L=1,N_MOL_LEVS
 				LL = LNK_MOL_TO_FULL(L)
 				IF (LL .GE. ATM(ID)%EQxZV .AND. LL .LT. ATM(ID)%EQXzV + ATM(ID)%NXzV) THEN
-!				   C_NC(ISPEC,JJ)=C_NC(ISPEC,JJ)+MTOT_BA(L,J,K)
+				   C_NC(ISPEC,JJ)=C_NC(ISPEC,JJ)+MTOT_BA(L,J,K)
 !				   C_ION(ID,JJ) = C_ION(ID,JJ) - MTOT_BA(L,J,K)
 !				   WRITE(LUER,*) 'Adding molecular term in generate_full_matrix: ' ************************************************
 !				   WRITE(LUER,*) 'ISPEC, SPECIES: ',ISPEC, ' ', SPECIES(ISPEC)
@@ -276,8 +276,10 @@
 			  II = LNK_MOL_TO_FULL(I)
 			  DO J=1,N_MOL_LEVS+2
 			     JJ = LNK_MOL_TO_FULL(J)
-! We only consider levels in this particular ion
+!       We only consider levels in this particular ion
+			     ! Should it be the opposite? Only include levels not in this ion? added .NOT.
 			     IF ( (II .GE. ATM(ID)%EQXzV) .AND. (II .LT. (ATM(ID)%EQXzV+ATM(ID)%NXzV)) ) THEN
+!			     IF ( .NOT. (II .GE. ATM(SPECIES_BEG_ID(ISPEC))%EQXzV .AND. II .LE. EQ_SPECIES(ISPEC) ) ) THEN
 				C_ION(ID,JJ) = C_ION(ID,JJ) + MTOT_BA(I,J,K)
 !				C_ION(ID,JJ) = C_ION(ID,JJ) + MTOT_BA(I,J,K)
 !			     WRITE(LUER,*) 'Updating ionization equation with molecular terms: '
@@ -286,8 +288,8 @@
 			     END IF
 			  END DO
 			  IF ( (II .GE. ATM(ID)%EQXzV) .AND. (II .LT. (ATM(ID)%EQXzV+ATM(ID)%NXzV)) .AND. DIAG_BAND) THEN
-!       STEQ_ION(ID) = STEQ_ION(ID) + MTOT_STEQ(I,K)
 			     STEQ_ION(ID) = STEQ_ION(ID) + MTOT_STEQ(I,K)
+!			     STEQ_ION(ID) = STEQ_ION(ID) + MTOT_STEQ(I,K)
 !			     IF (SPECIES(SPECIES_LNK(ID)) .EQ. 'OXY' .AND. K .EQ. 51) THEN
 !				WRITE(*,*) 'IN GENERATE_FULL_MATRIX, adding STEQ to oxygen: '
 !				WRITE(*,*) 'ION: ', ID
@@ -522,8 +524,12 @@
 !
 	IF(DIAG_BAND .AND. DEPTH_INDX .EQ. 1)REP_CNT(:)=0
         IF(.NOT. USE_PASSED_REP .AND. DIAG_BAND)THEN
-	  DO ID=1,NION
-	    REPLACE(ID)=.FALSE.
+	   DO ID=1,NION
+	      IF (REPLACE_ALL) THEN
+		 REPLACE(ID)=.TRUE.
+	      ELSE
+		 REPLACE(ID)=.FALSE.
+	      END IF
 	    IF (INCL_MOL_RXN) THEN
 	       IF( ATM(ID)%XzV_PRES .AND. .NOT. IS_MOLECULE(SPECIES_LNK(ID)) ) THEN !.NOT. ANY(SPECIESNAME_LIST .EQ. SPECIES(SPECIES_LNK(ID)) ) ) THEN
 !
@@ -557,6 +563,7 @@
 	    END IF
 	 END DO
 	END IF
+	
 	IF(DIAG_BAND)CALL SAVE_REPLACE(REPLACE,ION_ID,DEPTH_INDX,NION,DST,DEND)	
 !
 ! In all cases, we replace the ground state equation.
@@ -723,6 +730,20 @@
 !
 ! Extra writes for checks related to Luc's models
 !
+	IF(K .EQ. 91 .AND. DIAG_BAND .AND. K .LE. ND)THEN
+	   OPEN(UNIT=LUOUT,FILE='BA_ASCI_N_UNSCALED_D91',STATUS='UNKNOWN')
+	    CALL WR2D_MA(POPS(1,K),NT,1,'POPS_D1',LUOUT)
+	    CALL WR2D_MA(STEQ_VEC,NT,1,'STEQ_VEC_D1',LUOUT)
+	    CALL WR2D_MA(C_MAT,NT,NT,'C_MAT_D1',LUOUT)
+	  CLOSE(UNIT=LUOUT)
+	END IF
+	IF(K .EQ. 92 .AND. DIAG_BAND .AND. K .LE. ND)THEN
+	  OPEN(UNIT=LUOUT,FILE='BA_ASCI_N_UNSCALED_D92',STATUS='UNKNOWN')
+	    CALL WR2D_MA(POPS(1,K),NT,1,'POPS_D1',LUOUT)
+	    CALL WR2D_MA(STEQ_VEC,NT,1,'STEQ_VEC_D1',LUOUT)
+	    CALL WR2D_MA(C_MAT,NT,NT,'C_MAT_D1',LUOUT)
+	  CLOSE(UNIT=LUOUT)
+	END IF	
 	IF(K .EQ. 135 .AND. DIAG_BAND .AND. K .LE. ND)THEN
 	  OPEN(UNIT=LUOUT,FILE='BA_ASCI_N_UNSCALED_D135',STATUS='UNKNOWN')
 	    CALL WR2D_MA(POPS(1,K),NT,1,'POPS_D1',LUOUT)
