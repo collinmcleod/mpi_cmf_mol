@@ -34,6 +34,7 @@
 	REAL(KIND=LDP) SOL_ABUND_HSCL(NUM_SPECIES)	!Solar abundance with H=12.0
 !
 	LOGICAL IS_MOLECULE(NUM_SPECIES) !True if the given species is one of CO, C2, O2, CO2, or C2O
+	LOGICAL INC_MOL !variable denoting whether the model includes molecules
 	CHARACTER(10) MOL_ATOMS(NUM_SPECIES,2)
 	INTEGER MOL_ATM_NUMS(NUM_SPECIES,2)
 !

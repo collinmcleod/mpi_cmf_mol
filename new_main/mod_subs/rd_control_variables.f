@@ -758,6 +758,7 @@
 !
 	  CALL RD_STORE_LOG(INCL_CHG_EXCH,'INC_CHG',L_TRUE,'Include charge exchange reactions?')
 	  CALL RD_STORE_LOG(INCL_MOL_RXN,'INC_MOL',L_TRUE,'Include molecular reactions?')
+	  INC_MOL=INCL_MOL_RXN
 	  MOL_RXN_SCALE=1.0_LDP !Default
 	  CALL RD_STORE_DBLE(MOL_RXN_SCALE,'MOL_SCL',L_FALSE,'value by which to scale molecular reaction rates')
 	  CO_FORM_SCALE=1.0_LDP

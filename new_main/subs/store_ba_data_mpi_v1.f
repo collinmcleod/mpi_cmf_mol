@@ -7,6 +7,7 @@ C
 	USE SET_KIND_MODULE
 	USE MOD_CMFGEN
 	USE STEQ_DATA_MOD
+	USE MOL_RXN_MOD
 	IMPLICIT NONE
 !
 ! Altered 29-Jul-2024 - Added ability to BA to be output to SCRATCH directory.
@@ -64,6 +65,9 @@ C
 	  WRITE(LU,ERR=600,IOSTAT=IOS)BA_ED
 	  WRITE(LU,ERR=600,IOSTAT=IOS)BA_T
 	  WRITE(LU,ERR=600,IOSTAT=IOS)BA_T_EHB
+	  IF (INC_MOL) THEN
+	     WRITE(LU,ERR=600,IOSTAT=IOS)MTOT_BA
+	  END IF
 	CLOSE(UNIT=LU)
 C
 C Output to BAPNT file that write of BA and STEQ was successful.
@@ -93,6 +97,11 @@ C
 	1            DST,'Depth point start'
 	  WRITE(LU1,'(1X,I10,T20,A)',ERR=800,IOSTAT=IOS)
 	1            DEND,'Depth point end'
+	  IF (INC_MOL) THEN
+	     WRITE(LU1,'(1X,I10,T20,A)',ERR=800,IOSTAT=IOS)
+	1	     N_MOL_LEVS,'Number of levels in molecular matrix'
+	  END IF
+	     
 !
 ! Output dimesnions of each structure.
 !
